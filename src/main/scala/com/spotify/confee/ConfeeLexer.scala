@@ -24,7 +24,7 @@ object ConfeeLexer extends RegexParsers {
 
   def string: Parser[ConfeeToken] = "\"" ~> rep(char) <~ "\"" ^^ { chars => StringToken(chars.mkString) }
 
-  def number: Parser[ConfeeToken] = """\d+(\.\d+)?""".r ^^ { s => NumberToken(s.toDouble) }
+  def number: Parser[ConfeeToken] = """(\-|\+)?\d+(\.\d+)?""".r ^^ { s => NumberToken(s.toDouble) }
 
   def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ {
     case s if keywords.contains(s) => KeywordToken(s)
@@ -36,7 +36,7 @@ object ConfeeLexer extends RegexParsers {
     case s => NameToken(s)
   }
 
-  def addition: Parser[ConfeeToken] = """\+|\-|\*|\/|\%""".r ^^ { _ => AdditionToken() }
+  def addition: Parser[ConfeeToken] = """\+""".r ^^ { _ => AdditionToken() }
 
   def subtraction: Parser[ConfeeToken] = """\-""".r ^^ { _ => SubtractionToken() }
 
@@ -52,9 +52,9 @@ object ConfeeLexer extends RegexParsers {
 
   def parenthesesClose: Parser[ConfeeToken] = """\)""".r ^^ { _ => ParenthesesCloseToken() }
 
-  def bracketOpen: Parser[ConfeeToken] = """\[""".r ^^ { _ => BraceOpenToken() }
+  def bracketOpen: Parser[ConfeeToken] = """\[""".r ^^ { _ => BracketOpenToken() }
 
-  def bracketClose: Parser[ConfeeToken] = """\]""".r ^^ { _ => BraceCloseToken() }
+  def bracketClose: Parser[ConfeeToken] = """\]""".r ^^ { _ => BracketCloseToken() }
 
   def braceOpen: Parser[ConfeeToken] = """\{""".r ^^ { _ => BraceOpenToken() }
 

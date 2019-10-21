@@ -15,7 +15,6 @@ case class WordToken(word: String) extends ConfeeToken
 case class NameToken(name: String) extends ConfeeToken
 case class KeywordToken(keyword: String) extends ConfeeToken
 
-
 /* arithmetic and assignment operators */
 
 case class AdditionToken() extends ConfeeToken
@@ -25,7 +24,7 @@ case class MultiplicationToken() extends ConfeeToken
 case class ModulusToken() extends ConfeeToken
 case class AssignmentToken() extends ConfeeToken
 
-/* delimiters and grouping operators */
+/* delimiter and grouping operators */
 
 case class ParenthesesOpenToken() extends ConfeeToken
 case class ParenthesesCloseToken() extends ConfeeToken
