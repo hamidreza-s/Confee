@@ -22,18 +22,53 @@ object ConfeeLexer extends RegexParsers {
 
   def char: Parser[Char] = ("""[^"\\]""".r | '\\' ~> ".".r) ^^ { _.head }
 
-  def string: Parser[ConfeeToken] = "\"" ~> rep(char) <~ "\"" ^^ { chars => StringConfeeToken(chars.mkString) }
+  def string: Parser[ConfeeToken] = "\"" ~> rep(char) <~ "\"" ^^ { chars => StringToken(chars.mkString) }
 
-  def number: Parser[ConfeeToken] = """\d+(\.\d+)?""".r ^^ (s => NumberConfeeToken(s.toDouble))
+  def number: Parser[ConfeeToken] = """\d+(\.\d+)?""".r ^^ { s => NumberToken(s.toDouble) }
 
-  def operator: Parser[ConfeeToken] = """->|==|!=|\\|\+|-|/|\*|=|:|::|\{|\}|,""".r ^^ OperatorConfeeToken
-
-  def punctuation: Parser[ConfeeToken] = """\(|\)""".r ^^ PunctuationConfeeToken
-
-  def name: Parser[ConfeeToken] = """[a-zA-Z][a-zA-Z0-9_]*""".r ^^ {
-    case s if keywords.contains(s) => KeywordConfeeToken(s)
-    case s => NameConfeeToken(s)
+  def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ {
+    case s if keywords.contains(s) => KeywordToken(s)
+    case s => WordToken(s)
   }
+
+  def name: Parser[ConfeeToken] = """[A-Z][a-zA-Z0-9_]*""".r ^^ {
+    case s if keywords.contains(s) => KeywordToken(s)
+    case s => NameToken(s)
+  }
+
+  def addition: Parser[ConfeeToken] = """\+|\-|\*|\/|\%""".r ^^ { _ => AdditionToken() }
+
+  def subtraction: Parser[ConfeeToken] = """\-""".r ^^ { _ => SubtractionToken() }
+
+  def division: Parser[ConfeeToken] = """\/""".r ^^ { _ => DivisionToken() }
+
+  def multiplication: Parser[ConfeeToken] = """\*""".r ^^ { _ => MultiplicationToken() }
+
+  def modulus: Parser[ConfeeToken] = """\%""".r ^^ { _ => ModulusToken() }
+
+  def assignment: Parser[ConfeeToken] = """\=""".r ^^ { _ => AssignmentToken() }
+
+  def parenthesesOpen: Parser[ConfeeToken] = """\(""".r ^^ { _ => ParenthesesOpenToken() }
+
+  def parenthesesClose: Parser[ConfeeToken] = """\)""".r ^^ { _ => ParenthesesCloseToken() }
+
+  def bracketOpen: Parser[ConfeeToken] = """\[""".r ^^ { _ => BraceOpenToken() }
+
+  def bracketClose: Parser[ConfeeToken] = """\]""".r ^^ { _ => BraceCloseToken() }
+
+  def braceOpen: Parser[ConfeeToken] = """\{""".r ^^ { _ => BraceOpenToken() }
+
+  def braceClose: Parser[ConfeeToken] = """\}""".r ^^ { _ => BraceCloseToken() }
+
+  def separator: Parser[ConfeeToken] = """,""".r ^^ { _ => SeparatorToken() }
+
+  def colon: Parser[ConfeeToken] = """:""".r ^^ { _ => ColonToken() }
+
+  def semiColon: Parser[ConfeeToken] = """;""".r ^^ { _ => SemiColonToken() }
+
+  def hash: Parser[ConfeeToken] = """#""".r ^^ { _ => HashToken() }
+
+  def dot: Parser[ConfeeToken] = """\.""".r ^^ { _ => DotToken() }
 
   def singleComment: Parser[Unit] = "//" ~ rep(not("\n") ~ ".".r) ^^^ Unit
 
@@ -43,7 +78,12 @@ object ConfeeLexer extends RegexParsers {
 
   def skip: Parser[Unit] = rep(whiteSpace | comment) ^^^ Unit
 
-  def token: Parser[ConfeeToken] = positioned(operator | punctuation | name | number | string)
+  def token: Parser[ConfeeToken] = positioned {
+    string | number | word | name |
+    addition | subtraction | division | multiplication | modulus | assignment |
+    parenthesesOpen | parenthesesClose | bracketOpen | bracketClose | braceOpen | braceClose |
+    separator | colon | semiColon | hash | dot
+  }
 
   def tokens: Parser[List[ConfeeToken]] = skip ~> rep(token <~ skip) <~ skip
 }

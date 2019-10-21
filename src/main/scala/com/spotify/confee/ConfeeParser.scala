@@ -24,12 +24,14 @@ object ConfeeParser extends Parsers {
     }
   }
 
+  /* non-terminals */
+
   def exprArith: Parser[ConfeeAST] = positioned {
-    val a = exprArithFactor ~ operator ~ exprArith ^^ {
+    val a = exprArithFactor ~ exprArithOperator ~ exprArith ^^ {
       case x ~ op ~ y => Stmt("as-exp", List(x, op, y))
     }
 
-    val b = exprArithFactor ~ operator ~ exprArithFactor ^^ {
+    val b = exprArithFactor ~ exprArithOperator ~ exprArithFactor ^^ {
       case x ~ op ~ y => Stmt("a-expr", List(x, op, y))
     }
 
@@ -39,7 +41,7 @@ object ConfeeParser extends Parsers {
   }
 
   def exprArithFactor: Parser[ConfeeAST] = positioned {
-    val a = punctuation ~ exprArith ~ punctuation ^^ {
+    val a = openParentheses ~ exprArith ~ closeParentheses ^^ {
       case x ~ y ~ z => Stmt("p-expr", List(x, y, z))
     }
 
@@ -48,16 +50,42 @@ object ConfeeParser extends Parsers {
     a | b
   }
 
-  def operator: Parser[OperatorConfeeToken] = positioned {
-    accept("operator", { case token@OperatorConfeeToken(_) => token })
+  def exprArithOperator: Parser[ConfeeToken] = positioned {
+    addition | subtraction | division | multiplication | modulus
   }
 
-  def number: Parser[NumberConfeeToken] = positioned {
-    accept("number", { case token@NumberConfeeToken(_) => token })
+  /* terminals */
+
+  def number: Parser[NumberToken] = positioned {
+    accept("number", { case token@NumberToken(_) => token })
   }
 
-  def punctuation: Parser[PunctuationConfeeToken] = positioned {
-    accept("punctuation", { case token@PunctuationConfeeToken(_) => token })
+  def addition: Parser[AdditionToken] = positioned {
+    accept("addition", { case token@AdditionToken() => token })
+  }
+
+  def subtraction: Parser[SubtractionToken] = positioned {
+    accept("subtraction", { case token@SubtractionToken() => token })
+  }
+
+  def division: Parser[DivisionToken] = positioned {
+    accept("division", { case token@DivisionToken() => token })
+  }
+
+  def multiplication: Parser[MultiplicationToken] = positioned {
+    accept("multiplication", { case token@MultiplicationToken() => token })
+  }
+
+  def modulus: Parser[ModulusToken] = positioned {
+    accept("modulus", { case token@ModulusToken() => token })
+  }
+
+  def openParentheses: Parser[ParenthesesOpenToken] = positioned {
+    accept("parenthesesOpen", { case token@ParenthesesOpenToken() => token })
+  }
+
+  def closeParentheses: Parser[ParenthesesCloseToken] = positioned {
+    accept("parenthesesClose", { case token@ParenthesesCloseToken() => token })
   }
 
 }
