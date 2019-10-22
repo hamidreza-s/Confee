@@ -16,7 +16,7 @@ object ConfeeParser extends Parsers {
 
   def apply(tokens: Seq[ConfeeToken]): Either[ConfeeParserError, ConfeeAST] = {
     val reader: ConfeeTokenReader = new ConfeeTokenReader(tokens)
-    exprArith(reader) match {
+    stmts(reader) match {
       case NoSuccess(msg, next) =>
         Left(ConfeeParserError(Location(next.pos.line, next.pos.column), msg))
       case Success(result, next) =>
@@ -24,28 +24,67 @@ object ConfeeParser extends Parsers {
     }
   }
 
-  /* non-terminals */
+  /* ========== non-terminals ========== */
+
+  /* ---- statements ----- */
+
+  def stmts: Parser[Stmts] = positioned {
+
+    val a = stmt ~ stmts ^^ { case x ~ xs => Stmts(x :: xs.stmts)  }
+
+    val b = stmt ^^ { x => Stmts(x :: List()) }
+
+    a | b
+  }
+
+  def stmt: Parser[ConfeeAST] = positioned { typeStmt | factStmt }
+
+  /* ----- type statement ----- */
+
+  def typeStmt: Parser[TypeStmt] = positioned {
+    keyword ~ name ~ braceOpen ~ braceClose ^^ {
+      case k ~ n ~ bo ~ bc => TypeStmt(n, List())
+    }
+  }
+
+  /* ----- fact statement ----- */
+
+  def factStmt: Parser[FactStmt] = positioned {
+    keyword ~ word ~ colon ~ factStmtType ~ braceOpen ~ braceClose ^^ {
+      case k ~ w ~ c ~ t ~ bo ~ bc => FactStmt(w, t, List())
+    }
+  }
+
+  def factStmtType: Parser[TypeDef] = positioned {
+    val a = word ^^ { w => TypeDef(Right(w), isList = false) }
+
+    val b = name ^^ { n => TypeDef(Left(n), isList = false )}
+
+    a | b
+  }
+
+  /* ----- arithmetic expression ----- */
 
   def exprArith: Parser[ConfeeAST] = positioned {
     val a = exprArithFactor ~ exprArithOperator ~ exprArith ^^ {
-      case x ~ op ~ y => Stmt("as-exp", List(x, op, y))
+      case x ~ op ~ y => DebuggingStmt("expr-arith-a", List(x, op, y))
     }
 
     val b = exprArithFactor ~ exprArithOperator ~ exprArithFactor ^^ {
-      case x ~ op ~ y => Stmt("a-expr", List(x, op, y))
+      case x ~ op ~ y => DebuggingStmt("expr-arith-b", List(x, op, y))
     }
 
-    val c = exprArithFactor ^^ (x => Stmt("n-expr", List(x)))
+    val c = exprArithFactor ^^ (x => DebuggingStmt("expr-arith-b", List(x)))
 
     a | b | c
   }
 
   def exprArithFactor: Parser[ConfeeAST] = positioned {
-    val a = openParentheses ~ exprArith ~ closeParentheses ^^ {
-      case x ~ y ~ z => Stmt("p-expr", List(x, y, z))
+    val a = parenthesesOpen ~ exprArith ~ parenthesesClose ^^ {
+      case x ~ y ~ z => DebuggingStmt("expr-arith-factor-a", List(x, y, z))
     }
 
-    val b = number ^^ (n => Stmt("f-expr", List(n)))
+    val b = number ^^ (n => DebuggingStmt("expr-arith-factor-b", List(n)))
 
     a | b
   }
@@ -54,10 +93,26 @@ object ConfeeParser extends Parsers {
     addition | subtraction | division | multiplication | modulus
   }
 
-  /* terminals */
+  /* ========== terminals ========== */
+
+  def string: Parser[StringToken] = positioned {
+    accept("string", { case token@StringToken(_) => token })
+  }
 
   def number: Parser[NumberToken] = positioned {
     accept("number", { case token@NumberToken(_) => token })
+  }
+
+  def word: Parser[WordToken] = positioned {
+    accept("number", { case token@WordToken(_) => token })
+  }
+
+  def name: Parser[NameToken] = positioned {
+    accept("name", { case token@NameToken(_) => token })
+  }
+
+  def keyword: Parser[KeywordToken] = positioned {
+    accept("keyword", { case token@KeywordToken(_) => token })
   }
 
   def addition: Parser[AdditionToken] = positioned {
@@ -80,12 +135,48 @@ object ConfeeParser extends Parsers {
     accept("modulus", { case token@ModulusToken() => token })
   }
 
-  def openParentheses: Parser[ParenthesesOpenToken] = positioned {
+  def parenthesesOpen: Parser[ParenthesesOpenToken] = positioned {
     accept("parenthesesOpen", { case token@ParenthesesOpenToken() => token })
   }
 
-  def closeParentheses: Parser[ParenthesesCloseToken] = positioned {
+  def parenthesesClose: Parser[ParenthesesCloseToken] = positioned {
     accept("parenthesesClose", { case token@ParenthesesCloseToken() => token })
+  }
+
+  def bracketOpen: Parser[BracketOpenToken] = positioned {
+    accept("bracketOpen", { case token@BracketOpenToken() => token })
+  }
+
+  def bracketClose: Parser[BracketCloseToken] = positioned {
+    accept("bracketClose", { case token@BracketCloseToken() => token })
+  }
+
+  def braceOpen: Parser[BraceOpenToken] = positioned {
+    accept("braceOpen", { case token@BraceOpenToken() => token })
+  }
+
+  def braceClose: Parser[BraceCloseToken] = positioned {
+    accept("braceClose", { case token@BraceCloseToken() => token })
+  }
+
+  def separator: Parser[SeparatorToken] = positioned {
+    accept("separator", { case token@SeparatorToken() => token })
+  }
+
+  def colon: Parser[ColonToken] = positioned {
+    accept("colon", { case token@ColonToken() => token })
+  }
+
+  def semiColon: Parser[SemiColonToken] = positioned {
+    accept("semiColon", { case token@SemiColonToken() => token })
+  }
+
+  def hash: Parser[HashToken] = positioned {
+    accept("hash", { case token@HashToken() => token })
+  }
+
+  def dot: Parser[DotToken] = positioned {
+    accept("dot", { case token@DotToken() => token })
   }
 
 }
