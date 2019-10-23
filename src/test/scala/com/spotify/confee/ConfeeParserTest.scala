@@ -60,11 +60,42 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           |fact bar : foo { }
           |""".stripMargin,
         Grammar(List(
-          FactStmt(WordToken("foo"), TypeDef(Left(NameToken("Foo")), isList = false), List()),
-          FactStmt(WordToken("bar"), TypeDef(Right(WordToken("foo")), isList = false), List())
+          FactStmt(
+            WordToken("foo"),
+            TypeDef(Left(NameToken("Foo")), isList = false), FactItems(List.empty)
+          ),
+          FactStmt(
+            WordToken("bar"),
+            TypeDef(Right(WordToken("foo")), isList = false), FactItems(List.empty)
+          )
         ))
       )
     }
+
+    it("should parser fact definitions with fact items in multiple lines") {
+      assertAST(
+        """fact alice : Person {
+          |     name = "Alice"
+          |     age = 20
+          |}""".stripMargin,
+        Grammar(List(
+          FactStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
+            FactItems(List(
+              FactItem(
+                WordToken("name"),
+                StringLiteral(StringToken("Alice"))
+              ),
+              FactItem(
+                WordToken("age"),
+                NumberLiteral(NumberToken(20.0))
+              )
+            ))
+          )
+        ))
+      )
+
+    }
+
   }
 
   def assertAST(input: String, expectedOutput: ConfeeAST): Unit = {

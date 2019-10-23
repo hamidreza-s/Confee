@@ -2,7 +2,7 @@ package com.spotify.confee
 
 import scala.util.parsing.input.Positional
 
-sealed trait ConfeeToken extends Positional
+sealed trait ConfeeToken extends Positional with Node
 
 /* string and number */
 

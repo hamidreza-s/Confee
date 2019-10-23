@@ -35,7 +35,7 @@ object ConfeeParser extends Parsers {
 
     val a = stmt ~ grammar ^^ { case x ~ xs => Grammar(x :: xs.stmts) }
 
-    val b = stmt ^^ { x => Grammar(x :: List()) }
+    val b = stmt ^^ { x => Grammar(x :: List.empty) }
 
     a | b
   }
@@ -50,7 +50,7 @@ object ConfeeParser extends Parsers {
 
   def typeStmt: Parser[TypeStmt] = positioned {
     typeKeyword ~ name ~ braceOpen ~ typeStmtItems ~ braceClose ^^ {
-      case k ~ n ~ _ ~ ti ~ _ => TypeStmt(n, ti)
+      case _ ~ n ~ _ ~ ti ~ _ => TypeStmt(n, ti)
     }
   }
 
@@ -59,7 +59,7 @@ object ConfeeParser extends Parsers {
     val a = typeStmtItem ~ typeStmtItems ^^ { case x ~ xs => TypeItems(x :: xs.items) }
 
     val b = opt(typeStmtItem) ^^ {
-      case Some(x) => TypeItems(x :: List())
+      case Some(x) => TypeItems(x :: List.empty)
       case None => TypeItems(List.empty)
     }
 
@@ -67,7 +67,7 @@ object ConfeeParser extends Parsers {
   }
 
   def typeStmtItem: Parser[TypeItem] = positioned {
-    
+
     val a = word ~ colon ~ name ^^ {
       case w ~ _ ~ n => TypeItem(w, TypeDef(Left(n), isList = false))
     }
@@ -82,9 +82,25 @@ object ConfeeParser extends Parsers {
   /* ----- fact statement ----- */
 
   def factStmt: Parser[FactStmt] = positioned {
-    factKeyword ~ word ~ colon ~ factStmtType ~ braceOpen ~ braceClose ^^ {
-      case k ~ w ~ _ ~ t ~ _ ~ _ => FactStmt(w, t, List())
+    factKeyword ~ word ~ colon ~ factStmtType ~ braceOpen ~ factStmtItems ~ braceClose ^^ {
+      case _ ~ w ~ _ ~ t ~ _ ~ si ~ _ => FactStmt(w, t, FactItems(si.items))
     }
+  }
+
+  def factStmtItems: Parser[FactItems] = positioned {
+
+    val a = factStmtItem ~ factStmtItems ^^ { case x ~ xs => FactItems(x :: xs.items) }
+
+    val b = opt(factStmtItem) ^^ {
+      case Some(x) => FactItems(x :: List.empty)
+      case None => FactItems(List.empty)
+    }
+
+    a | b
+  }
+
+  def factStmtItem: Parser[FactItem] = positioned {
+    word ~ assignment ~ literal ^^ { case w ~ _ ~ l => FactItem(w, l) }
   }
 
   def factStmtType: Parser[TypeDef] = positioned {
@@ -124,8 +140,18 @@ object ConfeeParser extends Parsers {
     a | b
   }
 
-  def exprArithOperator: Parser[ConfeeToken] = positioned {
+  def exprArithOperator: Parser[Node] = positioned {
     addition | subtraction | division | multiplication | modulus
+  }
+
+  /* ----- literal ----- */
+
+  def literal: Parser[Literal] = positioned {
+    val a = string ^^ { x => StringLiteral(x) }
+
+    val b = number ^^ { x => NumberLiteral(x) }
+
+    a | b
   }
 
   /* ========== terminals ========== */
@@ -172,6 +198,10 @@ object ConfeeParser extends Parsers {
 
   def modulus: Parser[ModulusToken] = positioned {
     accept("modulus", { case token@ModulusToken() => token })
+  }
+
+  def assignment: Parser[AssignmentToken] = positioned {
+    accept("assignment", { case token@AssignmentToken() => token })
   }
 
   def parenthesesOpen: Parser[ParenthesesOpenToken] = positioned {
