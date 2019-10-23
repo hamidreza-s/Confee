@@ -2,16 +2,49 @@ package com.spotify.confee
 
 import scala.util.parsing.input.Positional
 
+/**
+  * AST Structure
+  *
+  * - Grammar is a list of Statements
+  * - Statement can contain another Statement, an Expression or a Node
+  * - Expression can contain another Expression or a Node
+  * - Node can contain token which generated in the lexing phase
+  *
+  *           Grammar
+  *           /     \
+  *         Stmt  Stmt
+  *         /  \     \
+  *      Expr  Stmt  Node
+  *      /  \
+  *    Expr Node
+  */
+
 sealed trait ConfeeAST extends Positional
 
-case class Stmts(stmts: List[ConfeeAST]) extends ConfeeAST
+sealed trait Stmt extends ConfeeAST
 
-case class TypeStmt(name: NameToken, items: List[TypeItem]) extends ConfeeAST
-case class TypeItem(name: WordToken, itemType: TypeDef) extends ConfeeAST
-case class TypeDef(name: Either[NameToken, WordToken], isList: Boolean) extends ConfeeAST
+sealed trait Expr extends ConfeeAST
 
-case class FactStmt(name: WordToken, factType: TypeDef, items: List[FactItem]) extends ConfeeAST
-case class FactItem(name: WordToken, itemType: TypeDef) extends ConfeeAST
+sealed trait Node extends ConfeeAST
+
+/* grammar */
+
+case class Grammar(stmts: List[Stmt]) extends ConfeeAST
+
+/* type statement */
+
+case class TypeStmt(name: NameToken, items: List[TypeItem]) extends Stmt
+
+case class TypeItem(name: WordToken, itemType: TypeDef) extends Node
+
+case class TypeDef(name: Either[NameToken, WordToken], isList: Boolean) extends Node
+
+/* fact statement */
+
+case class FactStmt(name: WordToken, factType: TypeDef, items: List[FactItem]) extends Stmt
+
+case class FactItem(name: WordToken, itemType: TypeDef) extends Node
+
+/* debugging statement */
 
 case class DebuggingStmt(name: String, items: List[Any]) extends ConfeeAST
-

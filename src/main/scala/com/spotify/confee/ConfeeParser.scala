@@ -16,7 +16,7 @@ object ConfeeParser extends Parsers {
 
   def apply(tokens: Seq[ConfeeToken]): Either[ConfeeParserError, ConfeeAST] = {
     val reader: ConfeeTokenReader = new ConfeeTokenReader(tokens)
-    stmts(reader) match {
+    grammar(reader) match {
       case NoSuccess(msg, next) =>
         Left(ConfeeParserError(Location(next.pos.line, next.pos.column), msg))
       case Success(result, next) =>
@@ -26,18 +26,20 @@ object ConfeeParser extends Parsers {
 
   /* ========== non-terminals ========== */
 
-  /* ---- statements ----- */
+  /* ---- grammar ----- */
 
-  def stmts: Parser[Stmts] = positioned {
+  def grammar: Parser[Grammar] = positioned {
 
-    val a = stmt ~ stmts ^^ { case x ~ xs => Stmts(x :: xs.stmts)  }
+    val a = stmt ~ grammar ^^ { case x ~ xs => Grammar(x :: xs.stmts)  }
 
-    val b = stmt ^^ { x => Stmts(x :: List()) }
+    val b = stmt ^^ { x => Grammar(x :: List()) }
 
     a | b
   }
 
-  def stmt: Parser[ConfeeAST] = positioned { typeStmt | factStmt }
+  /* ---- statements ----- */
+
+  def stmt: Parser[Stmt] = positioned { typeStmt | factStmt }
 
   /* ----- type statement ----- */
 
