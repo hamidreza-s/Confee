@@ -18,23 +18,19 @@ object ConfeeLexer extends RegexParsers {
 
   override def skipWhitespace: Boolean = false
 
-  val keywords = HashSet("fact", "func", "type")
-
   def char: Parser[Char] = ("""[^"\\]""".r | '\\' ~> ".".r) ^^ { _.head }
 
   def string: Parser[ConfeeToken] = "\"" ~> rep(char) <~ "\"" ^^ { chars => StringToken(chars.mkString) }
 
   def number: Parser[ConfeeToken] = """(\-|\+)?\d+(\.\d+)?""".r ^^ { s => NumberToken(s.toDouble) }
 
-  def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ {
-    case s if keywords.contains(s) => KeywordToken(s)
-    case s => WordToken(s)
-  }
+  def typeKeyword: Parser[ConfeeToken] = "type" ^^ { _ => TypeKeywordToken() }
 
-  def name: Parser[ConfeeToken] = """[A-Z][a-zA-Z0-9_]*""".r ^^ {
-    case s if keywords.contains(s) => KeywordToken(s)
-    case s => NameToken(s)
-  }
+  def factKeyword: Parser[ConfeeToken] = "fact" ^^ { _ => FactKeywordToken() }
+
+  def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ { s => WordToken(s) }
+
+  def name: Parser[ConfeeToken] = """[A-Z][a-zA-Z0-9_]*""".r ^^ { s => NameToken(s) }
 
   def addition: Parser[ConfeeToken] = """\+""".r ^^ { _ => AdditionToken() }
 
@@ -79,7 +75,7 @@ object ConfeeLexer extends RegexParsers {
   def skip: Parser[Unit] = rep(whiteSpace | comment) ^^^ Unit
 
   def token: Parser[ConfeeToken] = positioned {
-    string | number | word | name |
+    string | number | typeKeyword | factKeyword | word | name |
     addition | subtraction | division | multiplication | modulus | assignment |
     parenthesesOpen | parenthesesClose | bracketOpen | bracketClose | braceOpen | braceClose |
     separator | colon | semiColon | hash | dot

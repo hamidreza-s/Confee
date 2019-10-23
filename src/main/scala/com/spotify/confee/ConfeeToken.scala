@@ -10,13 +10,19 @@ case class StringToken(value: String) extends ConfeeToken
 
 case class NumberToken(value: Double) extends ConfeeToken
 
+/* keywords */
+
+case class KeywordToken(keyword: String) extends ConfeeToken
+
+case class TypeKeywordToken() extends ConfeeToken
+
+case class FactKeywordToken() extends ConfeeToken
+
 /* identifiers */
 
 case class WordToken(word: String) extends ConfeeToken
 
 case class NameToken(name: String) extends ConfeeToken
-
-case class KeywordToken(keyword: String) extends ConfeeToken
 
 /* arithmetic and assignment operators */
 

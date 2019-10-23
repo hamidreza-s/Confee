@@ -13,11 +13,42 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           |type Bar { }
           |""".stripMargin,
         Grammar(List(
-          TypeStmt(NameToken("Foo"), List()),
-          TypeStmt(NameToken("Bar"), List())
+          TypeStmt(NameToken("Foo"), TypeItems(List.empty)),
+          TypeStmt(NameToken("Bar"), TypeItems(List.empty))
         ))
       )
     }
+
+    it("should parser type definitions with type items in one line") {
+      assertAST(
+        "type Person { name: Text age: Int friends: [Person] }",
+        Grammar(List(
+          TypeStmt(NameToken("Person"), TypeItems(List(
+            TypeItem(WordToken("name"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("age"), TypeDef(Left(NameToken("Int")), isList = false)),
+            TypeItem(WordToken("friends"), TypeDef(Left(NameToken("Person")), isList = true))
+          )))
+        ))
+      )
+    }
+
+    it("should parser type definitions with type items in multiple lines") {
+      assertAST(
+        """type Person {
+          |     name: Text
+          |     age: Int
+          |     friends: [Person]
+          |}""".stripMargin,
+        Grammar(List(
+          TypeStmt(NameToken("Person"), TypeItems(List(
+            TypeItem(WordToken("name"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("age"), TypeDef(Left(NameToken("Int")), isList = false)),
+            TypeItem(WordToken("friends"), TypeDef(Left(NameToken("Person")), isList = true))
+          )))
+        ))
+      )
+    }
+
   }
 
   describe("Parser on fact statement") {

@@ -33,9 +33,11 @@ case class Grammar(stmts: List[Stmt]) extends ConfeeAST
 
 /* type statement */
 
-case class TypeStmt(name: NameToken, items: List[TypeItem]) extends Stmt
+case class TypeStmt(name: NameToken, items: TypeItems) extends Stmt
 
 case class TypeItem(name: WordToken, itemType: TypeDef) extends Node
+
+case class TypeItems(items: List[TypeItem]) extends Node
 
 case class TypeDef(name: Either[NameToken, WordToken], isList: Boolean) extends Node
 
