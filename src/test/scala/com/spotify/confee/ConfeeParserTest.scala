@@ -79,11 +79,11 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
             FactItems(List(
               FactItem(
                 WordToken("name"),
-                StringLiteral(StringToken("Alice"))
+                LiteralString(StringToken("Alice"))
               ),
               FactItem(
                 WordToken("age"),
-                NumberLiteral(NumberToken(20.0))
+                LiteralNumber(NumberToken(20.0))
               )
             ))
           )
@@ -91,99 +91,142 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
-    it("should parser fact definitions with string and number fact items") {
-      assertAST(
-        """fact alice : Person {
-          |     name = "Alice"
-          |     age = 20
-          |}""".stripMargin,
-        Grammar(List(
-          FactStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
-            FactItems(List(
-              FactItem(
-                WordToken("name"),
-                StringLiteral(StringToken("Alice"))
-              ),
-              FactItem(
-                WordToken("age"),
-                NumberLiteral(NumberToken(20.0))
-              )
-            ))
-          )
-        ))
-      )
-    }
+    describe("Parser on literal expression") {
 
-    it("should parser fact definitions with list of fact items") {
-      assertAST(
-        """fact team : Team {
-          |     members = ["Alice", "Bob", "Joe"]
-          |     records = [98, 97, 99]
-          |}""".stripMargin,
-        Grammar(List(
-          FactStmt(WordToken("team"), TypeDef(Left(NameToken("Team")), isList = false),
-            FactItems(List(
-              FactItem(
-                WordToken("members"),
-                ListLiteral(List(
-                  StringLiteral(StringToken("Alice")),
-                  StringLiteral(StringToken("Bob")),
-                  StringLiteral(StringToken("Joe"))
-                ))
-              ),
-              FactItem(
-                WordToken("records"),
-                ListLiteral(List(
-                  NumberLiteral(NumberToken(98.0)),
-                  NumberLiteral(NumberToken(97.0)),
-                  NumberLiteral(NumberToken(99.0))
-                ))
-              )
-            ))
-          )
-        ))
-      )
-    }
+      it("should parser fact definitions with string and number fact items") {
+        assertAST(
+          """fact alice : Person {
+            |     name = "Alice"
+            |     age = 20
+            |}""".stripMargin,
+          Grammar(List(
+            FactStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
+              FactItems(List(
+                FactItem(
+                  WordToken("name"),
+                  LiteralString(StringToken("Alice"))
+                ),
+                FactItem(
+                  WordToken("age"),
+                  LiteralNumber(NumberToken(20.0))
+                )
+              ))
+            )
+          ))
+        )
+      }
 
-    it("should parser fact definitions with list of list of fact items") {
-      assertAST(
-        """fact match : Match {
-          |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
-          |     scores = [[7, 10], [23, 14]]
-          |}""".stripMargin,
-        Grammar(List(
-          FactStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
-            FactItems(List(
-              FactItem(
-                WordToken("players"),
-                ListLiteral(List(
-                  ListLiteral(List(
-                    StringLiteral(StringToken("Alice")),
-                    StringLiteral(StringToken("Bob"))
-                  )),
-                  ListLiteral(List(
-                    StringLiteral(StringToken("Joe")),
-                    StringLiteral(StringToken("Monica"))
+      it("should parser fact definitions with list of fact items") {
+        assertAST(
+          """fact team : Team {
+            |     members = ["Alice", "Bob", "Joe"]
+            |     records = [98, 97, 99]
+            |}""".stripMargin,
+          Grammar(List(
+            FactStmt(WordToken("team"), TypeDef(Left(NameToken("Team")), isList = false),
+              FactItems(List(
+                FactItem(
+                  WordToken("members"),
+                  LiteralList(List(
+                    LiteralString(StringToken("Alice")),
+                    LiteralString(StringToken("Bob")),
+                    LiteralString(StringToken("Joe"))
                   ))
-                ))
-              ),
-              FactItem(
-                WordToken("scores"),
-                ListLiteral(List(
-                  ListLiteral(List(
-                    NumberLiteral(NumberToken(7.0)),
-                    NumberLiteral(NumberToken(10.0))
-                  )),
-                  ListLiteral(List(
-                    NumberLiteral(NumberToken(23.0)),
-                    NumberLiteral(NumberToken(14.0))
+                ),
+                FactItem(
+                  WordToken("records"),
+                  LiteralList(List(
+                    LiteralNumber(NumberToken(98.0)),
+                    LiteralNumber(NumberToken(97.0)),
+                    LiteralNumber(NumberToken(99.0))
                   ))
-                ))
-              )
-            ))
-          )
-        ))
-      )
+                )
+              ))
+            )
+          ))
+        )
+      }
+
+      it("should parser fact definitions with list of list of fact items") {
+        assertAST(
+          """fact match : Match {
+            |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
+            |     scores = [[7, 10], [23, 14]]
+            |}""".stripMargin,
+          Grammar(List(
+            FactStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
+              FactItems(List(
+                FactItem(
+                  WordToken("players"),
+                  LiteralList(List(
+                    LiteralList(List(
+                      LiteralString(StringToken("Alice")),
+                      LiteralString(StringToken("Bob"))
+                    )),
+                    LiteralList(List(
+                      LiteralString(StringToken("Joe")),
+                      LiteralString(StringToken("Monica"))
+                    ))
+                  ))
+                ),
+                FactItem(
+                  WordToken("scores"),
+                  LiteralList(List(
+                    LiteralList(List(
+                      LiteralNumber(NumberToken(7.0)),
+                      LiteralNumber(NumberToken(10.0))
+                    )),
+                    LiteralList(List(
+                      LiteralNumber(NumberToken(23.0)),
+                      LiteralNumber(NumberToken(14.0))
+                    ))
+                  ))
+                )
+              ))
+            )
+          ))
+        )
+      }
+    }
+
+    describe("Parser on arithmetic expression") {
+
+      it("should parser fact definitions with arithmetic expression as fact item") {
+        assertAST(
+          """fact report : TimeReport {
+            |     sec = 60
+            |     hour = 60 * sec
+            |     week = day * 7
+            |     working_days = week - (2 * day)
+            |}""".stripMargin,
+          Grammar(List(
+            FactStmt(WordToken("report"), TypeDef(Left(NameToken("TimeReport")), isList = false),
+              FactItems(List(
+                FactItem(WordToken("sec"), LiteralNumber(NumberToken(60.0))),
+                FactItem(WordToken("hour"), ArithFactorGroup(
+                  ArithMulOperator(),
+                  ArithFactorNumber(NumberToken(60.0)),
+                  ArithFactorWord(WordToken("sec"))
+                )),
+
+                FactItem(WordToken("week"), ArithFactorGroup(
+                  ArithMulOperator(),
+                  ArithFactorWord(WordToken("day")),
+                  ArithFactorNumber(NumberToken(7.0))
+                )),
+                 FactItem(WordToken("working_days"), ArithFactorGroup(
+                   ArithSubOperator(),
+                   ArithFactorWord(WordToken("week")), ArithFactorGroup(
+                     ArithMulOperator(),
+                     ArithFactorNumber(NumberToken(2.0)),
+                     ArithFactorWord(WordToken("day"))
+                   )
+                 ))
+              ))
+            )
+          ))
+        )
+      }
     }
   }
 

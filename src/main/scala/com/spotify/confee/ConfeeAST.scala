@@ -10,20 +10,21 @@ import scala.util.parsing.input.Positional
   * - Statement can contain another Statement, an Expression or a Node
   * - Statement has scope and can be defined in top-level (type, fact, func, import, export)
   * - Expression can contain another Expression or a Node
-  * - Expression can not be defined in top-level (literal, condition, case, arithmetic operation)
+  * - Expression can not be defined in top-level (literal, arithmetic, condition, case)
+  * - Literal Expression can be string, number, list, tuple, lambda or other Expressions
   * - Node is an abstraction which contains a value or points to it
   * - Node can be a Token which generated in the lexing phase
   * - Node can also point to a Statement, an Expression, or another Node
   *
-  *           Grammar
-  *           /     \
-  *         Stmt  Stmt
-  *         /  \     \
-  *      Expr  Stmt  Node -> Stmt | Expr | Node
-  *      /  \
-  *    Expr Node
-  *          \\
-  *         Token
+  *                                                    Grammar
+  *                                                    /     \
+  *                                                  Stmt  Stmt
+  *                                                  /  \     \
+  *                                               Expr  Stmt  Node -> Stmt | Expr | Node
+  *                                               /  \
+  *  Literal | Arithmetic | Condition | Case <= Expr Node
+  *                                                   \\
+  *                                                  Token
   */
 
 sealed trait ConfeeAST extends Positional
@@ -52,19 +53,41 @@ case class TypeDef(name: Either[NameToken, WordToken], isList: Boolean) extends 
 
 case class FactStmt(name: WordToken, factType: TypeDef, items: FactItems) extends Stmt
 
-case class FactItem(name: WordToken, itemVal: Literal) extends Node
+case class FactItem(name: WordToken, itemVal: Expr) extends Node
 
 case class FactItems(items: List[FactItem]) extends Node
 
-/* literal */
+/* literal expression */
 
-sealed trait Literal extends Expr
+sealed trait LiteralExpr extends Expr
 
-case class StringLiteral(value: StringToken) extends Literal
+case class LiteralString(value: StringToken) extends LiteralExpr
 
-case class NumberLiteral(value: NumberToken) extends Literal
+case class LiteralNumber(value: NumberToken) extends LiteralExpr
 
-case class ListLiteral(value: List[Literal]) extends Literal
+case class LiteralList(value: List[LiteralExpr]) extends LiteralExpr
+
+/* arithmetic expression */
+
+sealed trait ArithExpr extends Expr
+
+sealed trait ArithOperator extends Node
+
+case class ArithFactorGroup(operator: ArithOperator, a: ArithExpr, b: ArithExpr) extends ArithExpr
+
+case class ArithFactorNumber(value: NumberToken) extends ArithExpr
+
+case class ArithFactorWord(value: WordToken) extends ArithExpr
+
+case class ArithAddOperator() extends ArithOperator
+
+case class ArithSubOperator() extends ArithOperator
+
+case class ArithDivOperator() extends ArithOperator
+
+case class ArithMulOperator() extends ArithOperator
+
+case class ArithModOperator() extends ArithOperator
 
 /* debugging statement */
 

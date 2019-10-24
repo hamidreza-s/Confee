@@ -102,7 +102,7 @@ object ConfeeParser extends Parsers {
   }
 
   def factStmtItem: Parser[FactItem] = positioned {
-    word ~ assignment ~ literal ^^ { case w ~ _ ~ l => FactItem(w, l) }
+    word ~ assignment ~ expr ^^ { case w ~ _ ~ e => FactItem(w, e) }
   }
 
   def factStmtType: Parser[TypeDef] = positioned {
@@ -114,71 +114,90 @@ object ConfeeParser extends Parsers {
     a | b
   }
 
+  /* ----- expression ----- */
+
+  def expr: Parser[Expr] = positioned {
+    exprArith ||| exprLiteral
+  }
+
   /* ----- arithmetic expression ----- */
 
-  def exprArith: Parser[ConfeeAST] = positioned {
+  def exprArith: Parser[ArithExpr] = positioned {
 
     val a = exprArithFactor ~ exprArithOperator ~ exprArith ^^ {
-      case x ~ op ~ y => DebuggingStmt("expr-arith-a", List(x, op, y))
+      case x ~ op ~ xs => ArithFactorGroup(op, x, xs)
     }
 
     val b = exprArithFactor ~ exprArithOperator ~ exprArithFactor ^^ {
-      case x ~ op ~ y => DebuggingStmt("expr-arith-b", List(x, op, y))
+      case x ~ op ~ y => ArithFactorGroup(op, x, y)
     }
 
-    val c = exprArithFactor ^^ (x => DebuggingStmt("expr-arith-b", List(x)))
+    val c = exprArithFactor ^^ { f => f }
 
     a | b | c
   }
 
-  def exprArithFactor: Parser[ConfeeAST] = positioned {
+  def exprArithFactor: Parser[ArithExpr] = positioned {
 
-    val a = parenthesesOpen ~ exprArith ~ parenthesesClose ^^ {
-      case x ~ y ~ z => DebuggingStmt("expr-arith-factor-a", List(x, y, z))
-    }
+    val a = parenthesesOpen ~ exprArith ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
 
-    val b = number ^^ (n => DebuggingStmt("expr-arith-factor-b", List(n)))
+    val b = number ^^ { n => ArithFactorNumber(n) }
 
-    a | b
-  }
-
-  def exprArithOperator: Parser[Node] = positioned {
-    addition | subtraction | division | multiplication | modulus
-  }
-
-  /* ----- literal ----- */
-
-  def literal: Parser[Literal] = positioned {
-
-    val a = string ^^ { x => StringLiteral(x) }
-
-    val b = number ^^ { x => NumberLiteral(x) }
-
-    val c = list ^^ { x => x }
+    val c = word ^^ { n => ArithFactorWord(n) }
 
     a | b | c
   }
 
-  /* ----- list ----- */
+  def exprArithOperator: Parser[ArithOperator] = positioned {
 
-  def list: Parser[ListLiteral] = positioned {
-    bracketOpen ~ listItems ~ bracketClose ^^ { case _ ~ li ~ _ => ListLiteral(li.value) }
+    val a = addition ^^ { _ => ArithAddOperator() }
+
+    val b = subtraction ^^ { _ => ArithSubOperator() }
+
+    val c = division ^^ { _ => ArithDivOperator() }
+
+    val d = multiplication ^^ { _ => ArithMulOperator() }
+
+    val e = modulus ^^ { _ => ArithModOperator() }
+
+    a | b | c | d | e
   }
 
-  def listItems: Parser[ListLiteral] = positioned {
+  /* ----- literal expression ----- */
 
-    val a = listItem ~ separator ~ listItems ^^ { case x ~_ ~  xs => ListLiteral(x :: xs.value) }
+  def exprLiteral: Parser[LiteralExpr] = positioned {
 
-    val b = opt(listItem) ^^ {
-      case Some(x) => ListLiteral(x :: List.empty)
-      case None => ListLiteral(List.empty)
+    val a = string ^^ { x => LiteralString(x) }
+
+    val b = number ^^ { x => LiteralNumber(x) }
+
+    val c = listLiteral ^^ { x => x }
+
+    a | b | c
+  }
+
+  /* ----- list literal ----- */
+
+  def listLiteral: Parser[LiteralList] = positioned {
+    bracketOpen ~ listLiteralItems ~ bracketClose ^^ { case _ ~ li ~ _ => LiteralList(li.value) }
+  }
+
+  def listLiteralItems: Parser[LiteralList] = positioned {
+
+    val a = listLiteralItem ~ separator ~ listLiteralItems ^^ {
+      case x ~_ ~  xs => LiteralList(x :: xs.value)
+    }
+
+    val b = opt(listLiteralItem) ^^ {
+      case Some(x) => LiteralList(x :: List.empty)
+      case None => LiteralList(List.empty)
     }
 
     a | b
   }
 
-  def listItem: Parser[Literal] = positioned {
-    literal | list
+  def listLiteralItem: Parser[LiteralExpr] = positioned {
+    exprLiteral | listLiteral
   }
 
   /* ========== AST terminals ========== */
