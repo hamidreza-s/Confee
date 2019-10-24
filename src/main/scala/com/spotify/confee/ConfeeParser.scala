@@ -27,7 +27,7 @@ object ConfeeParser extends Parsers {
     }
   }
 
-  /* ========== non-terminals ========== */
+  /* ========== AST root ========== */
 
   /* ---- grammar ----- */
 
@@ -39,6 +39,8 @@ object ConfeeParser extends Parsers {
 
     a | b
   }
+
+  /* ========== AST non-terminals ========== */
 
   /* ---- statements ----- */
 
@@ -154,7 +156,7 @@ object ConfeeParser extends Parsers {
     a | b
   }
 
-  /* ========== terminals ========== */
+  /* ========== AST terminals ========== */
 
   def string: Parser[StringToken] = positioned {
     accept("string", { case token@StringToken(_) => token })

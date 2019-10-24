@@ -5,11 +5,12 @@ import scala.util.parsing.input.Positional
 /**
   * AST Structure
   *
+  * - Grammar is the root, Statement, Expression and Node are non-terminal, and Node is terminal
   * - Grammar is a list of Statements
   * - Statement can contain another Statement, an Expression or a Node
   * - Statement has scope and can be defined in top-level (type, fact, func, import, export)
   * - Expression can contain another Expression or a Node
-  * - Expression can not be defined in top-level (literal, condition, arithmetic operation)
+  * - Expression can not be defined in top-level (literal, condition, case, arithmetic operation)
   * - Node is an abstraction which contains a value or points to it
   * - Node can be a Token which generated in the lexing phase
   * - Node can also point to a Statement, an Expression, or another Node
