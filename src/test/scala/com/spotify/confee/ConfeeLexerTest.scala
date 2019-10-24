@@ -70,7 +70,6 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
         )
       )
     }
-
   }
 
   describe("Lexer on numbers") {
@@ -200,7 +199,6 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
         )
       )
     }
-
   }
 
   describe("Lexer on operators") {

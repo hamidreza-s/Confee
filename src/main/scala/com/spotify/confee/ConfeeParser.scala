@@ -149,11 +149,36 @@ object ConfeeParser extends Parsers {
   /* ----- literal ----- */
 
   def literal: Parser[Literal] = positioned {
+
     val a = string ^^ { x => StringLiteral(x) }
 
     val b = number ^^ { x => NumberLiteral(x) }
 
+    val c = list ^^ { x => x }
+
+    a | b | c
+  }
+
+  /* ----- list ----- */
+
+  def list: Parser[ListLiteral] = positioned {
+    bracketOpen ~ listItems ~ bracketClose ^^ { case _ ~ li ~ _ => ListLiteral(li.value) }
+  }
+
+  def listItems: Parser[ListLiteral] = positioned {
+
+    val a = listItem ~ separator ~ listItems ^^ { case x ~_ ~  xs => ListLiteral(x :: xs.value) }
+
+    val b = opt(listItem) ^^ {
+      case Some(x) => ListLiteral(x :: List.empty)
+      case None => ListLiteral(List.empty)
+    }
+
     a | b
+  }
+
+  def listItem: Parser[Literal] = positioned {
+    literal | list
   }
 
   /* ========== AST terminals ========== */

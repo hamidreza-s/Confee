@@ -64,7 +64,7 @@ case class StringLiteral(value: StringToken) extends Literal
 
 case class NumberLiteral(value: NumberToken) extends Literal
 
-case class ListLiteral[T](value: List[T]) extends Literal
+case class ListLiteral(value: List[Literal]) extends Literal
 
 /* debugging statement */
 
