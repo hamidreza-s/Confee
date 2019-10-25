@@ -26,7 +26,7 @@ object ConfeeLexer extends RegexParsers {
 
   def typeKeyword: Parser[ConfeeToken] = "type" ^^ { _ => TypeKeywordToken() }
 
-  def factKeyword: Parser[ConfeeToken] = "fact" ^^ { _ => FactKeywordToken() }
+  def confKeyword: Parser[ConfeeToken] = "conf" ^^ { _ => ConfKeywordToken() }
 
   def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ { s => WordToken(s) }
 
@@ -75,7 +75,7 @@ object ConfeeLexer extends RegexParsers {
   def skip: Parser[Unit] = rep(whiteSpace | comment) ^^^ Unit
 
   def token: Parser[ConfeeToken] = positioned {
-    string | number | typeKeyword | factKeyword | word | name |
+    string | number | typeKeyword | confKeyword | word | name |
     addition | subtraction | division | multiplication | modulus | assignment |
     parenthesesOpen | parenthesesClose | bracketOpen | bracketClose | braceOpen | braceClose |
     separator | colon | semiColon | hash | dot

@@ -50,38 +50,38 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
     }
   }
 
-  describe("Parser on fact statement") {
+  describe("Parser on conf statement") {
 
-    it("should parse fact definitions without fact items") {
+    it("should parse conf definitions without conf items") {
       assertAST(
         """
-          |fact foo : Foo { }
-          |fact bar : foo { }
+          |conf foo : Foo { }
+          |conf bar : foo { }
           |""".stripMargin,
         Grammar(List(
-          FactStmt(
+          ConfStmt(
             WordToken("foo"),
-            TypeDef(Left(NameToken("Foo")), isList = false), FactItems(List.empty)
+            TypeDef(Left(NameToken("Foo")), isList = false), ConfItems(List.empty)
           ),
-          FactStmt(
+          ConfStmt(
             WordToken("bar"),
-            TypeDef(Right(WordToken("foo")), isList = false), FactItems(List.empty)
+            TypeDef(Right(WordToken("foo")), isList = false), ConfItems(List.empty)
           )
         ))
       )
     }
 
-    it("should parser fact definitions with fact items in one line") {
+    it("should parser conf definitions with conf items in one line") {
       assertAST(
-        """fact alice : Person {name = "Alice" age = 20}""",
+        """conf alice : Person {name = "Alice" age = 20}""",
         Grammar(List(
-          FactStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
-            FactItems(List(
-              FactItem(
+          ConfStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
+            ConfItems(List(
+              ConfItem(
                 WordToken("name"),
                 LiteralString(StringToken("Alice"))
               ),
-              FactItem(
+              ConfItem(
                 WordToken("age"),
                 LiteralNumberFactor(NumberToken(20.0))
               )
@@ -93,20 +93,20 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
 
     describe("Parser on simple literal expression") {
 
-      it("should parser fact definitions with string and number fact items") {
+      it("should parser conf definitions with string and number conf items") {
         assertAST(
-          """fact alice : Person {
+          """conf alice : Person {
             |     name = "Alice"
             |     age = 20
             |}""".stripMargin,
           Grammar(List(
-            FactStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
-              FactItems(List(
-                FactItem(
+            ConfStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
+              ConfItems(List(
+                ConfItem(
                   WordToken("name"),
                   LiteralString(StringToken("Alice"))
                 ),
-                FactItem(
+                ConfItem(
                   WordToken("age"),
                   LiteralNumberFactor(NumberToken(20.0))
                 )
@@ -116,16 +116,16 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
         )
       }
 
-      it("should parser fact definitions with list of fact items") {
+      it("should parser conf definitions with list of conf items") {
         assertAST(
-          """fact team : Team {
+          """conf team : Team {
             |     members = ["Alice", "Bob", "Joe"]
             |     records = [98, 97, 99]
             |}""".stripMargin,
           Grammar(List(
-            FactStmt(WordToken("team"), TypeDef(Left(NameToken("Team")), isList = false),
-              FactItems(List(
-                FactItem(
+            ConfStmt(WordToken("team"), TypeDef(Left(NameToken("Team")), isList = false),
+              ConfItems(List(
+                ConfItem(
                   WordToken("members"),
                   LiteralArray(List(
                     LiteralString(StringToken("Alice")),
@@ -133,7 +133,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                     LiteralString(StringToken("Joe"))
                   ))
                 ),
-                FactItem(
+                ConfItem(
                   WordToken("records"),
                   LiteralArray(List(
                     LiteralNumberFactor(NumberToken(98.0)),
@@ -147,16 +147,16 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
         )
       }
 
-      it("should parser fact definitions with list of list of fact items") {
+      it("should parser conf definitions with list of list of conf items") {
         assertAST(
-          """fact match : Match {
+          """conf match : Match {
             |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
             |     scores = [[7, 10], [23, 14]]
             |}""".stripMargin,
           Grammar(List(
-            FactStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
-              FactItems(List(
-                FactItem(
+            ConfStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
+              ConfItems(List(
+                ConfItem(
                   WordToken("players"),
                   LiteralArray(List(
                     LiteralArray(List(
@@ -169,7 +169,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                     ))
                   ))
                 ),
-                FactItem(
+                ConfItem(
                   WordToken("scores"),
                   LiteralArray(List(
                     LiteralArray(List(
@@ -191,9 +191,9 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
 
     describe("Parser on literal number expression") {
 
-      it("should parser fact definitions with arithmetic expression as fact item") {
+      it("should parser conf definitions with arithmetic expression as conf item") {
         assertAST(
-          """fact report : TimeReport {
+          """conf report : TimeReport {
             |     sec = 60
             |     hour = 60 * sec
             |     week = day * 7
@@ -201,21 +201,21 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
             |     random = 1 + 2 + (3 * 4 / (5 - 6) + 7) - sec
             |}""".stripMargin,
           Grammar(List(
-            FactStmt(WordToken("report"), TypeDef(Left(NameToken("TimeReport")), isList = false),
-              FactItems(List(
-                FactItem(WordToken("sec"), LiteralNumberFactor(NumberToken(60.0))),
-                FactItem(WordToken("hour"), LiteralNumberGroup(
+            ConfStmt(WordToken("report"), TypeDef(Left(NameToken("TimeReport")), isList = false),
+              ConfItems(List(
+                ConfItem(WordToken("sec"), LiteralNumberFactor(NumberToken(60.0))),
+                ConfItem(WordToken("hour"), LiteralNumberGroup(
                   ArithMulOperator(),
                   LiteralNumberFactor(NumberToken(60.0)),
                   LiteralNumberWord(WordToken("sec"))
                 )),
 
-                FactItem(WordToken("week"), LiteralNumberGroup(
+                ConfItem(WordToken("week"), LiteralNumberGroup(
                   ArithMulOperator(),
                   LiteralNumberWord(WordToken("day")),
                   LiteralNumberFactor(NumberToken(7.0))
                 )),
-                FactItem(WordToken("working_days"), LiteralNumberGroup(
+                ConfItem(WordToken("working_days"), LiteralNumberGroup(
                   ArithSubOperator(),
                   LiteralNumberWord(WordToken("week")), LiteralNumberGroup(
                     ArithMulOperator(),
@@ -223,7 +223,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                     LiteralNumberWord(WordToken("day"))
                   )
                 )),
-                FactItem(WordToken("random"), LiteralNumberGroup(
+                ConfItem(WordToken("random"), LiteralNumberGroup(
                   ArithAddOperator(),
                   LiteralNumberFactor(NumberToken(1.0)),
                   LiteralNumberGroup(

@@ -16,7 +16,7 @@ case class KeywordToken(keyword: String) extends ConfeeToken
 
 case class TypeKeywordToken() extends ConfeeToken
 
-case class FactKeywordToken() extends ConfeeToken
+case class ConfKeywordToken() extends ConfeeToken
 
 /* identifiers */
 

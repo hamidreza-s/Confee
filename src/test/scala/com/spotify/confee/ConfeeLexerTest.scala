@@ -167,10 +167,10 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
   describe("Lexer on keywords") {
 
     it("should tokenize keywords") {
-      assertTokens("type fact",
+      assertTokens("type conf",
         List(
           TypeKeywordToken(),
-          FactKeywordToken()
+          ConfKeywordToken()
         )
       )
     }
@@ -244,7 +244,7 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
         """
           |"abc" "ABC" "abc123ABC!@#"
           |123.456 -123.456 123456 -123456
-          |type fact
+          |type conf
           |NamesStartWithUpperCase Foo Bar
           |wordsStartWithLowerCase foo bar
           |+ - / * % =
@@ -253,7 +253,7 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
         List(
           StringToken("abc"), StringToken("ABC"), StringToken("abc123ABC!@#"),
           NumberToken(123.456), NumberToken(-123.456), NumberToken(123456), NumberToken(-123456),
-          TypeKeywordToken(), FactKeywordToken(),
+          TypeKeywordToken(), ConfKeywordToken(),
           NameToken("NamesStartWithUpperCase"), NameToken("Foo"), NameToken("Bar"),
           WordToken("wordsStartWithLowerCase"), WordToken("foo"), WordToken("bar"),
           AdditionToken(),

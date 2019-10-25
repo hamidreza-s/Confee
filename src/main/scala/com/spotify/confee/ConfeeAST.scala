@@ -49,13 +49,13 @@ case class TypeItems(items: List[TypeItem]) extends Node
 
 case class TypeDef(name: Either[NameToken, WordToken], isList: Boolean) extends Node
 
-/* fact statement */
+/* conf statement */
 
-case class FactStmt(name: WordToken, factType: TypeDef, items: FactItems) extends Stmt
+case class ConfStmt(name: WordToken, confType: TypeDef, items: ConfItems) extends Stmt
 
-case class FactItem(name: WordToken, itemVal: Expr) extends Node
+case class ConfItem(name: WordToken, itemVal: Expr) extends Node
 
-case class FactItems(items: List[FactItem]) extends Node
+case class ConfItems(items: List[ConfItem]) extends Node
 
 /* literal expression */
 

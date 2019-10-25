@@ -45,7 +45,7 @@ object ConfeeParser extends Parsers {
   /* ---- statements ----- */
 
   def stmt: Parser[Stmt] = positioned {
-    typeStmt | factStmt
+    typeStmt | confStmt
   }
 
   /* ----- type statement ----- */
@@ -81,31 +81,31 @@ object ConfeeParser extends Parsers {
     a | b
   }
 
-  /* ----- fact statement ----- */
+  /* ----- conf statement ----- */
 
-  def factStmt: Parser[FactStmt] = positioned {
-    factKeyword ~ word ~ colon ~ factStmtType ~ braceOpen ~ factStmtItems ~ braceClose ^^ {
-      case _ ~ w ~ _ ~ t ~ _ ~ si ~ _ => FactStmt(w, t, FactItems(si.items))
+  def confStmt: Parser[ConfStmt] = positioned {
+    confKeyword ~ word ~ colon ~ confStmtType ~ braceOpen ~ confStmtItems ~ braceClose ^^ {
+      case _ ~ w ~ _ ~ t ~ _ ~ si ~ _ => ConfStmt(w, t, ConfItems(si.items))
     }
   }
 
-  def factStmtItems: Parser[FactItems] = positioned {
+  def confStmtItems: Parser[ConfItems] = positioned {
 
-    val a = factStmtItem ~ factStmtItems ^^ { case x ~ xs => FactItems(x :: xs.items) }
+    val a = confStmtItem ~ confStmtItems ^^ { case x ~ xs => ConfItems(x :: xs.items) }
 
-    val b = opt(factStmtItem) ^^ {
-      case Some(x) => FactItems(x :: List.empty)
-      case None => FactItems(List.empty)
+    val b = opt(confStmtItem) ^^ {
+      case Some(x) => ConfItems(x :: List.empty)
+      case None => ConfItems(List.empty)
     }
 
     a | b
   }
 
-  def factStmtItem: Parser[FactItem] = positioned {
-    word ~ assignment ~ expr ^^ { case w ~ _ ~ e => FactItem(w, e) }
+  def confStmtItem: Parser[ConfItem] = positioned {
+    word ~ assignment ~ expr ^^ { case w ~ _ ~ e => ConfItem(w, e) }
   }
 
-  def factStmtType: Parser[TypeDef] = positioned {
+  def confStmtType: Parser[TypeDef] = positioned {
 
     val a = word ^^ { w => TypeDef(Right(w), isList = false) }
 
@@ -178,7 +178,7 @@ object ConfeeParser extends Parsers {
     a | b | c | d | e
   }
 
-  /* ----- literal list expression ----- */
+  /* ----- literal array expression ----- */
 
   def exprLiteralArray: Parser[LiteralArray] = positioned {
     bracketOpen ~ exprLiteralArrayItems ~ bracketClose ^^ {
@@ -218,8 +218,8 @@ object ConfeeParser extends Parsers {
     accept("typeKeyword", { case token@TypeKeywordToken() => token })
   }
 
-  def factKeyword: Parser[FactKeywordToken] = positioned {
-    accept("factKeyword", { case token@FactKeywordToken() => token })
+  def confKeyword: Parser[ConfKeywordToken] = positioned {
+    accept("confKeyword", { case token@ConfKeywordToken() => token })
   }
 
   def word: Parser[WordToken] = positioned {
