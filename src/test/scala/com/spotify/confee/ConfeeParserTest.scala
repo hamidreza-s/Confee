@@ -127,7 +127,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
               FactItems(List(
                 FactItem(
                   WordToken("members"),
-                  LiteralList(List(
+                  LiteralArray(List(
                     LiteralString(StringToken("Alice")),
                     LiteralString(StringToken("Bob")),
                     LiteralString(StringToken("Joe"))
@@ -135,7 +135,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 ),
                 FactItem(
                   WordToken("records"),
-                  LiteralList(List(
+                  LiteralArray(List(
                     LiteralNumberFactor(NumberToken(98.0)),
                     LiteralNumberFactor(NumberToken(97.0)),
                     LiteralNumberFactor(NumberToken(99.0))
@@ -158,12 +158,12 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
               FactItems(List(
                 FactItem(
                   WordToken("players"),
-                  LiteralList(List(
-                    LiteralList(List(
+                  LiteralArray(List(
+                    LiteralArray(List(
                       LiteralString(StringToken("Alice")),
                       LiteralString(StringToken("Bob"))
                     )),
-                    LiteralList(List(
+                    LiteralArray(List(
                       LiteralString(StringToken("Joe")),
                       LiteralString(StringToken("Monica"))
                     ))
@@ -171,12 +171,12 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 ),
                 FactItem(
                   WordToken("scores"),
-                  LiteralList(List(
-                    LiteralList(List(
+                  LiteralArray(List(
+                    LiteralArray(List(
                       LiteralNumberFactor(NumberToken(7.0)),
                       LiteralNumberFactor(NumberToken(10.0))
                     )),
-                    LiteralList(List(
+                    LiteralArray(List(
                       LiteralNumberFactor(NumberToken(23.0)),
                       LiteralNumberFactor(NumberToken(14.0))
                     ))

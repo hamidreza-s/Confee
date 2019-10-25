@@ -63,7 +63,7 @@ sealed trait LiteralExpr extends Expr
 
 case class LiteralString(value: StringToken) extends LiteralExpr
 
-case class LiteralList(value: List[LiteralExpr]) extends LiteralExpr
+case class LiteralArray(value: List[LiteralExpr]) extends LiteralExpr
 
 /* literal number expression */
 

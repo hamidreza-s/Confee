@@ -128,7 +128,7 @@ object ConfeeParser extends Parsers {
 
     val b = exprLiteralNumber ^^ { x => x }
 
-    val c = listLiteral ^^ { x => x }
+    val c = exprLiteralArray ^^ { x => x }
 
     a | b | c
   }
@@ -180,26 +180,28 @@ object ConfeeParser extends Parsers {
 
   /* ----- literal list expression ----- */
 
-  def listLiteral: Parser[LiteralList] = positioned {
-    bracketOpen ~ listLiteralItems ~ bracketClose ^^ { case _ ~ li ~ _ => LiteralList(li.value) }
+  def exprLiteralArray: Parser[LiteralArray] = positioned {
+    bracketOpen ~ exprLiteralArrayItems ~ bracketClose ^^ {
+      case _ ~ li ~ _ => LiteralArray(li.value)
+    }
   }
 
-  def listLiteralItems: Parser[LiteralList] = positioned {
+  def exprLiteralArrayItems: Parser[LiteralArray] = positioned {
 
-    val a = listLiteralItem ~ separator ~ listLiteralItems ^^ {
-      case x ~_ ~  xs => LiteralList(x :: xs.value)
+    val a = exprLiteralArrayItem ~ separator ~ exprLiteralArrayItems ^^ {
+      case x ~_ ~  xs => LiteralArray(x :: xs.value)
     }
 
-    val b = opt(listLiteralItem) ^^ {
-      case Some(x) => LiteralList(x :: List.empty)
-      case None => LiteralList(List.empty)
+    val b = opt(exprLiteralArrayItem) ^^ {
+      case Some(x) => LiteralArray(x :: List.empty)
+      case None => LiteralArray(List.empty)
     }
 
     a | b
   }
 
-  def listLiteralItem: Parser[LiteralExpr] = positioned {
-    exprLiteral | listLiteral
+  def exprLiteralArrayItem: Parser[LiteralExpr] = positioned {
+    exprLiteral | exprLiteralArray
   }
 
   /* ========== AST terminals ========== */
