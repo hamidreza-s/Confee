@@ -123,7 +123,18 @@ object ConfeeParser extends Parsers {
   /* ----- literal expression ----- */
 
   def exprLiteral: Parser[LiteralExpr] = positioned {
-    exprLiteralString ||| exprLiteralNumber ||| exprLiteralArray ||| exprLiteralObject
+    exprLiteralBool ||| exprLiteralString ||| exprLiteralNumber |||
+    exprLiteralArray ||| exprLiteralObject
+  }
+
+  /* ----- literal boolean expression ----- */
+
+  def exprLiteralBool: Parser[LiteralBool] = positioned {
+    val a = trueBool ^^ { _ => LiteralBoolTrue() }
+
+    val b = falseBool ^^ { _ => LiteralBoolFalse() }
+
+    a | b
   }
 
   /* ----- literal string expression ----- */
@@ -269,6 +280,14 @@ object ConfeeParser extends Parsers {
     accept("number", { case token@NumberToken(_) => token })
   }
 
+  def trueBool: Parser[TrueToken] = positioned {
+    accept("trueBool", { case token@TrueToken() => token })
+  }
+
+  def falseBool: Parser[FalseToken] = positioned {
+    accept("falseBool", { case token@FalseToken() => token })
+  }
+
   def typeKeyword: Parser[TypeKeywordToken] = positioned {
     accept("typeKeyword", { case token@TypeKeywordToken() => token })
   }
@@ -278,7 +297,7 @@ object ConfeeParser extends Parsers {
   }
 
   def word: Parser[WordToken] = positioned {
-    accept("number", { case token@WordToken(_) => token })
+    accept("word", { case token@WordToken(_) => token })
   }
 
   def name: Parser[NameToken] = positioned {

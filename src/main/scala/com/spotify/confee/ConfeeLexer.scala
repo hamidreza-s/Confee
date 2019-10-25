@@ -24,6 +24,10 @@ object ConfeeLexer extends RegexParsers {
 
   def number: Parser[ConfeeToken] = """(\-|\+)?\d+(\.\d+)?""".r ^^ { s => NumberToken(s.toDouble) }
 
+  def trueBool: Parser[ConfeeToken] = "true" ^^ { _ => TrueToken() }
+
+  def falseBool: Parser[ConfeeToken] = "false" ^^ { _ => FalseToken() }
+
   def typeKeyword: Parser[ConfeeToken] = "type" ^^ { _ => TypeKeywordToken() }
 
   def confKeyword: Parser[ConfeeToken] = "conf" ^^ { _ => ConfKeywordToken() }
@@ -75,7 +79,8 @@ object ConfeeLexer extends RegexParsers {
   def skip: Parser[Unit] = rep(whiteSpace | comment) ^^^ Unit
 
   def token: Parser[ConfeeToken] = positioned {
-    string | number | typeKeyword | confKeyword | word | name |
+    string | number | trueBool | falseBool |
+    typeKeyword | confKeyword | word | name |
     addition | subtraction | division | multiplication | modulus | assignment |
     parenthesesOpen | parenthesesClose | bracketOpen | bracketClose | braceOpen | braceClose |
     separator | colon | semiColon | hash | dot

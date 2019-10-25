@@ -10,6 +10,12 @@ case class StringToken(value: String) extends ConfeeToken
 
 case class NumberToken(value: Double) extends ConfeeToken
 
+/* boolean */
+
+case class TrueToken() extends ConfeeToken
+
+case class FalseToken() extends ConfeeToken
+
 /* keywords */
 
 case class KeywordToken(keyword: String) extends ConfeeToken

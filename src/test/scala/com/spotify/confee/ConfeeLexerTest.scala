@@ -164,6 +164,20 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
     }
   }
 
+  describe("Lexer on booleans") {
+
+    it("should tokenize booleans") {
+      assertTokens("true false true false",
+        List(
+          TrueToken(),
+          FalseToken(),
+          TrueToken(),
+          FalseToken()
+        )
+      )
+    }
+  }
+
   describe("Lexer on keywords") {
 
     it("should tokenize keywords") {

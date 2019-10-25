@@ -11,7 +11,7 @@ import scala.util.parsing.input.Positional
   * - Statement has scope and can be defined in top-level (type, conf, import, export)
   * - Expression can contain another Expression or a Node
   * - Expression can not be defined in top-level (literal, lambda, condition, case)
-  * - Literal Expression can be string, number, array, object or other Expressions
+  * - Literal Expression can be bool, string, number, array, object or other Expressions
   * - Node is an abstraction which contains a value or points to it
   * - Node can be a Token which generated in the lexing phase
   * - Node can also point to a Statement, an Expression, or another Node
@@ -60,6 +60,14 @@ case class ConfItems(items: List[ConfItem]) extends Node
 /* literal expression */
 
 sealed trait LiteralExpr extends Expr
+
+/* literal boolean expression */
+
+sealed trait LiteralBool extends LiteralExpr
+
+case class LiteralBoolTrue() extends LiteralBool
+
+case class LiteralBoolFalse() extends LiteralBool
 
 /* literal string expression */
 

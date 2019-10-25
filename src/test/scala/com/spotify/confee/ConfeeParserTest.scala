@@ -93,11 +93,13 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
 
     describe("Parser on literal expression") {
 
-      it("should parse conf definition with string and number") {
+      it("should parse conf definition with boolean, string and number") {
         assertAST(
           """conf alice : Person {
             |     name = "Alice"
             |     age = 20
+            |     active = true
+            |     flagged = false
             |}""".stripMargin,
           Grammar(List(
             ConfStmt(WordToken("alice"), TypeDef(Left(NameToken("Person")), isList = false),
@@ -109,6 +111,14 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 ConfItem(
                   WordToken("age"),
                   LiteralNumberFactor(NumberToken(20.0))
+                ),
+                ConfItem(
+                  WordToken("active"),
+                  LiteralBoolTrue()
+                ),
+                ConfItem(
+                  WordToken("flagged"),
+                  LiteralBoolFalse()
                 )
               ))
             )
