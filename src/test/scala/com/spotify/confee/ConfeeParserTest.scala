@@ -79,7 +79,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
             ConfItems(List(
               ConfItem(
                 WordToken("name"),
-                LiteralString(StringToken("Alice"))
+                LiteralStringFactor(StringToken("Alice"))
               ),
               ConfItem(
                 WordToken("age"),
@@ -91,7 +91,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
-    describe("Parser on simple literal expression") {
+    describe("Parser on literal expression") {
 
       it("should parser conf definitions with string and number conf items") {
         assertAST(
@@ -104,7 +104,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
               ConfItems(List(
                 ConfItem(
                   WordToken("name"),
-                  LiteralString(StringToken("Alice"))
+                  LiteralStringFactor(StringToken("Alice"))
                 ),
                 ConfItem(
                   WordToken("age"),
@@ -128,9 +128,9 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 ConfItem(
                   WordToken("members"),
                   LiteralArray(List(
-                    LiteralString(StringToken("Alice")),
-                    LiteralString(StringToken("Bob")),
-                    LiteralString(StringToken("Joe"))
+                    LiteralStringFactor(StringToken("Alice")),
+                    LiteralStringFactor(StringToken("Bob")),
+                    LiteralStringFactor(StringToken("Joe"))
                   ))
                 ),
                 ConfItem(
@@ -160,12 +160,12 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                   WordToken("players"),
                   LiteralArray(List(
                     LiteralArray(List(
-                      LiteralString(StringToken("Alice")),
-                      LiteralString(StringToken("Bob"))
+                      LiteralStringFactor(StringToken("Alice")),
+                      LiteralStringFactor(StringToken("Bob"))
                     )),
                     LiteralArray(List(
-                      LiteralString(StringToken("Joe")),
-                      LiteralString(StringToken("Monica"))
+                      LiteralStringFactor(StringToken("Joe")),
+                      LiteralStringFactor(StringToken("Monica"))
                     ))
                   ))
                 ),
@@ -187,11 +187,8 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           ))
         )
       }
-    }
 
-    describe("Parser on literal number expression") {
-
-      it("should parser conf definitions with arithmetic expression as conf item") {
+      it("should parser conf definitions with arithmetic in number expression as conf item") {
         assertAST(
           """conf report : TimeReport {
             |     sec = 60
@@ -205,42 +202,42 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
               ConfItems(List(
                 ConfItem(WordToken("sec"), LiteralNumberFactor(NumberToken(60.0))),
                 ConfItem(WordToken("hour"), LiteralNumberGroup(
-                  ArithMulOperator(),
+                  LiteralNumberOperatorMul(),
                   LiteralNumberFactor(NumberToken(60.0)),
                   LiteralNumberWord(WordToken("sec"))
                 )),
 
                 ConfItem(WordToken("week"), LiteralNumberGroup(
-                  ArithMulOperator(),
+                  LiteralNumberOperatorMul(),
                   LiteralNumberWord(WordToken("day")),
                   LiteralNumberFactor(NumberToken(7.0))
                 )),
                 ConfItem(WordToken("working_days"), LiteralNumberGroup(
-                  ArithSubOperator(),
+                  LiteralNumberOperatorSub(),
                   LiteralNumberWord(WordToken("week")), LiteralNumberGroup(
-                    ArithMulOperator(),
+                    LiteralNumberOperatorMul(),
                     LiteralNumberFactor(NumberToken(2.0)),
                     LiteralNumberWord(WordToken("day"))
                   )
                 )),
                 ConfItem(WordToken("random"), LiteralNumberGroup(
-                  ArithAddOperator(),
+                  LiteralNumberOperatorAdd(),
                   LiteralNumberFactor(NumberToken(1.0)),
                   LiteralNumberGroup(
-                    ArithAddOperator(),
+                    LiteralNumberOperatorAdd(),
                     LiteralNumberFactor(NumberToken(2.0)),
                     LiteralNumberGroup(
-                      ArithSubOperator(),
+                      LiteralNumberOperatorSub(),
                       LiteralNumberGroup(
-                        ArithMulOperator(),
+                        LiteralNumberOperatorMul(),
                         LiteralNumberFactor(NumberToken(3.0)),
                         LiteralNumberGroup(
-                          ArithDivOperator(),
+                          LiteralNumberOperatorDiv(),
                           LiteralNumberFactor(NumberToken(4.0)),
                           LiteralNumberGroup(
-                            ArithAddOperator(),
+                            LiteralNumberOperatorAdd(),
                             LiteralNumberGroup(
-                              ArithSubOperator(),
+                              LiteralNumberOperatorSub(),
                               LiteralNumberFactor(NumberToken(5.0)),
                               LiteralNumberFactor(NumberToken(6.0))),
                             LiteralNumberFactor(NumberToken(7.0))))),
@@ -248,6 +245,36 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                     )
                   )
                 ))
+              ))
+            )
+          ))
+        )
+      }
+
+      it("should parser conf definitions with concat/remove in string expression as conf item") {
+        assertAST(
+          """conf report : SprintReport {
+            |     project = "wheel"
+            |     goal = "Inventing the " + project
+            |     next = "Maintaining " + (goal - "Inventing ")
+            |}""".stripMargin,
+          Grammar(List(
+            ConfStmt(WordToken("report"), TypeDef(Left(NameToken("SprintReport")), isList = false),
+              ConfItems(List(
+                ConfItem(WordToken("project"), LiteralStringFactor(StringToken("wheel"))),
+                ConfItem(WordToken("goal"), LiteralStringGroup(
+                  LiteralStringOperatorConcat(),
+                  LiteralStringFactor(StringToken("Inventing the ")),
+                  LiteralStringWord(WordToken("project"))
+                )),
+                ConfItem(WordToken("next"), LiteralStringGroup(
+                  LiteralStringOperatorConcat(),
+                  LiteralStringFactor(StringToken("Maintaining ")), LiteralStringGroup(
+                    LiteralStringOperatorRemove(),
+                    LiteralStringWord(WordToken("goal")),
+                    LiteralStringFactor(StringToken("Inventing "))
+                  ))
+                )
               ))
             )
           ))

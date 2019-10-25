@@ -123,14 +123,44 @@ object ConfeeParser extends Parsers {
   /* ----- literal expression ----- */
 
   def exprLiteral: Parser[LiteralExpr] = positioned {
+    exprLiteralString ||| exprLiteralNumber ||| exprLiteralArray
+  }
 
-    val a = string ^^ { x => LiteralString(x) }
+  /* ----- literal string expression ----- */
 
-    val b = exprLiteralNumber ^^ { x => x }
+  def exprLiteralString: Parser[LiteralString] = positioned {
 
-    val c = exprLiteralArray ^^ { x => x }
+    val a = exprLiteralStringFactor ~ exprLiteralStringOperator ~ exprLiteralString ^^ {
+      case x ~ op ~ xs => LiteralStringGroup(op, x, xs)
+    }
+
+    val b = exprLiteralStringFactor ~ exprLiteralStringOperator ~ exprLiteralStringFactor ^^ {
+      case x ~ op ~ y => LiteralStringGroup(op, x, y)
+    }
+
+    val c = exprLiteralStringFactor ^^ { f => f }
 
     a | b | c
+  }
+
+  def exprLiteralStringFactor: Parser[LiteralString] = positioned {
+
+    val a = parenthesesOpen ~ exprLiteralString ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
+
+    val b = string ^^ { n => LiteralStringFactor(n) }
+
+    val c = word ^^ { n => LiteralStringWord(n) }
+
+    a | b | c
+  }
+
+  def exprLiteralStringOperator: Parser[LiteralStringOperator] = positioned {
+
+    val a = addition ^^ { _ => LiteralStringOperatorConcat() }
+
+    val b = subtraction ^^ { _ => LiteralStringOperatorRemove() }
+
+    a | b
   }
 
   /* ----- literal number expression ----- */
@@ -150,7 +180,6 @@ object ConfeeParser extends Parsers {
     a | b | c
   }
 
-
   def exprLiteralNumberFactor: Parser[LiteralNumber] = positioned {
 
     val a = parenthesesOpen ~ exprLiteralNumber ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
@@ -162,18 +191,17 @@ object ConfeeParser extends Parsers {
     a | b | c
   }
 
-
   def exprLiteralNumberOperator: Parser[LiteralNumberOperator] = positioned {
 
-    val a = addition ^^ { _ => ArithAddOperator() }
+    val a = addition ^^ { _ => LiteralNumberOperatorAdd() }
 
-    val b = subtraction ^^ { _ => ArithSubOperator() }
+    val b = subtraction ^^ { _ => LiteralNumberOperatorSub() }
 
-    val c = division ^^ { _ => ArithDivOperator() }
+    val c = division ^^ { _ => LiteralNumberOperatorDiv() }
 
-    val d = multiplication ^^ { _ => ArithMulOperator() }
+    val d = multiplication ^^ { _ => LiteralNumberOperatorMul() }
 
-    val e = modulus ^^ { _ => ArithModOperator() }
+    val e = modulus ^^ { _ => LiteralNumberOperatorMod() }
 
     a | b | c | d | e
   }

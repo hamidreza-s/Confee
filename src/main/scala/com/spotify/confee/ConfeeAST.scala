@@ -61,9 +61,23 @@ case class ConfItems(items: List[ConfItem]) extends Node
 
 sealed trait LiteralExpr extends Expr
 
-case class LiteralString(value: StringToken) extends LiteralExpr
+/* literal string expression */
 
-case class LiteralArray(value: List[LiteralExpr]) extends LiteralExpr
+sealed trait LiteralString extends LiteralExpr
+
+sealed trait LiteralStringOperator extends Node
+
+case class LiteralStringFactor(value: StringToken) extends LiteralString
+
+case class LiteralStringWord(value: WordToken) extends LiteralString
+
+case class LiteralStringGroup(operator: LiteralStringOperator,
+                              left: LiteralString,
+                              right: LiteralString) extends LiteralString
+
+case class LiteralStringOperatorConcat() extends LiteralStringOperator
+
+case class LiteralStringOperatorRemove() extends LiteralStringOperator
 
 /* literal number expression */
 
@@ -79,15 +93,19 @@ case class LiteralNumberGroup(operator: LiteralNumberOperator,
                               left: LiteralNumber,
                               right: LiteralNumber) extends LiteralNumber
 
-case class ArithAddOperator() extends LiteralNumberOperator
+case class LiteralNumberOperatorAdd() extends LiteralNumberOperator
 
-case class ArithSubOperator() extends LiteralNumberOperator
+case class LiteralNumberOperatorSub() extends LiteralNumberOperator
 
-case class ArithDivOperator() extends LiteralNumberOperator
+case class LiteralNumberOperatorDiv() extends LiteralNumberOperator
 
-case class ArithMulOperator() extends LiteralNumberOperator
+case class LiteralNumberOperatorMul() extends LiteralNumberOperator
 
-case class ArithModOperator() extends LiteralNumberOperator
+case class LiteralNumberOperatorMod() extends LiteralNumberOperator
+
+/* literal array expression */
+
+case class LiteralArray(value: List[LiteralExpr]) extends LiteralExpr
 
 /* debugging statement */
 
