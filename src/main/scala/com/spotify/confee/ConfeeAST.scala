@@ -107,6 +107,14 @@ case class LiteralNumberOperatorMod() extends LiteralNumberOperator
 
 case class LiteralArray(value: List[LiteralExpr]) extends LiteralExpr
 
+/* literal object expression */
+
+case class LiteralObject(items: LiteralObjectItems) extends LiteralExpr
+
+case class LiteralObjectItem(name: WordToken, itemVal: LiteralExpr) extends Node
+
+case class LiteralObjectItems(items: List[LiteralObjectItem]) extends Node
+
 /* debugging statement */
 
 case class DebuggingStmt(name: String, items: List[Any]) extends ConfeeAST

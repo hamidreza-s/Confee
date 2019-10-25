@@ -52,7 +52,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
 
   describe("Parser on conf statement") {
 
-    it("should parse conf definitions without conf items") {
+    it("should parse conf definition without conf items") {
       assertAST(
         """
           |conf foo : Foo { }
@@ -71,7 +71,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
-    it("should parser conf definitions with conf items in one line") {
+    it("should parse conf definition with conf items in one line") {
       assertAST(
         """conf alice : Person {name = "Alice" age = 20}""",
         Grammar(List(
@@ -93,7 +93,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
 
     describe("Parser on literal expression") {
 
-      it("should parser conf definitions with string and number conf items") {
+      it("should parse conf definition with string and number") {
         assertAST(
           """conf alice : Person {
             |     name = "Alice"
@@ -116,79 +116,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
         )
       }
 
-      it("should parser conf definitions with list of conf items") {
-        assertAST(
-          """conf team : Team {
-            |     members = ["Alice", "Bob", "Joe"]
-            |     records = [98, 97, 99]
-            |}""".stripMargin,
-          Grammar(List(
-            ConfStmt(WordToken("team"), TypeDef(Left(NameToken("Team")), isList = false),
-              ConfItems(List(
-                ConfItem(
-                  WordToken("members"),
-                  LiteralArray(List(
-                    LiteralStringFactor(StringToken("Alice")),
-                    LiteralStringFactor(StringToken("Bob")),
-                    LiteralStringFactor(StringToken("Joe"))
-                  ))
-                ),
-                ConfItem(
-                  WordToken("records"),
-                  LiteralArray(List(
-                    LiteralNumberFactor(NumberToken(98.0)),
-                    LiteralNumberFactor(NumberToken(97.0)),
-                    LiteralNumberFactor(NumberToken(99.0))
-                  ))
-                )
-              ))
-            )
-          ))
-        )
-      }
-
-      it("should parser conf definitions with list of list of conf items") {
-        assertAST(
-          """conf match : Match {
-            |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
-            |     scores = [[7, 10], [23, 14]]
-            |}""".stripMargin,
-          Grammar(List(
-            ConfStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
-              ConfItems(List(
-                ConfItem(
-                  WordToken("players"),
-                  LiteralArray(List(
-                    LiteralArray(List(
-                      LiteralStringFactor(StringToken("Alice")),
-                      LiteralStringFactor(StringToken("Bob"))
-                    )),
-                    LiteralArray(List(
-                      LiteralStringFactor(StringToken("Joe")),
-                      LiteralStringFactor(StringToken("Monica"))
-                    ))
-                  ))
-                ),
-                ConfItem(
-                  WordToken("scores"),
-                  LiteralArray(List(
-                    LiteralArray(List(
-                      LiteralNumberFactor(NumberToken(7.0)),
-                      LiteralNumberFactor(NumberToken(10.0))
-                    )),
-                    LiteralArray(List(
-                      LiteralNumberFactor(NumberToken(23.0)),
-                      LiteralNumberFactor(NumberToken(14.0))
-                    ))
-                  ))
-                )
-              ))
-            )
-          ))
-        )
-      }
-
-      it("should parser conf definitions with arithmetic in number expression as conf item") {
+      it("should parse conf definition with operator in number") {
         assertAST(
           """conf report : TimeReport {
             |     sec = 60
@@ -251,7 +179,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
         )
       }
 
-      it("should parser conf definitions with concat/remove in string expression as conf item") {
+      it("should parse conf definition with operator in string") {
         assertAST(
           """conf report : SprintReport {
             |     project = "wheel"
@@ -274,6 +202,157 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                     LiteralStringWord(WordToken("goal")),
                     LiteralStringFactor(StringToken("Inventing "))
                   ))
+                )
+              ))
+            )
+          ))
+        )
+      }
+
+      it("should parse conf definition with list") {
+        assertAST(
+          """conf team : Team {
+            |     members = ["Alice", "Bob", "Joe"]
+            |     records = [98, 97, 99]
+            |}""".stripMargin,
+          Grammar(List(
+            ConfStmt(WordToken("team"), TypeDef(Left(NameToken("Team")), isList = false),
+              ConfItems(List(
+                ConfItem(
+                  WordToken("members"),
+                  LiteralArray(List(
+                    LiteralStringFactor(StringToken("Alice")),
+                    LiteralStringFactor(StringToken("Bob")),
+                    LiteralStringFactor(StringToken("Joe"))
+                  ))
+                ),
+                ConfItem(
+                  WordToken("records"),
+                  LiteralArray(List(
+                    LiteralNumberFactor(NumberToken(98.0)),
+                    LiteralNumberFactor(NumberToken(97.0)),
+                    LiteralNumberFactor(NumberToken(99.0))
+                  ))
+                )
+              ))
+            )
+          ))
+        )
+      }
+
+      it("should parse conf definition with list of list") {
+        assertAST(
+          """conf match : Match {
+            |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
+            |     scores = [[7, 10], [23, 14]]
+            |}""".stripMargin,
+          Grammar(List(
+            ConfStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
+              ConfItems(List(
+                ConfItem(
+                  WordToken("players"),
+                  LiteralArray(List(
+                    LiteralArray(List(
+                      LiteralStringFactor(StringToken("Alice")),
+                      LiteralStringFactor(StringToken("Bob"))
+                    )),
+                    LiteralArray(List(
+                      LiteralStringFactor(StringToken("Joe")),
+                      LiteralStringFactor(StringToken("Monica"))
+                    ))
+                  ))
+                ),
+                ConfItem(
+                  WordToken("scores"),
+                  LiteralArray(List(
+                    LiteralArray(List(
+                      LiteralNumberFactor(NumberToken(7.0)),
+                      LiteralNumberFactor(NumberToken(10.0))
+                    )),
+                    LiteralArray(List(
+                      LiteralNumberFactor(NumberToken(23.0)),
+                      LiteralNumberFactor(NumberToken(14.0))
+                    ))
+                  ))
+                )
+              ))
+            )
+          ))
+        )
+      }
+
+      it("should parse conf definition with object") {
+        assertAST(
+          """
+            |conf match : Match {
+            |     info = {
+            |          stadium = "Azadi"
+            |          capacity = 90000
+            |          renovated = [2012, 2016]
+            |     }
+            |}
+          """.stripMargin,
+          Grammar(List(
+            ConfStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
+              ConfItems(List(
+                ConfItem(
+                  WordToken("info"),
+                  LiteralObject(LiteralObjectItems(List(
+                    LiteralObjectItem(
+                      WordToken("stadium"),
+                      LiteralStringFactor(StringToken("Azadi"))
+                    ),
+                    LiteralObjectItem(
+                      WordToken("capacity"),
+                      LiteralNumberFactor(NumberToken(90000.0))
+                    ),
+                    LiteralObjectItem(
+                      WordToken("renovated"),
+                      LiteralArray(List(
+                        LiteralNumberFactor(NumberToken(2012.0)),
+                        LiteralNumberFactor(NumberToken(2016.0))
+                      ))
+                    )
+                  )))
+                )
+              ))
+            )
+          ))
+        )
+      }
+
+      it("should parse conf definition with object of object") {
+        assertAST(
+          """
+            |conf match : Match {
+            |     info = {
+            |          size = {
+            |               field = [110, 75]
+            |               scoreboard = 104
+            |          }
+            |     }
+            |}
+          """.stripMargin,
+          Grammar(List(
+            ConfStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
+              ConfItems(List(
+                ConfItem(
+                  WordToken("info"),
+                  LiteralObject(LiteralObjectItems(List(
+                    LiteralObjectItem(
+                      WordToken("size"),
+                      LiteralObject(LiteralObjectItems(List(
+                        LiteralObjectItem(WordToken("field"), LiteralArray(List(
+                          LiteralNumberFactor(NumberToken(110.0)),
+                          LiteralNumberFactor(NumberToken(75.0)))
+                        )),
+                        LiteralObjectItem(
+                          WordToken("scoreboard"),
+                          LiteralNumberFactor(NumberToken(104.0))
+                        )
+                      )))
+                    )
+                  )))
                 )
               ))
             )
