@@ -8,10 +8,10 @@ import scala.util.parsing.input.Positional
   * - Grammar is the root, Statement, Expression and Node are non-terminal, and Node is terminal
   * - Grammar is a list of Statements
   * - Statement can contain another Statement, an Expression or a Node
-  * - Statement has scope and can be defined in top-level (type, fact, func, import, export)
+  * - Statement has scope and can be defined in top-level (type, conf, import, export)
   * - Expression can contain another Expression or a Node
-  * - Expression can not be defined in top-level (literal, arithmetic, condition, case)
-  * - Literal Expression can be string, number, list, tuple, lambda or other Expressions
+  * - Expression can not be defined in top-level (literal, lambda, condition, case)
+  * - Literal Expression can be string, number, array, object or other Expressions
   * - Node is an abstraction which contains a value or points to it
   * - Node can be a Token which generated in the lexing phase
   * - Node can also point to a Statement, an Expression, or another Node
@@ -22,7 +22,7 @@ import scala.util.parsing.input.Positional
   *                                                  /  \     \
   *                                               Expr  Stmt  Node -> Stmt | Expr | Node
   *                                               /  \
-  *  Literal | Arithmetic | Condition | Case <= Expr Node
+  *      Literal | Lambda | Condition | Case <= Expr Node
   *                                                   \\
   *                                                  Token
   */
@@ -63,31 +63,31 @@ sealed trait LiteralExpr extends Expr
 
 case class LiteralString(value: StringToken) extends LiteralExpr
 
-case class LiteralNumber(value: NumberToken) extends LiteralExpr
-
 case class LiteralList(value: List[LiteralExpr]) extends LiteralExpr
 
-/* arithmetic expression */
+/* literal number expression */
 
-sealed trait ArithExpr extends Expr
+sealed trait LiteralNumber extends LiteralExpr
 
-sealed trait ArithOperator extends Node
+sealed trait LiteralNumberOperator extends Node
 
-case class ArithFactorGroup(operator: ArithOperator, a: ArithExpr, b: ArithExpr) extends ArithExpr
+case class LiteralNumberFactor(value: NumberToken) extends LiteralNumber
 
-case class ArithFactorNumber(value: NumberToken) extends ArithExpr
+case class LiteralNumberWord(value: WordToken) extends LiteralNumber
 
-case class ArithFactorWord(value: WordToken) extends ArithExpr
+case class LiteralNumberGroup(operator: LiteralNumberOperator,
+                              left: LiteralNumber,
+                              right: LiteralNumber) extends LiteralNumber
 
-case class ArithAddOperator() extends ArithOperator
+case class ArithAddOperator() extends LiteralNumberOperator
 
-case class ArithSubOperator() extends ArithOperator
+case class ArithSubOperator() extends LiteralNumberOperator
 
-case class ArithDivOperator() extends ArithOperator
+case class ArithDivOperator() extends LiteralNumberOperator
 
-case class ArithMulOperator() extends ArithOperator
+case class ArithMulOperator() extends LiteralNumberOperator
 
-case class ArithModOperator() extends ArithOperator
+case class ArithModOperator() extends LiteralNumberOperator
 
 /* debugging statement */
 

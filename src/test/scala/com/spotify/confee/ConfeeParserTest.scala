@@ -83,7 +83,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
               ),
               FactItem(
                 WordToken("age"),
-                LiteralNumber(NumberToken(20.0))
+                LiteralNumberFactor(NumberToken(20.0))
               )
             ))
           )
@@ -91,7 +91,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
-    describe("Parser on literal expression") {
+    describe("Parser on simple literal expression") {
 
       it("should parser fact definitions with string and number fact items") {
         assertAST(
@@ -108,7 +108,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 ),
                 FactItem(
                   WordToken("age"),
-                  LiteralNumber(NumberToken(20.0))
+                  LiteralNumberFactor(NumberToken(20.0))
                 )
               ))
             )
@@ -136,9 +136,9 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 FactItem(
                   WordToken("records"),
                   LiteralList(List(
-                    LiteralNumber(NumberToken(98.0)),
-                    LiteralNumber(NumberToken(97.0)),
-                    LiteralNumber(NumberToken(99.0))
+                    LiteralNumberFactor(NumberToken(98.0)),
+                    LiteralNumberFactor(NumberToken(97.0)),
+                    LiteralNumberFactor(NumberToken(99.0))
                   ))
                 )
               ))
@@ -173,12 +173,12 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                   WordToken("scores"),
                   LiteralList(List(
                     LiteralList(List(
-                      LiteralNumber(NumberToken(7.0)),
-                      LiteralNumber(NumberToken(10.0))
+                      LiteralNumberFactor(NumberToken(7.0)),
+                      LiteralNumberFactor(NumberToken(10.0))
                     )),
                     LiteralList(List(
-                      LiteralNumber(NumberToken(23.0)),
-                      LiteralNumber(NumberToken(14.0))
+                      LiteralNumberFactor(NumberToken(23.0)),
+                      LiteralNumberFactor(NumberToken(14.0))
                     ))
                   ))
                 )
@@ -189,7 +189,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       }
     }
 
-    describe("Parser on arithmetic expression") {
+    describe("Parser on literal number expression") {
 
       it("should parser fact definitions with arithmetic expression as fact item") {
         assertAST(
@@ -198,30 +198,56 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
             |     hour = 60 * sec
             |     week = day * 7
             |     working_days = week - (2 * day)
+            |     random = 1 + 2 + (3 * 4 / (5 - 6) + 7) - sec
             |}""".stripMargin,
           Grammar(List(
             FactStmt(WordToken("report"), TypeDef(Left(NameToken("TimeReport")), isList = false),
               FactItems(List(
-                FactItem(WordToken("sec"), LiteralNumber(NumberToken(60.0))),
-                FactItem(WordToken("hour"), ArithFactorGroup(
+                FactItem(WordToken("sec"), LiteralNumberFactor(NumberToken(60.0))),
+                FactItem(WordToken("hour"), LiteralNumberGroup(
                   ArithMulOperator(),
-                  ArithFactorNumber(NumberToken(60.0)),
-                  ArithFactorWord(WordToken("sec"))
+                  LiteralNumberFactor(NumberToken(60.0)),
+                  LiteralNumberWord(WordToken("sec"))
                 )),
 
-                FactItem(WordToken("week"), ArithFactorGroup(
+                FactItem(WordToken("week"), LiteralNumberGroup(
                   ArithMulOperator(),
-                  ArithFactorWord(WordToken("day")),
-                  ArithFactorNumber(NumberToken(7.0))
+                  LiteralNumberWord(WordToken("day")),
+                  LiteralNumberFactor(NumberToken(7.0))
                 )),
-                 FactItem(WordToken("working_days"), ArithFactorGroup(
-                   ArithSubOperator(),
-                   ArithFactorWord(WordToken("week")), ArithFactorGroup(
-                     ArithMulOperator(),
-                     ArithFactorNumber(NumberToken(2.0)),
-                     ArithFactorWord(WordToken("day"))
-                   )
-                 ))
+                FactItem(WordToken("working_days"), LiteralNumberGroup(
+                  ArithSubOperator(),
+                  LiteralNumberWord(WordToken("week")), LiteralNumberGroup(
+                    ArithMulOperator(),
+                    LiteralNumberFactor(NumberToken(2.0)),
+                    LiteralNumberWord(WordToken("day"))
+                  )
+                )),
+                FactItem(WordToken("random"), LiteralNumberGroup(
+                  ArithAddOperator(),
+                  LiteralNumberFactor(NumberToken(1.0)),
+                  LiteralNumberGroup(
+                    ArithAddOperator(),
+                    LiteralNumberFactor(NumberToken(2.0)),
+                    LiteralNumberGroup(
+                      ArithSubOperator(),
+                      LiteralNumberGroup(
+                        ArithMulOperator(),
+                        LiteralNumberFactor(NumberToken(3.0)),
+                        LiteralNumberGroup(
+                          ArithDivOperator(),
+                          LiteralNumberFactor(NumberToken(4.0)),
+                          LiteralNumberGroup(
+                            ArithAddOperator(),
+                            LiteralNumberGroup(
+                              ArithSubOperator(),
+                              LiteralNumberFactor(NumberToken(5.0)),
+                              LiteralNumberFactor(NumberToken(6.0))),
+                            LiteralNumberFactor(NumberToken(7.0))))),
+                      LiteralNumberWord(WordToken("sec"))
+                    )
+                  )
+                ))
               ))
             )
           ))

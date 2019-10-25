@@ -117,38 +117,53 @@ object ConfeeParser extends Parsers {
   /* ----- expression ----- */
 
   def expr: Parser[Expr] = positioned {
-    exprArith ||| exprLiteral
+    exprLiteral
   }
 
-  /* ----- arithmetic expression ----- */
+  /* ----- literal expression ----- */
 
-  def exprArith: Parser[ArithExpr] = positioned {
+  def exprLiteral: Parser[LiteralExpr] = positioned {
 
-    val a = exprArithFactor ~ exprArithOperator ~ exprArith ^^ {
-      case x ~ op ~ xs => ArithFactorGroup(op, x, xs)
-    }
+    val a = string ^^ { x => LiteralString(x) }
 
-    val b = exprArithFactor ~ exprArithOperator ~ exprArithFactor ^^ {
-      case x ~ op ~ y => ArithFactorGroup(op, x, y)
-    }
+    val b = exprLiteralNumber ^^ { x => x }
 
-    val c = exprArithFactor ^^ { f => f }
+    val c = listLiteral ^^ { x => x }
 
     a | b | c
   }
 
-  def exprArithFactor: Parser[ArithExpr] = positioned {
+  /* ----- literal number expression ----- */
 
-    val a = parenthesesOpen ~ exprArith ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
+  def exprLiteralNumber: Parser[LiteralNumber] = positioned {
 
-    val b = number ^^ { n => ArithFactorNumber(n) }
+    val a = exprLiteralNumberFactor ~ exprLiteralNumberOperator ~ exprLiteralNumber ^^ {
+      case x ~ op ~ xs => LiteralNumberGroup(op, x, xs)
+    }
 
-    val c = word ^^ { n => ArithFactorWord(n) }
+    val b = exprLiteralNumberFactor ~ exprLiteralNumberOperator ~ exprLiteralNumberFactor ^^ {
+      case x ~ op ~ y => LiteralNumberGroup(op, x, y)
+    }
+
+    val c = exprLiteralNumberFactor ^^ { f => f }
 
     a | b | c
   }
 
-  def exprArithOperator: Parser[ArithOperator] = positioned {
+
+  def exprLiteralNumberFactor: Parser[LiteralNumber] = positioned {
+
+    val a = parenthesesOpen ~ exprLiteralNumber ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
+
+    val b = number ^^ { n => LiteralNumberFactor(n) }
+
+    val c = word ^^ { n => LiteralNumberWord(n) }
+
+    a | b | c
+  }
+
+
+  def exprLiteralNumberOperator: Parser[LiteralNumberOperator] = positioned {
 
     val a = addition ^^ { _ => ArithAddOperator() }
 
@@ -163,20 +178,7 @@ object ConfeeParser extends Parsers {
     a | b | c | d | e
   }
 
-  /* ----- literal expression ----- */
-
-  def exprLiteral: Parser[LiteralExpr] = positioned {
-
-    val a = string ^^ { x => LiteralString(x) }
-
-    val b = number ^^ { x => LiteralNumber(x) }
-
-    val c = listLiteral ^^ { x => x }
-
-    a | b | c
-  }
-
-  /* ----- list literal ----- */
+  /* ----- literal list expression ----- */
 
   def listLiteral: Parser[LiteralList] = positioned {
     bracketOpen ~ listLiteralItems ~ bracketClose ^^ { case _ ~ li ~ _ => LiteralList(li.value) }
