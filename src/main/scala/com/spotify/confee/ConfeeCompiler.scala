@@ -9,11 +9,4 @@ object ConfeeCompiler {
     } yield ast
   }
 
-  def main(args: Array[String]): Unit = {
-    val input = "777 + (888 + 999) + (333 + 444 / (555 * 444))"
-    val output = ConfeeCompiler(input)
-
-    println(input + " = " + output)
-  }
-
 }

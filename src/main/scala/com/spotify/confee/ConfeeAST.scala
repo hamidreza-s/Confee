@@ -2,31 +2,6 @@ package com.spotify.confee
 
 import scala.util.parsing.input.Positional
 
-/**
-  * AST Structure
-  *
-  * - Grammar is the root, Statement, Expression and Node are non-terminal, and Node is terminal
-  * - Grammar is a list of Statements
-  * - Statement can contain another Statement, an Expression or a Node
-  * - Statement has scope and can be defined in top-level (type, conf, import, export)
-  * - Expression can contain another Expression or a Node
-  * - Expression can not be defined in top-level (literal, lambda, condition, case)
-  * - Literal Expression can be bool, string, number, array, object or other Expressions
-  * - Node is an abstraction which contains a value or points to it
-  * - Node can be a Token which generated in the lexing phase
-  * - Node can also point to a Statement, an Expression, or another Node
-  *
-  *                                                    Grammar
-  *                                                    /     \
-  *                                                  Stmt  Stmt
-  *                                                  /  \     \
-  *                                               Expr  Stmt  Node -> Stmt | Expr | Node
-  *                                               /  \
-  *      Literal | Lambda | Condition | Case <= Expr Node
-  *                                                   \\
-  *                                                  Token
-  */
-
 sealed trait ConfeeAST extends Positional
 
 sealed trait Stmt extends ConfeeAST
