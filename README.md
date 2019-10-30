@@ -13,7 +13,7 @@ AST Structure
 - Statement has scope and can be defined in top-level (type, conf, import)
 - Expression can contain another Expression or a Node
 - Expression can not be defined in top-level (literal, condition, case)
-- Literal Expression can be bool, string, number, array, object or other Expressions
+- Literal Expression can be bool, string, number, array, object, proto or other Expressions
 - Node is an abstraction which contains a value or points to it
 - Node can be a Token which generated in the lexing phase
 - Node can also point to a Statement, an Expression, or another Node

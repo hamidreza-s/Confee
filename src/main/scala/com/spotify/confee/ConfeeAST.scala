@@ -102,6 +102,10 @@ case class LiteralObjectItem(name: WordToken, itemVal: LiteralExpr) extends Node
 
 case class LiteralObjectItems(items: List[LiteralObjectItem]) extends Node
 
+/* literal proto expression */
+
+case class LiteralProto(proto: WordToken, items: LiteralObjectItems) extends LiteralExpr
+
 /* debugging statement */
 
 case class DebuggingStmt(name: String, items: List[Any]) extends ConfeeAST

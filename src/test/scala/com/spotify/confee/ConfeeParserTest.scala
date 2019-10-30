@@ -383,6 +383,133 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           ))
         )
       }
+
+      it("should parse conf definition with proto") {
+        assertAST(
+          """
+            |conf match : Match {
+            |     info = templateInfo { quality = 5 }
+            |}
+          """.stripMargin,
+          Grammar(List(
+            ConfStmt(WordToken("match"), TypeDef(Left(NameToken("Match")), isList = false),
+              ConfItems(List(
+                ConfItem(WordToken("info"),
+                  LiteralProto(WordToken("templateInfo"), LiteralObjectItems(List(
+                    LiteralObjectItem(WordToken("quality"), LiteralNumberFactor(NumberToken(5.0)))
+                  )))
+                )
+              ))
+            )
+          ))
+        )
+      }
+    }
+  }
+
+  describe("Parser on a real example") {
+    it("should parse type definitions") {
+      assertAST(
+        """
+          |type DataInfo {
+          |     id: Text
+          |     description: Text
+          |     facts: DataFact
+          |}
+          |
+          |type DataFact {
+          |     doc: Text
+          |     workFlows: [DataWorkflow]
+          |}
+          |
+          |type DataWorkflow {
+          |     id: Text
+          |     service: Text
+          |     schedule: Text
+          |     dockerArgs: [String]
+          |}
+        """.stripMargin,
+        Grammar(List(
+          TypeStmt(NameToken("DataInfo"), TypeItems(List(
+            TypeItem(WordToken("id"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("description"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("facts"), TypeDef(Left(NameToken("DataFact")), isList = false))))),
+          TypeStmt(NameToken("DataFact"), TypeItems(List(
+            TypeItem(WordToken("doc"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("workFlows"), TypeDef(Left(NameToken("DataWorkflow")), isList = true))))),
+          TypeStmt(NameToken("DataWorkflow"), TypeItems(List(
+            TypeItem(WordToken("id"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("service"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("schedule"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("dockerArgs"), TypeDef(Left(NameToken("String")), isList = true))
+          )))
+        ))
+      )
+    }
+
+    it("should parse conf definitions based on the above types ") {
+      assertAST(
+        """
+          |import "/path/to/DataInfoTypes.confee"
+          |
+          |conf workflow : DataWorkflow {
+          |     account = "admin@dataflow.com"
+          |     dockerArgs = ["--wrap-luigi"]
+          |}
+          |
+          |conf dataInfo : DataInfo {
+          |     id = "e73d6402"
+          |     description = "sample desc"
+          |     facts = {
+          |          doc = "sample doc"
+          |          workFlows = [
+          |               workflow { id = "a1dc6109" schedule = "monthly" },
+          |               workflow { id = "320a0de1" schedule = "monthly" },
+          |               workflow { id = "ac62a310" schedule = "daily" },
+          |               workflow { id = "68b703f8" schedule = "daily" }
+          |          ]
+          |     }
+          |}
+        """.stripMargin,
+        Grammar(List(
+          ImportStmt(StringToken("/path/to/DataInfoTypes.confee")),
+          ConfStmt(WordToken("workflow"), TypeDef(Left(NameToken("DataWorkflow")), isList = false),
+            ConfItems(List(
+              ConfItem(WordToken("account"), LiteralStringFactor(StringToken("admin@dataflow.com"))),
+              ConfItem(WordToken("dockerArgs"), LiteralArray(List(
+                LiteralStringFactor(StringToken("--wrap-luigi"))
+              )))
+            ))
+          ),
+          ConfStmt(WordToken("dataInfo"), TypeDef(Left(NameToken("DataInfo")), isList = false),
+            ConfItems(List(
+              ConfItem(WordToken("id"), LiteralStringFactor(StringToken("e73d6402"))),
+              ConfItem(WordToken("description"), LiteralStringFactor(StringToken("sample desc"))),
+              ConfItem(WordToken("facts"), LiteralObject(LiteralObjectItems(List(
+                LiteralObjectItem(WordToken("doc"), LiteralStringFactor(StringToken("sample doc"))),
+                LiteralObjectItem(WordToken("workFlows"), LiteralArray(List(
+                  LiteralProto(WordToken("workflow"), LiteralObjectItems(List(
+                    LiteralObjectItem(WordToken("id"), LiteralStringFactor(StringToken("a1dc6109"))),
+                    LiteralObjectItem(WordToken("schedule"), LiteralStringFactor(StringToken("monthly")))
+                  ))),
+                  LiteralProto(WordToken("workflow"), LiteralObjectItems(List(
+                    LiteralObjectItem(WordToken("id"), LiteralStringFactor(StringToken("320a0de1"))),
+                    LiteralObjectItem(WordToken("schedule"), LiteralStringFactor(StringToken("monthly")))
+                  ))),
+                  LiteralProto(WordToken("workflow"), LiteralObjectItems(List(
+                    LiteralObjectItem(WordToken("id"), LiteralStringFactor(StringToken("ac62a310"))),
+                    LiteralObjectItem(WordToken("schedule"), LiteralStringFactor(StringToken("daily")))
+                  ))),
+                  LiteralProto(WordToken("workflow"), LiteralObjectItems(List(
+                    LiteralObjectItem(WordToken("id"), LiteralStringFactor(StringToken("68b703f8"))),
+                    LiteralObjectItem(WordToken("schedule"), LiteralStringFactor(StringToken("daily")))
+                  )))
+                )))
+              ))))
+            ))
+          ))
+        )
+      )
     }
   }
 

@@ -130,7 +130,7 @@ object ConfeeParser extends Parsers {
 
   def exprLiteral: Parser[LiteralExpr] = positioned {
     exprLiteralBool ||| exprLiteralString ||| exprLiteralNumber |||
-    exprLiteralArray ||| exprLiteralObject
+    exprLiteralArray ||| exprLiteralObject ||| exprLiteralProto
   }
 
   /* ----- literal boolean expression ----- */
@@ -251,7 +251,6 @@ object ConfeeParser extends Parsers {
 
   /* ----- literal object expression ----- */
 
-
   def exprLiteralObject: Parser[LiteralObject] = positioned {
     braceOpen ~ exprLiteralObjectItems ~ braceClose ^^ {
       case _ ~ si ~ _ => LiteralObject(LiteralObjectItems(si.items))
@@ -274,6 +273,12 @@ object ConfeeParser extends Parsers {
 
   def exprLiteralObjectItem: Parser[LiteralObjectItem] = positioned {
     word ~ assignment ~ exprLiteral ^^ { case w ~ _ ~ l => LiteralObjectItem(w, l) }
+  }
+
+  /* ----- literal proto expression ----- */
+
+  def exprLiteralProto: Parser[LiteralProto] = positioned {
+    word ~ exprLiteralObject ^^ { case w ~ e => LiteralProto(w, e.items) }
   }
 
   /* ========== AST terminals ========== */
