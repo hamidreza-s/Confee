@@ -10,7 +10,7 @@ AST Structure
 - Grammar is the root, Statement, Expression and Node are non-terminal, and Node is terminal
 - Grammar is a list of Statements
 - Statement can contain another Statement, an Expression or a Node
-- Statement has scope and can be defined in top-level (type, conf, import, export)
+- Statement has scope and can be defined in top-level (type, conf, import)
 - Expression can contain another Expression or a Node
 - Expression can not be defined in top-level (literal, condition, case)
 - Literal Expression can be bool, string, number, array, object or other Expressions

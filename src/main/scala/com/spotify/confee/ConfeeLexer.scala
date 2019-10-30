@@ -1,6 +1,5 @@
 package com.spotify.confee
 
-import scala.collection.immutable.HashSet
 import scala.util.parsing.combinator._
 
 object ConfeeLexer extends RegexParsers {
@@ -31,6 +30,8 @@ object ConfeeLexer extends RegexParsers {
   def typeKeyword: Parser[ConfeeToken] = "type" ^^ { _ => TypeKeywordToken() }
 
   def confKeyword: Parser[ConfeeToken] = "conf" ^^ { _ => ConfKeywordToken() }
+
+  def importKeyword: Parser[ConfeeToken] = "import" ^^ { _ => ImportKeywordToken() }
 
   def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ { s => WordToken(s) }
 
@@ -80,7 +81,7 @@ object ConfeeLexer extends RegexParsers {
 
   def token: Parser[ConfeeToken] = positioned {
     string | number | trueBool | falseBool |
-    typeKeyword | confKeyword | word | name |
+    typeKeyword | confKeyword | importKeyword | word | name |
     addition | subtraction | division | multiplication | modulus | assignment |
     parenthesesOpen | parenthesesClose | bracketOpen | bracketClose | braceOpen | braceClose |
     separator | colon | semiColon | hash | dot

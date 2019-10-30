@@ -32,6 +32,10 @@ case class ConfItem(name: WordToken, itemVal: Expr) extends Node
 
 case class ConfItems(items: List[ConfItem]) extends Node
 
+/* import statement */
+
+case class ImportStmt(path: StringToken) extends Stmt
+
 /* literal expression */
 
 sealed trait LiteralExpr extends Expr

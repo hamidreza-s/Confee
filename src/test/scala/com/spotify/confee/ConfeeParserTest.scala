@@ -19,7 +19,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
-    it("should parser type definitions with type items in one line") {
+    it("should parse type definitions with type items in one line") {
       assertAST(
         "type Person { name: Text age: Int friends: [Person] }",
         Grammar(List(
@@ -32,7 +32,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
-    it("should parser type definitions with type items") {
+    it("should parse type definitions with type items") {
       assertAST(
         """type Person {
           |     name: Text
@@ -47,6 +47,20 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           )))
         ))
       )
+    }
+  }
+
+  describe("Parser on import statement") {
+    it("should parse two import statements") {
+      assertAST(
+        """
+          |import "/path/to/foo.confee"
+          |import "/path/to/bar.confee"
+        """.stripMargin,
+        Grammar(List(
+          ImportStmt(StringToken("/path/to/foo.confee")),
+          ImportStmt(StringToken("/path/to/bar.confee"))
+        )))
     }
   }
 

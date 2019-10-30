@@ -24,6 +24,8 @@ case class TypeKeywordToken() extends ConfeeToken
 
 case class ConfKeywordToken() extends ConfeeToken
 
+case class ImportKeywordToken() extends ConfeeToken
+
 /* identifiers */
 
 case class WordToken(word: String) extends ConfeeToken

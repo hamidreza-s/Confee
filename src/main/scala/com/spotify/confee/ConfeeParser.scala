@@ -45,7 +45,7 @@ object ConfeeParser extends Parsers {
   /* ---- statements ----- */
 
   def stmt: Parser[Stmt] = positioned {
-    typeStmt | confStmt
+    typeStmt | confStmt | importStmt
   }
 
   /* ----- type statement ----- */
@@ -112,6 +112,12 @@ object ConfeeParser extends Parsers {
     val b = name ^^ { n => TypeDef(Left(n), isList = false) }
 
     a | b
+  }
+
+  /* ----- import statement ----- */
+
+  def importStmt: Parser[ImportStmt] = positioned {
+    importKeyword ~ string ^^ { case _ ~ s => ImportStmt(s) }
   }
 
   /* ----- expression ----- */
@@ -294,6 +300,10 @@ object ConfeeParser extends Parsers {
 
   def confKeyword: Parser[ConfKeywordToken] = positioned {
     accept("confKeyword", { case token@ConfKeywordToken() => token })
+  }
+
+  def importKeyword: Parser[ImportKeywordToken] = positioned {
+    accept("importKeyword", { case token@ImportKeywordToken() => token })
   }
 
   def word: Parser[WordToken] = positioned {
