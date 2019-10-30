@@ -22,10 +22,156 @@ AST Structure
                                                 Grammar
                                                 /     \
                                               Stmt  Stmt
-                                              /  \     \
-                                           Expr  Stmt  Node -> Stmt | Expr | Node
+                                              /  \      \
+                                           Expr  Stmt   Node -> Stmt | Expr | Node
                                            /  \
   Literal | Lambda | Condition | Case <= Expr Node
-                                               \\
-                                              Token
+                                                \\
+                                                Token
+```
+
+Context-Free Grammar (BNF)
+===
+
+The context-free grammar of Confee contains data types we have in most common config file notations
+such as **Bool**, **String**, **Number**, **Array** and **Object**. 
+It also contains a special data type called *Proto* which is a clone of an object letting us 
+override its fields.
+
+The **Type** statement is used to define the types of a **Conf** statement, and they both can be
+imported to other Confee file using **Import** statement.
+
+```
+<grammar> ::= <stmt> <gramar>
+            | <stmt>
+            
+<stmt> ::= <typeStmt>
+         | <confStmt>
+         | <importStmt>
+         
+<typeStmt> ::= <typeKeyword> <name> <braceOpen> <typeStmtItems> <braceClose>
+
+<typeStmtItems> ::= <typeStmtItem> <typeStmtItems>
+                  | <typeStmtItem>
+                  
+<typeStmtItem> ::= <word> <colon> <name>
+                 | <word> <colon> <bracketOpen> <name> <bracketClose>
+                 
+<confStmt> ::= <confStmtItem> <confStmtItems>
+             | <confStmtItem>
+             
+<confStmtType> ::= <word>
+                 | <name>
+                 
+<importStmt> ::= <importKeyword> <string>
+
+<expr> ::= <exprLiteral>
+
+<exprLiteral> ::= <exprLiteralBool>
+                | <exprLiteralString>
+                | <exprLiteralNumber>
+                | <exprLiteralArray>
+                | <exprLiteralObject>
+                | <exprLiteralProto>
+                
+<exprLiteralBool> ::= <trueBool>
+                    | <falseBool>
+                    
+<exprLiteralString> ::= <exprLiteralStringFactor> <exprLiteralStringOperator> <exprLiteral>
+                      | <exprLiteralStringFactor> <exprLiteralStringOperator> <exprLiteralStringFactor>
+                      | <exprLiteralStringFactor>
+                      
+<exprLiteralStringFactor> ::= <parenthesesOpen> <exprLiteralString> <parenthesesClose>
+                            | <string>
+                            | word
+                            
+<exprLiteralStringOperator> ::= <addition> | <subtraction>
+
+<exprLiteralNumber> ::= <exprLiteralNumberFactor> <exprLiteralNumberOperator> <exprLiteralNumber>
+                      | <exprLiteralNumberFactor> <exprLiteralNumberOperator> <exprLiteralNumberFactor>
+                      | <exprLiteralNumberFactor>
+                      
+<exprLiteralNumberFactor> ::= <parenthesesOpen> <exprLiteralNumber> <parenthesesClose>
+                            | <number>
+                            | <word>
+                            
+<exprLiteralNumberOperator> ::= <addition>
+                              | <subtraction>
+                              | <division>
+                              | <multiplication>
+                              | <modulus>
+                              
+<exprLiteralArray> ::= <bracketOpen> <exprLiteralArrayItems> <bracketClose>
+
+<exprLiteralArrayItems> ::= <exprLiteralArrayItem> <separator> <exprLiteralArrayItems>
+                          | <exprLiteralArrayItem>
+                          
+<exprLiteralArrayItem> ::= <exprLiteral>
+
+<exprLiteralObject> ::= <braceOpen> <exprLiteralObjectItems> <braceClose>
+
+<exprLiteralObjectItems> ::= <exprLiteralObjectItem> <exprLiteralObjectItems>
+                           | <exprLiteralObjectItem>
+                           
+<exprLiteralProto> ::= <word> <exprLiteralObject> 
+```
+
+Example
+===
+
+Here is an example to define data pipelines to be used as the `data-info.yaml` for Luigi.
+
+The types can be used in a global space to be used by every data pipeline project:
+```
+type DataInfo {
+     id: Text
+     description: Text
+     facts: DataFact
+}
+
+type DataFact {
+     doc: Text
+     workFlows: [DataWorkflow]
+}
+
+type DataWorkflow {
+     id: Text
+     order: Number
+     account: Text
+     schedule: Text
+     dockerArgs: [String]
+}
+```
+
+Then by importing the types and then defining the proto, we can define the configs:
+
+```
+import "/path/to/DataInfoTypes.confee"
+
+conf workflow : DataWorkflow {
+     order = 10
+     account = "admin@dataflow.com"
+     dockerArgs = ["--wrap-luigi", "--development"]
+}
+
+conf dataInfo : DataInfo {
+     id = "e73d6402"
+     description = "sample desc"
+     facts = {
+          doc = "sample doc"
+          workFlows = [
+               workflow { id = "a1dc6109" order = order + 1 schedule = "monthly" },
+               workflow { id = "320a0de1" order = order + 2 schedule = "monthly" },
+               workflow { id = "ac62a310" order = order + 3 schedule = "daily" },
+               workflow { id = "68b703f8" order = order + 4 schedule = "daily" }
+          ]
+     }
+}
+```
+
+Copyright
+===
+
+```
+Copyright (c) 2019 Spotify AB
 ```

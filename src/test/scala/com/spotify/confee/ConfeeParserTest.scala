@@ -424,7 +424,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           |
           |type DataWorkflow {
           |     id: Text
-          |     service: Text
+          |     account: Text
           |     schedule: Text
           |     dockerArgs: [String]
           |}
@@ -439,7 +439,7 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
             TypeItem(WordToken("workFlows"), TypeDef(Left(NameToken("DataWorkflow")), isList = true))))),
           TypeStmt(NameToken("DataWorkflow"), TypeItems(List(
             TypeItem(WordToken("id"), TypeDef(Left(NameToken("Text")), isList = false)),
-            TypeItem(WordToken("service"), TypeDef(Left(NameToken("Text")), isList = false)),
+            TypeItem(WordToken("account"), TypeDef(Left(NameToken("Text")), isList = false)),
             TypeItem(WordToken("schedule"), TypeDef(Left(NameToken("Text")), isList = false)),
             TypeItem(WordToken("dockerArgs"), TypeDef(Left(NameToken("String")), isList = true))
           )))
