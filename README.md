@@ -7,7 +7,7 @@ A Confee notation file is compiled to JSON, YAML or other config notation files.
 AST Structure
 ===
 
-- Grammar is the root, Statement, Expression and Node are non-terminal, and Node is terminal
+- Grammar is the root, Statement and Expression are non-terminal, Node is terminal
 - Grammar is a list of Statements
 - Statement can contain another Statement, an Expression or a Node
 - Statement has scope and can be defined in top-level (type, conf, import)

@@ -58,9 +58,11 @@ case class LiteralStringFactor(value: StringToken) extends LiteralString
 
 case class LiteralStringWord(value: WordToken) extends LiteralString
 
-case class LiteralStringGroup(operator: LiteralStringOperator,
-                              left: LiteralString,
-                              right: LiteralString) extends LiteralString
+case class LiteralStringGroup(
+    operator: LiteralStringOperator,
+    left: LiteralString,
+    right: LiteralString
+) extends LiteralString
 
 case class LiteralStringOperatorConcat() extends LiteralStringOperator
 
@@ -76,9 +78,11 @@ case class LiteralNumberFactor(value: NumberToken) extends LiteralNumber
 
 case class LiteralNumberWord(value: WordToken) extends LiteralNumber
 
-case class LiteralNumberGroup(operator: LiteralNumberOperator,
-                              left: LiteralNumber,
-                              right: LiteralNumber) extends LiteralNumber
+case class LiteralNumberGroup(
+    operator: LiteralNumberOperator,
+    left: LiteralNumber,
+    right: LiteralNumber
+) extends LiteralNumber
 
 case class LiteralNumberOperatorAdd() extends LiteralNumberOperator
 

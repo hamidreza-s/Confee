@@ -122,7 +122,7 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
       assertTokens(
         BigDecimal(Double.MaxValue).toBigInt.toString,
         List(
-          NumberToken(1.7976931348623157E308)
+          NumberToken(1.7976931348623157e308)
         )
       )
     }
@@ -131,7 +131,7 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
       assertTokens(
         BigDecimal(Double.MinValue).toBigInt.toString,
         List(
-          NumberToken(-1.7976931348623157E308)
+          NumberToken(-1.7976931348623157e308)
         )
       )
     }
@@ -167,7 +167,8 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
   describe("Lexer on booleans") {
 
     it("should tokenize booleans") {
-      assertTokens("true false true false",
+      assertTokens(
+        "true false true false",
         List(
           TrueToken(),
           FalseToken(),
@@ -181,7 +182,8 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
   describe("Lexer on keywords") {
 
     it("should tokenize keywords") {
-      assertTokens("type conf import",
+      assertTokens(
+        "type conf import",
         List(
           TypeKeywordToken(),
           ConfKeywordToken(),
@@ -199,7 +201,7 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
         List(
           NameToken("NamesStartWithUpperCase"),
           NameToken("Foo"),
-          NameToken("Bar"),
+          NameToken("Bar")
         )
       )
     }
@@ -266,11 +268,22 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
           |( ) [ ] { } , : ; # .
         """.stripMargin,
         List(
-          StringToken("abc"), StringToken("ABC"), StringToken("abc123ABC!@#"),
-          NumberToken(123.456), NumberToken(-123.456), NumberToken(123456), NumberToken(-123456),
-          TypeKeywordToken(), ConfKeywordToken(), ImportKeywordToken(),
-          NameToken("NamesStartWithUpperCase"), NameToken("Foo"), NameToken("Bar"),
-          WordToken("wordsStartWithLowerCase"), WordToken("foo"), WordToken("bar"),
+          StringToken("abc"),
+          StringToken("ABC"),
+          StringToken("abc123ABC!@#"),
+          NumberToken(123.456),
+          NumberToken(-123.456),
+          NumberToken(123456),
+          NumberToken(-123456),
+          TypeKeywordToken(),
+          ConfKeywordToken(),
+          ImportKeywordToken(),
+          NameToken("NamesStartWithUpperCase"),
+          NameToken("Foo"),
+          NameToken("Bar"),
+          WordToken("wordsStartWithLowerCase"),
+          WordToken("foo"),
+          WordToken("bar"),
           AdditionToken(),
           SubtractionToken(),
           DivisionToken(),
