@@ -15,6 +15,7 @@ object ConfeeCompiler {
     //  - lexer -> tokens [done]
     //  - parser -> ast [done]
     //  - linker (import) -> ast
+    //  - binder (reference) -> ast
     //  - evaluator (expression) -> ast [wip]
     //  - executor (lambda) -> ast
     //  - checker (type) -> ast
@@ -24,7 +25,8 @@ object ConfeeCompiler {
       tokens    <- ConfeeLexer(code).right
       parsed    <- ConfeeParser(tokens).right
       linked    <- ConfeeLinker(parsed).right
-      evaluated <- ConfeeEvaluator(linked).right
+      bound     <- ConfeeBinder(linked).right
+      evaluated <- ConfeeEvaluator(bound).right
       executed  <- ConfeeExecutor(evaluated).right
       checked   <- ConfeeChecker(executed).right
       generated <- ConfeeGenerator(checked).right
