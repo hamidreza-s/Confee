@@ -29,7 +29,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                       LiteralObjectItems(
                         List(
                           LiteralObjectItem(
-                            WordToken("i2"),
+                            WordToken("j1"),
                             LiteralStringFactor(StringToken("abc"))
                           )
                         )

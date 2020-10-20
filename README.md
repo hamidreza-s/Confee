@@ -42,7 +42,7 @@ The **Type** statement is used to define the types of a **Conf** statement, and 
 imported to other Confee file using **Import** statement.
 
 ```
-<grammar> ::= <stmt> <gramar>
+<grammar> ::= <stmt> <grammar>
             | <stmt>
             
 <stmt> ::= <typeStmt>
@@ -56,10 +56,14 @@ imported to other Confee file using **Import** statement.
                   
 <typeStmtItem> ::= <word> <colon> <name>
                  | <word> <colon> <bracketOpen> <name> <bracketClose>
-                 
-<confStmt> ::= <confStmtItem> <confStmtItems>
-             | <confStmtItem>
+
+<confStmt> ::= <confKeyword> <word> <colon> <confStmtType> <braceOpen> <confStmtItems> <braceClose>
+
+<confStmtItems> ::= <confStmtItem> <confStmtItems>
+                  | <confStmtItem>
              
+<confStmtItem> ::= <word> <assignment> <expr>
+
 <confStmtType> ::= <word>
                  | <name>
                  
