@@ -5,14 +5,10 @@ import org.scalatest.{FunSpec, Matchers}
 class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal string group") {
-    it("should evaluate ...") {
+    it("should evaluate concat operator on literal string group") {
       assertEvaluatedAST(
         """conf foo : Foo {
-          |     i1 = "ab" + "c"
-          |     i2 = "abcd" - "d"
-          |     i3 = {
-          |          j1 = "a" + "b" + "c"
-          |     }
+          |     bar = "a" + "b"
           |}""".stripMargin,
         Grammar(
           List(
@@ -21,21 +17,77 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
               TypeDef(Left(NameToken("Foo")), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("i1"), LiteralStringFactor(StringToken("abc"))),
-                  ConfItem(WordToken("i2"), LiteralStringFactor(StringToken("abc"))),
-                  ConfItem(
-                    WordToken("i3"),
-                    LiteralObject(
-                      LiteralObjectItems(
-                        List(
-                          LiteralObjectItem(
-                            WordToken("j1"),
-                            LiteralStringFactor(StringToken("abc"))
-                          )
-                        )
-                      )
-                    )
-                  )
+                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("ab")))
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
+    it("should evaluate remove operator on literal string group") {
+      assertEvaluatedAST(
+        """conf foo : Foo {
+          |     bar = "a" - "b"
+          |     bat = "abc" - "b"
+          |     ban = "abcabc" - "abc"
+          |}""".stripMargin,
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("a"))),
+                  ConfItem(WordToken("bat"), LiteralStringFactor(StringToken("ac"))),
+                  ConfItem(WordToken("ban"), LiteralStringFactor(StringToken("abc")))
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
+    it("should evaluate concat operator on literal string group in group (recursive)") {
+      assertEvaluatedAST(
+        """conf foo : Foo {
+          |     bar = "a" + "bc" + "d"
+          |}""".stripMargin,
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("abcd")))
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
+    it("should evaluate remove operator on literal string group in group (recursive)") {
+      // NOTE: operators are right-associative in confee
+      assertEvaluatedAST(
+        """conf foo : Foo {
+          |     bar = "abc" - "efg" - "abc"
+          |     bat = "ab" - "bc" - "c"
+          |}""".stripMargin,
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("abc"))),
+                  ConfItem(WordToken("bat"), LiteralStringFactor(StringToken("a")))
                 )
               )
             )

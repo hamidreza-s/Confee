@@ -12,7 +12,7 @@ AST Structure
 - Statement can contain another Statement, an Expression or a Node
 - Statement has scope and can be defined in top-level (type, conf, import)
 - Expression can contain another Expression or a Node
-- Expression can not be defined in top-level (literal, condition, case)
+- Expression can not be defined in top-level (literal, lambda, condition, case)
 - Literal Expression can be bool, string, number, array, object, proto or other Expressions
 - Node is an abstraction which contains a value or points to it
 - Node can be a Token which generated in the lexing phase
@@ -87,7 +87,7 @@ imported to other Confee file using **Import** statement.
                       
 <exprLiteralStringFactor> ::= <parenthesesOpen> <exprLiteralString> <parenthesesClose>
                             | <string>
-                            | word
+                            | <word>
                             
 <exprLiteralStringOperator> ::= <addition> | <subtraction>
 
@@ -119,6 +119,22 @@ imported to other Confee file using **Import** statement.
                            
 <exprLiteralProto> ::= <word> <exprLiteralObject> 
 ```
+
+Expression
+==
+
+In confee, every config item value is an expression which means it is evaluated and then returns 
+something of its type. Each config item value can also be referenced in other item values in the 
+same scope.
+
+- Bool: It can be `true` or `false`.
+- String: It is used to keep string values and also can reference other string item values. 
+It supports right-associative *concat* and *remove* operators with other strings by using `+`
+and `-` operator respectively. 
+- Number: TODO
+- Array: TODO
+- Object: TODO
+- Proto: TODO
 
 Example
 ===
