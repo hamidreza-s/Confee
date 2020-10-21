@@ -129,9 +129,12 @@ same scope.
 
 - Bool: It can be `true` or `false`.
 - String: It is used to keep string values and also can reference other string item values. 
-It supports right-associative *concat* and *remove* operators with other strings by using `+`
-and `-` operator respectively. 
-- Number: TODO
+It supports *concat* and *remove* operations with other strings using `+` and `-` operator 
+respectively. The operator precedence can be set by parentheses, otherwise it defaults to
+be right-associative. 
+- Number: It is used to keep number values and also can reference other number item values.
+It supports `+`, `-`, `*`, `/`, and `%` operators. The operator precedence can be set by 
+parentheses, otherwise it defaults to be right-associative.
 - Array: TODO
 - Object: TODO
 - Proto: TODO

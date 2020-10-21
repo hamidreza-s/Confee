@@ -1,6 +1,78 @@
 package com.spotify.confee
 
+import scala.util.{Failure, Success, Try}
+
 object ConfeeEvaluator {
+
+  /* ----- literal string expression ----- */
+
+  def evaluateLiteralString(literalString: LiteralString): LiteralStringFactor =
+    literalString match {
+      case factor: LiteralStringFactor => factor
+      case word: LiteralStringWord     => evaluateLiteralStringWord(word)
+      case group: LiteralStringGroup   => evaluateLiteralStringGroup(group)
+    }
+
+  def evaluateLiteralStringWord(word: LiteralStringWord): LiteralStringFactor =
+    throw new Exception("Literal String Word must have been referenced in binder step")
+
+  @scala.annotation.tailrec
+  def evaluateLiteralStringGroup(group: LiteralStringGroup): LiteralStringFactor = group match {
+    case LiteralStringGroup(operator, left: LiteralStringFactor, right: LiteralStringFactor) =>
+      operator match {
+        case LiteralStringOperatorConcat() =>
+          LiteralStringFactor(StringToken(left.value.value + right.value.value))
+        case LiteralStringOperatorRemove() =>
+          LiteralStringFactor(StringToken(left.value.value.replaceFirst(right.value.value, "")))
+      }
+    case LiteralStringGroup(operator, left, right) =>
+      evaluateLiteralStringGroup(
+        LiteralStringGroup(
+          operator = operator,
+          left = evaluateLiteralString(left),
+          right = evaluateLiteralString(right)
+        )
+      )
+  }
+
+  /* ----- literal number expression ----- */
+
+  def evaluateLiteralNumber(literalNumber: LiteralNumber): LiteralNumberFactor =
+    literalNumber match {
+      case factor: LiteralNumberFactor => factor
+      case word: LiteralNumberWord     => evaluateLiteralNumberWord(word)
+      case group: LiteralNumberGroup   => evaluateLiteralNumberGroup(group)
+    }
+
+  def evaluateLiteralNumberWord(word: LiteralNumberWord): LiteralNumberFactor =
+    throw new Exception("Literal Number Word must have been referenced in binder step")
+
+  @scala.annotation.tailrec
+  def evaluateLiteralNumberGroup(group: LiteralNumberGroup): LiteralNumberFactor = group match {
+    case LiteralNumberGroup(operator, left: LiteralNumberFactor, right: LiteralNumberFactor) =>
+      operator match {
+        case LiteralNumberOperatorAdd() =>
+          LiteralNumberFactor(NumberToken(left.value.value + right.value.value))
+        case LiteralNumberOperatorSub() =>
+          LiteralNumberFactor(NumberToken(left.value.value - right.value.value))
+        case LiteralNumberOperatorMul() =>
+          LiteralNumberFactor(NumberToken(left.value.value * right.value.value))
+        case LiteralNumberOperatorDiv() =>
+          LiteralNumberFactor(NumberToken(left.value.value / right.value.value))
+        case LiteralNumberOperatorMod() =>
+          LiteralNumberFactor(NumberToken(left.value.value % right.value.value))
+      }
+    case LiteralNumberGroup(operator, left, right) =>
+      evaluateLiteralNumberGroup(
+        LiteralNumberGroup(
+          operator = operator,
+          left = evaluateLiteralNumber(left),
+          right = evaluateLiteralNumber(right)
+        )
+      )
+  }
+
+  /* ----- evaluator entry on config item values ----- */
 
   def evaluateConfItems(confItems: ConfItems): ConfItems =
     ConfItems(confItems.items.map(evaluateConfItem))
@@ -8,57 +80,26 @@ object ConfeeEvaluator {
   def evaluateConfItem(confItem: ConfItem): ConfItem = confItem match {
     case item @ ConfItem(_, itemVal: LiteralString) =>
       item.copy(itemVal = evaluateLiteralString(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralNumber) =>
+      item.copy(itemVal = evaluateLiteralNumber(itemVal))
     case otherwise => otherwise
-  }
-
-  def evaluateLiteralString(literalString: LiteralString): LiteralStringFactor =
-    literalString match {
-      case factor: LiteralStringFactor => factor
-      case group: LiteralStringGroup   => evaluateLiteralStringGroup(group)
-    }
-
-  def evaluateLiteralStringGroup(group: LiteralStringGroup): LiteralStringFactor = group match {
-    case LiteralStringGroup(
-        operator: LiteralStringOperator,
-        left: LiteralStringFactor,
-        right: LiteralStringGroup
-        ) =>
-      evaluateLiteralStringGroup(
-        LiteralStringGroup(
-          operator = operator,
-          left = left,
-          right = evaluateLiteralStringGroup(right)
-        )
-      )
-    case LiteralStringGroup(
-        operator: LiteralStringOperator,
-        left: LiteralStringFactor,
-        right: LiteralStringFactor
-        ) =>
-      operator match {
-        case LiteralStringOperatorConcat() =>
-          LiteralStringFactor(StringToken(left.value.value + right.value.value))
-        case LiteralStringOperatorRemove() =>
-          LiteralStringFactor(StringToken(left.value.value.replaceFirst(right.value.value, "")))
-      }
   }
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = {
     ast match {
       case Grammar(stmts: List[Stmt]) =>
-        val evaluatedStmts = stmts.map {
+        Try(stmts.map {
           case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = evaluateConfItems(items))
           case otherwise                        => otherwise
+        }) match {
+          case Success(evaluatedStmts) =>
+            Right(Grammar(evaluatedStmts))
+          case Failure(exception) =>
+            Left(ConfeeEvaluatorError(exception.getMessage))
         }
-
-        Right(Grammar(evaluatedStmts))
       case _ =>
-        Left(
-          ConfeeEvaluatorError(
-            Location(ast.pos.line, ast.pos.column),
-            "AST does not contain valid grammar structure"
-          )
-        )
+        Left(ConfeeEvaluatorError("AST does not contain valid grammar structure"))
     }
   }
+
 }
