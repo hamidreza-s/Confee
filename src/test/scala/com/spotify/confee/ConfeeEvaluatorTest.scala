@@ -192,16 +192,18 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
   }
 
   describe("Evaluator on literal array") {
-
-    // TODO: add tests for array of objects and protos once they are implemented
-
-    it("should evaluate literal array of evaluated bool, string, number & nested array") {
+    it("should evaluate literal array of evaluated bool, string, number, array, object & proto") {
       assertEvaluatedAST("""conf foo : Foo {
           |     bar = [true, false, true]
           |     bat = ["abc" - "c", "def" - "d", "ghi" - "ghi"]
           |     ban = ["a" + "b" + "c", "d" + "ef", "gh" + "i"]
           |     bal = [1, 1 + 1, 1 + (2 * 3) + (4 + 5 - (6 / 2))]
           |     baz = [[1 + 1, 2 + 2], [3 + 3, 4 + 4]]
+          |     bay = [{bax = "a" + "b"}, {baw = 1 + 1}]
+          |     bav = [
+          |          bau { bas = "a" + "b" baq = 1 + 1 },
+          |          bau { bas = "abc" - "c" baq = 1 * (2 + 3) }
+          |     ]
           |}""".stripMargin) shouldEqual Right(
         Grammar(
           List(
@@ -262,6 +264,74 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                         )
                       )
                     )
+                  ),
+                  ConfItem(
+                    WordToken("bay"),
+                    LiteralArray(
+                      List(
+                        LiteralObject(
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(
+                                WordToken("bax"),
+                                LiteralStringFactor(
+                                  StringToken("ab")
+                                )
+                              )
+                            )
+                          )
+                        ),
+                        LiteralObject(
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(
+                                WordToken("baw"),
+                                LiteralNumberFactor(
+                                  NumberToken(2)
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+                  ConfItem(
+                    WordToken("bav"),
+                    LiteralArray(
+                      List(
+                        LiteralProto(
+                          WordToken("bau"),
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(
+                                WordToken("bas"),
+                                LiteralStringFactor(StringToken("ab"))
+                              ),
+                              LiteralObjectItem(
+                                WordToken("baq"),
+                                LiteralNumberFactor(NumberToken(2))
+                              )
+                            )
+                          )
+                        ),
+                        LiteralProto(
+                          WordToken("bau"),
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(
+                                WordToken("bas"),
+                                LiteralStringFactor(StringToken("ab"))
+                              ),
+                              LiteralObjectItem(
+                                WordToken("baq"),
+                                LiteralNumberFactor(NumberToken(5))
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
                   )
                 )
               )
@@ -274,7 +344,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
   }
 
   describe("Evaluator on literal object") {
-    it("should evaluate literal object of evaluated bool, string, number, array & nested object") {
+    it("should evaluate literal object of evaluated bool, string, number, array, object & proto") {
       assertEvaluatedAST("""conf foo : Foo {
                            |     bar = {
                            |          ban = true
@@ -283,7 +353,12 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                            |          baz = ["ab" + "cd", "ef" + "gh"]
                            |          bay = {
                            |               bax = 1 + 2
+                           |               baw = "a" + "b"
                            |          }
+                           |          bav = [
+                           |               bau { bas = "a" + "b" baq = 1 + 1 },
+                           |               bau { bas = "abc" - "c" baq = 1 * (2 + 3) }
+                           |          ]
                            |     }
                            |}
                            |}""".stripMargin) shouldEqual Right(
@@ -300,7 +375,10 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                       LiteralObjectItems(
                         List(
                           LiteralObjectItem(WordToken("ban"), LiteralBoolTrue()),
-                          LiteralObjectItem(WordToken("bat"), LiteralStringFactor(StringToken("abc"))),
+                          LiteralObjectItem(
+                            WordToken("bat"),
+                            LiteralStringFactor(StringToken("abc"))
+                          ),
                           LiteralObjectItem(WordToken("bal"), LiteralNumberFactor(NumberToken(21))),
                           LiteralObjectItem(
                             WordToken("baz"),
@@ -319,8 +397,110 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                                   LiteralObjectItem(
                                     WordToken("bax"),
                                     LiteralNumberFactor(NumberToken(3))
+                                  ),
+                                  LiteralObjectItem(
+                                    WordToken("baw"),
+                                    LiteralStringFactor(StringToken("ab"))
                                   )
                                 )
+                              )
+                            )
+                          ),
+                          LiteralObjectItem(
+                            WordToken("bav"),
+                            LiteralArray(
+                              List(
+                                LiteralProto(
+                                  WordToken("bau"),
+                                  LiteralObjectItems(
+                                    List(
+                                      LiteralObjectItem(
+                                        WordToken("bas"),
+                                        LiteralStringFactor(StringToken("ab"))
+                                      ),
+                                      LiteralObjectItem(
+                                        WordToken("baq"),
+                                        LiteralNumberFactor(NumberToken(2))
+                                      )
+                                    )
+                                  )
+                                ),
+                                LiteralProto(
+                                  WordToken("bau"),
+                                  LiteralObjectItems(
+                                    List(
+                                      LiteralObjectItem(
+                                        WordToken("bas"),
+                                        LiteralStringFactor(StringToken("ab"))
+                                      ),
+                                      LiteralObjectItem(
+                                        WordToken("baq"),
+                                        LiteralNumberFactor(NumberToken(5))
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+  }
+
+  describe("Evaluator on literal proto") {
+    it("should evaluate literal proto of evaluated bool, string, number, array & nested object") {
+      assertEvaluatedAST("""conf foo : Foo {
+                           |     bar = [
+                           |          ban { bat = true bal = "a" + "b" },
+                           |          baz { bay = "abc" - "b" bax = (1 + 2) * 3 }
+                           |     ]
+                           |}""".stripMargin) shouldEqual Right(
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(
+                    WordToken("bar"),
+                    LiteralArray(
+                      List(
+                        LiteralProto(
+                          WordToken("ban"),
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(
+                                WordToken("bat"),
+                                LiteralBoolTrue()
+                              ),
+                              LiteralObjectItem(
+                                WordToken("bal"),
+                                LiteralStringFactor(StringToken("ab"))
+                              )
+                            )
+                          )
+                        ),
+                        LiteralProto(
+                          WordToken("baz"),
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(
+                                WordToken("bay"),
+                                LiteralStringFactor(StringToken("ac"))
+                              ),
+                              LiteralObjectItem(
+                                WordToken("bax"),
+                                LiteralNumberFactor(NumberToken(9))
                               )
                             )
                           )

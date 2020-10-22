@@ -117,7 +117,8 @@ object ConfeeEvaluator {
 
   /* ----- literal proto expression ----- */
 
-  def evaluateLiteralProto(proto: LiteralProto): LiteralProto = ???
+  def evaluateLiteralProto(literalProto: LiteralProto): LiteralProto =
+    literalProto.copy(items = evaluateLiteralObjectItems(literalProto.items))
 
   /* ----- evaluator entry on config item values ----- */
 

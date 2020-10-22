@@ -30,12 +30,35 @@ AST Structure
                                                 Token
 ```
 
+Expression
+==
+
+In confee, every config item value is an expression which means it is evaluated and then returns 
+something of its type. Each config item value can also be referenced in other item values in the 
+same scope.
+
+- **Bool**: It can be `true` or `false`.
+- **String**: It is used for storing string values and also can reference other string item values. 
+  It supports *concat* and *remove* operations with other strings using `+` and `-` operator 
+  respectively. The operator precedence can be set by parentheses, otherwise it defaults to
+  be right-associative. 
+- **Number**: It is used for storing number values and also can reference other number item values.
+  It supports `+`, `-`, `*`, `/`, and `%` operators. The operator precedence can be set by 
+  parentheses, otherwise it defaults to be right-associative.
+- **Array**: It is used for storing a collection of values with the same type. It also supports
+  multidimensional arrays whose values have the same type.
+- **Object**: It is a dictionary data type composed of a collection of (key, value) pairs, such that 
+  each possible key appears at most once in the collection. Each pair can have its own type and can
+  have another nested object as its value.
+- **Proto**: It is a clone of an object by which we can reuse an already defined object while being
+  able to override its item values. 
+
 Context-Free Grammar (BNF)
 ===
 
 The context-free grammar of Confee contains data types we have in most common config file notations
 such as **Bool**, **String**, **Number**, **Array** and **Object**. 
-It also contains a special data type called *Proto* which is a clone of an object letting us 
+It also contains a special data type called **Proto** which is a clone of an object letting us 
 override its fields.
 
 The **Type** statement is used to define the types of a **Conf** statement, and they both can be
@@ -119,28 +142,6 @@ imported to other Confee file using **Import** statement.
                            
 <exprLiteralProto> ::= <word> <exprLiteralObject> 
 ```
-
-Expression
-==
-
-In confee, every config item value is an expression which means it is evaluated and then returns 
-something of its type. Each config item value can also be referenced in other item values in the 
-same scope.
-
-- Bool: It can be `true` or `false`.
-- String: It is used for storing string values and also can reference other string item values. 
-  It supports *concat* and *remove* operations with other strings using `+` and `-` operator 
-  respectively. The operator precedence can be set by parentheses, otherwise it defaults to
-  be right-associative. 
-- Number: It is used for storing number values and also can reference other number item values.
-  It supports `+`, `-`, `*`, `/`, and `%` operators. The operator precedence can be set by 
-  parentheses, otherwise it defaults to be right-associative.
-- Array: It is used for storing a collection of values with the same type. It also supports
-  multidimensional arrays whose values have the same type.
-- Object: It is a dictionary data type composed of a collection of (key, value) pairs, such that 
-  each possible key appears at most once in the collection. Each pair can have its own type and can
-  have another nested object as its value.
-- Proto: TODO
 
 Example
 ===
