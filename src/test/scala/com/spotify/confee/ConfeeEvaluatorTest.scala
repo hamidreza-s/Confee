@@ -214,7 +214,13 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                 List(
                   ConfItem(
                     WordToken("bar"),
-                    LiteralArray(List(LiteralBoolTrue(), LiteralBoolFalse(), LiteralBoolTrue()))
+                    LiteralArray(
+                      List(
+                        LiteralBoolFactor(BoolToken(true)),
+                        LiteralBoolFactor(BoolToken(false)),
+                        LiteralBoolFactor(BoolToken(true))
+                      )
+                    )
                   ),
                   ConfItem(
                     WordToken("bat"),
@@ -374,7 +380,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("ban"), LiteralBoolTrue()),
+                          LiteralObjectItem(WordToken("ban"), LiteralBoolFactor(BoolToken(true))),
                           LiteralObjectItem(
                             WordToken("bat"),
                             LiteralStringFactor(StringToken("abc"))
@@ -481,7 +487,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                             List(
                               LiteralObjectItem(
                                 WordToken("bat"),
-                                LiteralBoolTrue()
+                                LiteralBoolFactor(BoolToken(true))
                               ),
                               LiteralObjectItem(
                                 WordToken("bal"),

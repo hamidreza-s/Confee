@@ -12,9 +12,7 @@ case class NumberToken(value: Double) extends ConfeeToken
 
 /* boolean */
 
-case class TrueToken() extends ConfeeToken
-
-case class FalseToken() extends ConfeeToken
+case class BoolToken(value: Boolean) extends ConfeeToken
 
 /* keywords */
 
@@ -31,6 +29,16 @@ case class ImportKeywordToken() extends ConfeeToken
 case class WordToken(word: String) extends ConfeeToken
 
 case class NameToken(name: String) extends ConfeeToken
+
+/* bitwise operators */
+
+case class NotToken() extends ConfeeToken
+
+case class AndToken() extends ConfeeToken
+
+case class OrToken() extends ConfeeToken
+
+case class XorToken() extends ConfeeToken
 
 /* arithmetic and assignment operators */
 
@@ -69,6 +77,3 @@ case class SemiColonToken() extends ConfeeToken
 case class HashToken() extends ConfeeToken
 
 case class DotToken() extends ConfeeToken
-
-
-

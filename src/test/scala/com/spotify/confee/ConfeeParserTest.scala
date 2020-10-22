@@ -161,11 +161,58 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                     ),
                     ConfItem(
                       WordToken("active"),
-                      LiteralBoolTrue()
+                      LiteralBoolFactor(BoolToken(true))
                     ),
                     ConfItem(
                       WordToken("flagged"),
-                      LiteralBoolFalse()
+                      LiteralBoolFactor(BoolToken(false))
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      it("should parse conf definition with operator in bool") {
+        assertAST(
+          """conf report : StatusReport {
+            |     is_in_progress = false
+            |     is_done = true
+            |     is_valid = true
+            |     is_successful = is_done and is_valid
+            |     is_acceptable = (is_done and is_valid) or is_in_progress
+            |}""".stripMargin,
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("report"),
+                TypeDef(Left(NameToken("StatusReport")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(WordToken("is_in_progress"), LiteralBoolFactor(BoolToken(false))),
+                    ConfItem(WordToken("is_done"), LiteralBoolFactor(BoolToken(true))),
+                    ConfItem(WordToken("is_valid"), LiteralBoolFactor(BoolToken(true))),
+                    ConfItem(
+                      WordToken("is_successful"),
+                      LiteralBoolGroup(
+                        LiteralBoolOperatorAnd(),
+                        LiteralBoolWord(WordToken("is_done")),
+                        LiteralBoolWord(WordToken("is_valid"))
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("is_acceptable"),
+                      LiteralBoolGroup(
+                        LiteralBoolOperatorOr(),
+                        LiteralBoolGroup(
+                          LiteralBoolOperatorAnd(),
+                          LiteralBoolWord(WordToken("is_done")),
+                          LiteralBoolWord(WordToken("is_valid"))
+                        ),
+                        LiteralBoolWord(WordToken("is_in_progress"))
+                      )
                     )
                   )
                 )

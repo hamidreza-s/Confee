@@ -133,14 +133,47 @@ object ConfeeParser extends Parsers {
     exprLiteralArray ||| exprLiteralObject ||| exprLiteralProto
   }
 
-  /* ----- literal boolean expression ----- */
+  /* ----- literal boolean (bitwise) expression ----- */
 
   def exprLiteralBool: Parser[LiteralBool] = positioned {
-    val a = trueBool ^^ { _ => LiteralBoolTrue() }
 
-    val b = falseBool ^^ { _ => LiteralBoolFalse() }
+    val a = exprLiteralBoolFactor ~ exprLiteralBoolOperator ~ exprLiteralBool ^^ {
+      case x ~ op ~ xs => LiteralBoolGroup(op, x, xs)
+    }
 
-    a | b
+    val b = exprLiteralBoolFactor ~ exprLiteralBoolOperator ~ exprLiteralBoolFactor ^^ {
+      case x ~ op ~ y => LiteralBoolGroup(op, x, y)
+    }
+
+    val c = exprLiteralBoolFactor ^^ { f => f }
+
+    a | b | c
+  }
+
+  def exprLiteralBoolFactor: Parser[LiteralBool] = positioned {
+
+    val a = parenthesesOpen ~ exprLiteralBool ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
+
+    val b = trueBool ^^ { f => LiteralBoolFactor(f) }
+
+    val c = falseBool ^^ { f => LiteralBoolFactor(f) }
+
+    val d = word ^^ { w => LiteralBoolWord(w) }
+
+    a | b | c | d
+  }
+
+  def exprLiteralBoolOperator: Parser[LiteralBoolOperator] = positioned {
+
+    val a = not ^^ { _ => LiteralBoolOperatorNot() }
+
+    val b = and ^^ { _ => LiteralBoolOperatorAnd() }
+
+    val c = or ^^ { _ => LiteralBoolOperatorOr() }
+
+    val d = xor ^^ { _ => LiteralBoolOperatorXor() }
+
+    a | b | c | d
   }
 
   /* ----- literal string expression ----- */
@@ -164,9 +197,9 @@ object ConfeeParser extends Parsers {
 
     val a = parenthesesOpen ~ exprLiteralString ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
 
-    val b = string ^^ { n => LiteralStringFactor(n) }
+    val b = string ^^ { s => LiteralStringFactor(s) }
 
-    val c = word ^^ { n => LiteralStringWord(n) }
+    val c = word ^^ { w => LiteralStringWord(w) }
 
     a | b | c
   }
@@ -203,7 +236,7 @@ object ConfeeParser extends Parsers {
 
     val b = number ^^ { n => LiteralNumberFactor(n) }
 
-    val c = word ^^ { n => LiteralNumberWord(n) }
+    val c = word ^^ { w => LiteralNumberWord(w) }
 
     a | b | c
   }
@@ -291,12 +324,28 @@ object ConfeeParser extends Parsers {
     accept("number", { case token@NumberToken(_) => token })
   }
 
-  def trueBool: Parser[TrueToken] = positioned {
-    accept("trueBool", { case token@TrueToken() => token })
+  def trueBool: Parser[BoolToken] = positioned {
+    accept("trueBool", { case token@BoolToken(_) => token })
   }
 
-  def falseBool: Parser[FalseToken] = positioned {
-    accept("falseBool", { case token@FalseToken() => token })
+  def falseBool: Parser[BoolToken] = positioned {
+    accept("falseBool", { case token@BoolToken(_) => token })
+  }
+
+  def not: Parser[NotToken] = positioned {
+    accept("not", { case token@NotToken() => token })
+  }
+
+  def and: Parser[AndToken] = positioned {
+    accept("and", { case token@AndToken() => token })
+  }
+
+  def or: Parser[OrToken] = positioned {
+    accept("or", { case token@OrToken() => token })
+  }
+
+  def xor: Parser[XorToken] = positioned {
+    accept("xor", { case token@XorToken() => token })
   }
 
   def typeKeyword: Parser[TypeKeywordToken] = positioned {

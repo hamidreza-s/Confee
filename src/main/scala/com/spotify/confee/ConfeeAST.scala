@@ -40,13 +40,29 @@ case class ImportStmt(path: StringToken) extends Stmt
 
 sealed trait LiteralExpr extends Expr
 
-/* literal boolean expression */
+/* literal boolean (bitwise) expression */
 
 sealed trait LiteralBool extends LiteralExpr
 
-case class LiteralBoolTrue() extends LiteralBool
+sealed trait LiteralBoolOperator extends Node
 
-case class LiteralBoolFalse() extends LiteralBool
+case class LiteralBoolWord(value: WordToken) extends LiteralBool
+
+case class LiteralBoolFactor(value: BoolToken) extends LiteralBool
+
+case class LiteralBoolGroup(
+    operator: LiteralBoolOperator,
+    left: LiteralBool,
+    right: LiteralBool
+) extends LiteralBool
+
+case class LiteralBoolOperatorNot() extends LiteralBoolOperator
+
+case class LiteralBoolOperatorAnd() extends LiteralBoolOperator
+
+case class LiteralBoolOperatorOr() extends LiteralBoolOperator
+
+case class LiteralBoolOperatorXor() extends LiteralBoolOperator
 
 /* literal string expression */
 

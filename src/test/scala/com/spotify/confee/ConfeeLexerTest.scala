@@ -170,10 +170,10 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
       assertTokens(
         "true false true false",
         List(
-          TrueToken(),
-          FalseToken(),
-          TrueToken(),
-          FalseToken()
+          BoolToken(true),
+          BoolToken(false),
+          BoolToken(true),
+          BoolToken(false)
         )
       )
     }
@@ -220,6 +220,18 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
 
   describe("Lexer on operators") {
 
+    it("should tokenize boolean (bitwise) operators") {
+      assertTokens(
+        "not and or xor",
+        List(
+          NotToken(),
+          AndToken(),
+          OrToken(),
+          XorToken()
+        )
+      )
+    }
+
     it("should tokenize arithmetic and assignment operators") {
       assertTokens(
         "+ - / * % =",
@@ -261,6 +273,8 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
         """
           |"abc" "ABC" "abc123ABC!@#"
           |123.456 -123.456 123456 -123456
+          |true false
+          |not and or xor
           |type conf import
           |NamesStartWithUpperCase Foo Bar
           |wordsStartWithLowerCase foo bar
@@ -275,6 +289,12 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
           NumberToken(-123.456),
           NumberToken(123456),
           NumberToken(-123456),
+          BoolToken(true),
+          BoolToken(false),
+          NotToken(),
+          AndToken(),
+          OrToken(),
+          XorToken(),
           TypeKeywordToken(),
           ConfKeywordToken(),
           ImportKeywordToken(),
