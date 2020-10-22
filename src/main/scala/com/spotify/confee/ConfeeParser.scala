@@ -227,14 +227,14 @@ object ConfeeParser extends Parsers {
 
   def exprLiteralArray: Parser[LiteralArray] = positioned {
     bracketOpen ~ exprLiteralArrayItems ~ bracketClose ^^ {
-      case _ ~ li ~ _ => LiteralArray(li.value)
+      case _ ~ li ~ _ => LiteralArray(li.items)
     }
   }
 
   def exprLiteralArrayItems: Parser[LiteralArray] = positioned {
 
     val a = exprLiteralArrayItem ~ separator ~ exprLiteralArrayItems ^^ {
-      case x ~ _ ~  xs => LiteralArray(x :: xs.value)
+      case x ~ _ ~  xs => LiteralArray(x :: xs.items)
     }
 
     val b = opt(exprLiteralArrayItem) ^^ {

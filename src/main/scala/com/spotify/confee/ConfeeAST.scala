@@ -96,7 +96,7 @@ case class LiteralNumberOperatorMod() extends LiteralNumberOperator
 
 /* literal array expression */
 
-case class LiteralArray(value: List[LiteralExpr]) extends LiteralExpr
+case class LiteralArray(items: List[LiteralExpr]) extends LiteralExpr
 
 /* literal object expression */
 

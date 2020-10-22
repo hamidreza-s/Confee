@@ -128,14 +128,15 @@ something of its type. Each config item value can also be referenced in other it
 same scope.
 
 - Bool: It can be `true` or `false`.
-- String: It is used to keep string values and also can reference other string item values. 
-It supports *concat* and *remove* operations with other strings using `+` and `-` operator 
-respectively. The operator precedence can be set by parentheses, otherwise it defaults to
-be right-associative. 
-- Number: It is used to keep number values and also can reference other number item values.
-It supports `+`, `-`, `*`, `/`, and `%` operators. The operator precedence can be set by 
-parentheses, otherwise it defaults to be right-associative.
-- Array: TODO
+- String: It is used for storing string values and also can reference other string item values. 
+  It supports *concat* and *remove* operations with other strings using `+` and `-` operator 
+  respectively. The operator precedence can be set by parentheses, otherwise it defaults to
+  be right-associative. 
+- Number: It is used for storing number values and also can reference other number item values.
+  It supports `+`, `-`, `*`, `/`, and `%` operators. The operator precedence can be set by 
+  parentheses, otherwise it defaults to be right-associative.
+- Array: It is used for storing a collection of values with the same type. It also supports
+  multidimensional arrays whose values have the same type.
 - Object: TODO
 - Proto: TODO
 

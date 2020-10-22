@@ -4,6 +4,12 @@ import scala.util.{Failure, Success, Try}
 
 object ConfeeEvaluator {
 
+  /* ----- literal bool expression ----- */
+
+  def evaluateLiteralBool(literalBool: LiteralBool): LiteralBool =
+    // TODO: add bitwise operation evaluation
+    literalBool
+
   /* ----- literal string expression ----- */
 
   def evaluateLiteralString(literalString: LiteralString): LiteralStringFactor =
@@ -72,16 +78,34 @@ object ConfeeEvaluator {
       )
   }
 
+  /* ----- literal array expression ----- */
+
+  def evaluateLiteralArray(literalArray: LiteralArray): LiteralArray =
+    LiteralArray(literalArray.items.map(evaluateArrayItem))
+
+  def evaluateArrayItem(arrayItem: LiteralExpr): LiteralExpr = arrayItem match {
+    case bool: LiteralBool     => evaluateLiteralBool(bool)
+    case string: LiteralString => evaluateLiteralString(string)
+    case number: LiteralNumber => evaluateLiteralNumber(number)
+    case array: LiteralArray   => evaluateLiteralArray(array)
+    case _: LiteralObject      => ???
+    case _: LiteralProto       => ???
+  }
+
   /* ----- evaluator entry on config item values ----- */
 
   def evaluateConfItems(confItems: ConfItems): ConfItems =
     ConfItems(confItems.items.map(evaluateConfItem))
 
   def evaluateConfItem(confItem: ConfItem): ConfItem = confItem match {
+    case item @ ConfItem(_, itemVal: LiteralBool) =>
+      item.copy(itemVal = evaluateLiteralBool(itemVal))
     case item @ ConfItem(_, itemVal: LiteralString) =>
       item.copy(itemVal = evaluateLiteralString(itemVal))
     case item @ ConfItem(_, itemVal: LiteralNumber) =>
       item.copy(itemVal = evaluateLiteralNumber(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralArray) =>
+      item.copy(itemVal = evaluateLiteralArray(itemVal))
     case otherwise => otherwise
   }
 
