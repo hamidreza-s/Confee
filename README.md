@@ -137,7 +137,9 @@ same scope.
   parentheses, otherwise it defaults to be right-associative.
 - Array: It is used for storing a collection of values with the same type. It also supports
   multidimensional arrays whose values have the same type.
-- Object: TODO
+- Object: It is a dictionary data type composed of a collection of (key, value) pairs, such that 
+  each possible key appears at most once in the collection. Each pair can have its own type and can
+  have another nested object as its value.
 - Proto: TODO
 
 Example

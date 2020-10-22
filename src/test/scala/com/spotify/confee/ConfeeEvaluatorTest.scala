@@ -4,6 +4,8 @@ import org.scalatest.{FunSpec, Matchers}
 
 class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
+  // TODO: add tests for booleans once it is implemented
+
   describe("Evaluator on literal string") {
     it("should evaluate concat operator on literal string group") {
       assertEvaluatedAST("""conf foo : Foo {
@@ -193,7 +195,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
     // TODO: add tests for array of objects and protos once they are implemented
 
-    it("should evaluate literal array of evaluated booleans, strings, numbers and nested arrays") {
+    it("should evaluate literal array of evaluated bool, string, number & nested array") {
       assertEvaluatedAST("""conf foo : Foo {
           |     bar = [true, false, true]
           |     bat = ["abc" - "c", "def" - "d", "ghi" - "ghi"]
@@ -269,6 +271,70 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
       )
     }
 
+  }
+
+  describe("Evaluator on literal object") {
+    it("should evaluate literal object of evaluated bool, string, number, array & nested object") {
+      assertEvaluatedAST("""conf foo : Foo {
+                           |     bar = {
+                           |          ban = true
+                           |          bat = "a" + "bcde" - "de"
+                           |          bal = (1 + 2) * (3 + 4)
+                           |          baz = ["ab" + "cd", "ef" + "gh"]
+                           |          bay = {
+                           |               bax = 1 + 2
+                           |          }
+                           |     }
+                           |}
+                           |}""".stripMargin) shouldEqual Right(
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(
+                    WordToken("bar"),
+                    LiteralObject(
+                      LiteralObjectItems(
+                        List(
+                          LiteralObjectItem(WordToken("ban"), LiteralBoolTrue()),
+                          LiteralObjectItem(WordToken("bat"), LiteralStringFactor(StringToken("abc"))),
+                          LiteralObjectItem(WordToken("bal"), LiteralNumberFactor(NumberToken(21))),
+                          LiteralObjectItem(
+                            WordToken("baz"),
+                            LiteralArray(
+                              List(
+                                LiteralStringFactor(StringToken("abcd")),
+                                LiteralStringFactor(StringToken("efgh"))
+                              )
+                            )
+                          ),
+                          LiteralObjectItem(
+                            WordToken("bay"),
+                            LiteralObject(
+                              LiteralObjectItems(
+                                List(
+                                  LiteralObjectItem(
+                                    WordToken("bax"),
+                                    LiteralNumberFactor(NumberToken(3))
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    }
   }
 
   def assertEvaluatedAST(input: String): Either[ConfeeError, ConfeeAST] = {

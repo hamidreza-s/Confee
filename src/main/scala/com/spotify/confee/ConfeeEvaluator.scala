@@ -84,13 +84,40 @@ object ConfeeEvaluator {
     LiteralArray(literalArray.items.map(evaluateArrayItem))
 
   def evaluateArrayItem(arrayItem: LiteralExpr): LiteralExpr = arrayItem match {
-    case bool: LiteralBool     => evaluateLiteralBool(bool)
-    case string: LiteralString => evaluateLiteralString(string)
-    case number: LiteralNumber => evaluateLiteralNumber(number)
-    case array: LiteralArray   => evaluateLiteralArray(array)
-    case _: LiteralObject      => ???
-    case _: LiteralProto       => ???
+    case literalBool: LiteralBool     => evaluateLiteralBool(literalBool)
+    case literalString: LiteralString => evaluateLiteralString(literalString)
+    case literalNumber: LiteralNumber => evaluateLiteralNumber(literalNumber)
+    case literalArray: LiteralArray   => evaluateLiteralArray(literalArray)
+    case literalObject: LiteralObject => evaluateLiteralObject(literalObject)
+    case literalProto: LiteralProto   => evaluateLiteralProto(literalProto)
   }
+
+  /* ----- literal object expression ----- */
+
+  def evaluateLiteralObject(literalObject: LiteralObject): LiteralObject =
+    literalObject.copy(items = evaluateLiteralObjectItems(literalObject.items))
+
+  def evaluateLiteralObjectItems(literalObjectItems: LiteralObjectItems): LiteralObjectItems =
+    LiteralObjectItems(literalObjectItems.items.map(evaluateObjectItem))
+
+  def evaluateObjectItem(objectItem: LiteralObjectItem): LiteralObjectItem = objectItem match {
+    case item @ LiteralObjectItem(_, itemVal: LiteralBool) =>
+      item.copy(itemVal = evaluateLiteralBool(itemVal))
+    case item @ LiteralObjectItem(_, itemVal: LiteralString) =>
+      item.copy(itemVal = evaluateLiteralString(itemVal))
+    case item @ LiteralObjectItem(_, itemVal: LiteralNumber) =>
+      item.copy(itemVal = evaluateLiteralNumber(itemVal))
+    case item @ LiteralObjectItem(_, itemVal: LiteralArray) =>
+      item.copy(itemVal = evaluateLiteralArray(itemVal))
+    case item @ LiteralObjectItem(_, itemVal: LiteralObject) =>
+      item.copy(itemVal = evaluateLiteralObject(itemVal))
+    case item @ LiteralObjectItem(_, itemVal: LiteralProto) =>
+      item.copy(itemVal = evaluateLiteralProto(itemVal))
+  }
+
+  /* ----- literal proto expression ----- */
+
+  def evaluateLiteralProto(proto: LiteralProto): LiteralProto = ???
 
   /* ----- evaluator entry on config item values ----- */
 
@@ -106,6 +133,8 @@ object ConfeeEvaluator {
       item.copy(itemVal = evaluateLiteralNumber(itemVal))
     case item @ ConfItem(_, itemVal: LiteralArray) =>
       item.copy(itemVal = evaluateLiteralArray(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralObject) =>
+      item.copy(itemVal = evaluateLiteralObject(itemVal))
     case otherwise => otherwise
   }
 
