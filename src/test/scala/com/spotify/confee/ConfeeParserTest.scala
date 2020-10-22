@@ -179,10 +179,11 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
         assertAST(
           """conf report : StatusReport {
             |     is_in_progress = false
-            |     is_done = true
-            |     is_valid = true
+            |     is_done = not false
+            |     is_valid = true xor false
             |     is_successful = is_done and is_valid
             |     is_acceptable = (is_done and is_valid) or is_in_progress
+            |     is_not_acceptable = not (is_done and is_valid) or is_in_progress
             |}""".stripMargin,
           Grammar(
             List(
@@ -191,9 +192,29 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                 TypeDef(Left(NameToken("StatusReport")), isList = false),
                 ConfItems(
                   List(
-                    ConfItem(WordToken("is_in_progress"), LiteralBoolFactor(BoolToken(false))),
-                    ConfItem(WordToken("is_done"), LiteralBoolFactor(BoolToken(true))),
-                    ConfItem(WordToken("is_valid"), LiteralBoolFactor(BoolToken(true))),
+                    ConfItem(
+                      WordToken("is_in_progress"),
+                      LiteralBoolFactor(BoolToken(false))
+                    ),
+                    ConfItem(
+                      WordToken("is_done"),
+                      LiteralBoolUnit(
+                        LiteralBoolOperatorNot(),
+                        LiteralBoolFactor(BoolToken(false))
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("is_valid"),
+                      LiteralBoolGroup(
+                        LiteralBoolOperatorXor(),
+                        LiteralBoolFactor(
+                          BoolToken(true)
+                        ),
+                        LiteralBoolFactor(
+                          BoolToken(false)
+                        )
+                      )
+                    ),
                     ConfItem(
                       WordToken("is_successful"),
                       LiteralBoolGroup(
@@ -212,6 +233,21 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                           LiteralBoolWord(WordToken("is_valid"))
                         ),
                         LiteralBoolWord(WordToken("is_in_progress"))
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("is_not_acceptable"),
+                      LiteralBoolUnit(
+                        LiteralBoolOperatorNot(),
+                        LiteralBoolGroup(
+                          LiteralBoolOperatorOr(),
+                          LiteralBoolGroup(
+                            LiteralBoolOperatorAnd(),
+                            LiteralBoolWord(WordToken("is_done")),
+                            LiteralBoolWord(WordToken("is_valid"))
+                          ),
+                          LiteralBoolWord(WordToken("is_in_progress"))
+                        )
                       )
                     )
                   )

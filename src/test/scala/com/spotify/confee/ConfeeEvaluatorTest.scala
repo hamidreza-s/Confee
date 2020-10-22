@@ -4,7 +4,65 @@ import org.scalatest.{FunSpec, Matchers}
 
 class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
-  // TODO: add tests for booleans once it is implemented
+  describe("Evaluator on literal bool (bitwise)") {
+    it("should evaluate bitwise operator on literal bool group") {
+      assertEvaluatedAST("""conf foo : Foo {
+                           |     bar = not false
+                           |     bat = true and false
+                           |     ban = true or false
+                           |     bal = true xor false
+                           |     baz = not (true and false)
+                           |     bay = true and (false or true)
+                           |     bax = false or (false and true)
+                           |     baw = true xor (false xor true)
+                           |     bav = false and (not true)
+                           |     bau = (true and false) xor (true or false)
+                           |     bas = (true or false) and not true or false
+                           |     baq = true and false or true and false xor true
+                           |}""".stripMargin) shouldEqual Right(
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(WordToken("bar"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(WordToken("bat"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(WordToken("ban"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(WordToken("bal"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(WordToken("baz"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(WordToken("bay"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(WordToken("bax"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(WordToken("baw"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(WordToken("bav"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(WordToken("bau"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(WordToken("bas"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(WordToken("baq"), LiteralBoolFactor(BoolToken(true)))
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
+    it("should fail when a literal word presents and has not been referenced in binder step") {
+      assertEvaluatedAST("""conf foo : Foo {
+                           |     bar = true
+                           |     bat = false and bar
+                           |}""".stripMargin) shouldEqual Left(
+        ConfeeEvaluatorError("Literal Bool Word must have been referenced in binder step")
+      )
+
+      assertEvaluatedAST("""conf foo : Foo {
+                           |     bar = true
+                           |     bat = bar or true
+                           |}""".stripMargin) shouldEqual Left(
+        ConfeeEvaluatorError("Literal Bool Word must have been referenced in binder step")
+      )
+    }
+  }
 
   describe("Evaluator on literal string") {
     it("should evaluate concat operator on literal string group") {
@@ -194,7 +252,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
   describe("Evaluator on literal array") {
     it("should evaluate literal array of evaluated bool, string, number, array, object & proto") {
       assertEvaluatedAST("""conf foo : Foo {
-          |     bar = [true, false, true]
+          |     bar = [not false, false and true, false or true]
           |     bat = ["abc" - "c", "def" - "d", "ghi" - "ghi"]
           |     ban = ["a" + "b" + "c", "d" + "ef", "gh" + "i"]
           |     bal = [1, 1 + 1, 1 + (2 * 3) + (4 + 5 - (6 / 2))]
@@ -353,7 +411,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     it("should evaluate literal object of evaluated bool, string, number, array, object & proto") {
       assertEvaluatedAST("""conf foo : Foo {
                            |     bar = {
-                           |          ban = true
+                           |          ban = not ((true and true) xor not false)
                            |          bat = "a" + "bcde" - "de"
                            |          bal = (1 + 2) * (3 + 4)
                            |          baz = ["ab" + "cd", "ef" + "gh"]
@@ -466,7 +524,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     it("should evaluate literal proto of evaluated bool, string, number, array & nested object") {
       assertEvaluatedAST("""conf foo : Foo {
                            |     bar = [
-                           |          ban { bat = true bal = "a" + "b" },
+                           |          ban { bat = true and true bal = "a" + "b" },
                            |          baz { bay = "abc" - "b" bax = (1 + 2) * 3 }
                            |     ]
                            |}""".stripMargin) shouldEqual Right(

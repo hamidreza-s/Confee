@@ -6,9 +6,53 @@ object ConfeeEvaluator {
 
   /* ----- literal bool expression ----- */
 
-  def evaluateLiteralBool(literalBool: LiteralBool): LiteralBool =
-    // TODO: add bitwise operation evaluation
-    literalBool
+  def evaluateLiteralBool(literalBool: LiteralBool): LiteralBoolFactor =
+    literalBool match {
+      case factor: LiteralBoolFactor => factor
+      case word: LiteralBoolWord     => evaluateLiteralBoolWord(word)
+      case unit: LiteralBoolUnit     => evaluateLiteralBoolUnit(unit)
+      case group: LiteralBoolGroup   => evaluateLiteralBoolGroup(group)
+    }
+
+  def evaluateLiteralBoolWord(word: LiteralBoolWord): LiteralBoolFactor =
+    throw new Exception("Literal Bool Word must have been referenced in binder step")
+
+  @scala.annotation.tailrec
+  def evaluateLiteralBoolUnit(unit: LiteralBoolUnit): LiteralBoolFactor = unit match {
+    case LiteralBoolUnit(operator, unit: LiteralBoolFactor) =>
+      operator match {
+        case LiteralBoolOperatorNot() =>
+          LiteralBoolFactor(BoolToken(!unit.value.value))
+      }
+    case LiteralBoolUnit(operator, unit) =>
+      evaluateLiteralBoolUnit(
+        LiteralBoolUnit(
+          operator = operator,
+          unit = evaluateLiteralBool(unit)
+        )
+      )
+  }
+
+  @scala.annotation.tailrec
+  def evaluateLiteralBoolGroup(group: LiteralBoolGroup): LiteralBoolFactor = group match {
+    case LiteralBoolGroup(operator, left: LiteralBoolFactor, right: LiteralBoolFactor) =>
+      operator match {
+        case LiteralBoolOperatorAnd() =>
+          LiteralBoolFactor(BoolToken(left.value.value & right.value.value))
+        case LiteralBoolOperatorOr() =>
+          LiteralBoolFactor(BoolToken(left.value.value | right.value.value))
+        case LiteralBoolOperatorXor() =>
+          LiteralBoolFactor(BoolToken(left.value.value ^ right.value.value))
+      }
+    case LiteralBoolGroup(operator, left, right) =>
+      evaluateLiteralBoolGroup(
+        LiteralBoolGroup(
+          operator = operator,
+          left = evaluateLiteralBool(left),
+          right = evaluateLiteralBool(right)
+        )
+      )
+  }
 
   /* ----- literal string expression ----- */
 

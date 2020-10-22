@@ -44,25 +44,32 @@ sealed trait LiteralExpr extends Expr
 
 sealed trait LiteralBool extends LiteralExpr
 
-sealed trait LiteralBoolOperator extends Node
+sealed trait LiteralBoolUnaryOperator extends Node
+
+sealed trait LiteralBoolBinaryOperator extends Node
 
 case class LiteralBoolWord(value: WordToken) extends LiteralBool
 
 case class LiteralBoolFactor(value: BoolToken) extends LiteralBool
 
+case class LiteralBoolUnit(
+    operator: LiteralBoolUnaryOperator,
+    unit: LiteralBool
+) extends LiteralBool
+
 case class LiteralBoolGroup(
-    operator: LiteralBoolOperator,
+    operator: LiteralBoolBinaryOperator,
     left: LiteralBool,
     right: LiteralBool
 ) extends LiteralBool
 
-case class LiteralBoolOperatorNot() extends LiteralBoolOperator
+case class LiteralBoolOperatorNot() extends LiteralBoolUnaryOperator
 
-case class LiteralBoolOperatorAnd() extends LiteralBoolOperator
+case class LiteralBoolOperatorAnd() extends LiteralBoolBinaryOperator
 
-case class LiteralBoolOperatorOr() extends LiteralBoolOperator
+case class LiteralBoolOperatorOr() extends LiteralBoolBinaryOperator
 
-case class LiteralBoolOperatorXor() extends LiteralBoolOperator
+case class LiteralBoolOperatorXor() extends LiteralBoolBinaryOperator
 
 /* literal string expression */
 

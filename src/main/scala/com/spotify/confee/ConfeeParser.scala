@@ -137,17 +137,25 @@ object ConfeeParser extends Parsers {
 
   def exprLiteralBool: Parser[LiteralBool] = positioned {
 
-    val a = exprLiteralBoolFactor ~ exprLiteralBoolOperator ~ exprLiteralBool ^^ {
+    val a = exprLiteralBoolUnaryOperator ~ exprLiteralBool ^^ {
+      case op ~ xs => LiteralBoolUnit(op, xs)
+    }
+
+    val b = exprLiteralBoolUnaryOperator ~ exprLiteralBoolFactor ^^ {
+      case op ~ x => LiteralBoolUnit(op, x)
+    }
+
+    val c = exprLiteralBoolFactor ~ exprLiteralBoolBinaryOperator ~ exprLiteralBool ^^ {
       case x ~ op ~ xs => LiteralBoolGroup(op, x, xs)
     }
 
-    val b = exprLiteralBoolFactor ~ exprLiteralBoolOperator ~ exprLiteralBoolFactor ^^ {
+    val d = exprLiteralBoolFactor ~ exprLiteralBoolBinaryOperator ~ exprLiteralBoolFactor ^^ {
       case x ~ op ~ y => LiteralBoolGroup(op, x, y)
     }
 
-    val c = exprLiteralBoolFactor ^^ { f => f }
+    val e = exprLiteralBoolFactor ^^ { f => f }
 
-    a | b | c
+    a | b | c | d | e
   }
 
   def exprLiteralBoolFactor: Parser[LiteralBool] = positioned {
@@ -163,17 +171,19 @@ object ConfeeParser extends Parsers {
     a | b | c | d
   }
 
-  def exprLiteralBoolOperator: Parser[LiteralBoolOperator] = positioned {
+  def exprLiteralBoolUnaryOperator: Parser[LiteralBoolUnaryOperator] = positioned {
+    not ^^ { _ => LiteralBoolOperatorNot() }
+  }
 
-    val a = not ^^ { _ => LiteralBoolOperatorNot() }
+  def exprLiteralBoolBinaryOperator: Parser[LiteralBoolBinaryOperator] = positioned {
 
-    val b = and ^^ { _ => LiteralBoolOperatorAnd() }
+    val a = and ^^ { _ => LiteralBoolOperatorAnd() }
 
-    val c = or ^^ { _ => LiteralBoolOperatorOr() }
+    val b = or ^^ { _ => LiteralBoolOperatorOr() }
 
-    val d = xor ^^ { _ => LiteralBoolOperatorXor() }
+    val c = xor ^^ { _ => LiteralBoolOperatorXor() }
 
-    a | b | c | d
+    a | b | c
   }
 
   /* ----- literal string expression ----- */

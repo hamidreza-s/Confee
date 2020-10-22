@@ -16,7 +16,7 @@ object ConfeeCompiler {
     //  - parser -> ast [done]
     //  - linker (import) -> ast
     //  - binder (reference) -> ast
-    //  - evaluator (expression) -> ast [wip]
+    //  - evaluator (expression) -> ast [done]
     //  - executor (lambda) -> ast
     //  - checker (type) -> ast
     //  - generator (lint, optimize, etc.) -> irc

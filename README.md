@@ -37,7 +37,9 @@ In confee, every config item value is an expression which means it is evaluated 
 something of its type. Each config item value can also be referenced in other item values in the 
 same scope.
 
-- **Bool**: It can be `true` or `false`.
+- **Bool**: It can be `true` or `false` and also can reference other booleans. It supports bitwise
+  binary operations with other booleans using `and`, `or`, `xor` and negation unary operation using 
+  `not` operator.
 - **String**: It is used for storing string values and also can reference other string item values. 
   It supports *concat* and *remove* operations with other strings using `+` and `-` operator 
   respectively. The operator precedence can be set by parentheses, otherwise it defaults to
@@ -100,10 +102,24 @@ imported to other Confee file using **Import** statement.
                 | <exprLiteralArray>
                 | <exprLiteralObject>
                 | <exprLiteralProto>
-                
-<exprLiteralBool> ::= <trueBool>
-                    | <falseBool>
-                    
+
+<exprLiteralBool> ::= <exprLiteralBoolUnaryOperator> <exprLiteralBool>
+                    | <exprLiteralBoolUnaryOperator> <exprLiteralBoolFactor>
+                    | <exprLiteralBoolFactor> <exprLiteralBoolBinaryOperator> <exprLiteralBool>
+                    | <exprLiteralBoolFactor> <exprLiteralBoolBinaryOperator> <exprLiteralBoolFactor>
+                    | <exprLiteralBoolFactor>
+
+<exprLiteralBoolFactor> ::= <parenthesesOpen> <exprLiteralBool> <parenthesesClose>
+                          | <trueBool>
+                          | <falseBool>
+                          | <word>
+
+<exprLiteralBoolUnaryOperator> ::= <not>
+
+<exprLiteralBoolBinaryOperator> ::= <and>
+                                  | <or>
+                                  | <xor>
+
 <exprLiteralString> ::= <exprLiteralStringFactor> <exprLiteralStringOperator> <exprLiteral>
                       | <exprLiteralStringFactor> <exprLiteralStringOperator> <exprLiteralStringFactor>
                       | <exprLiteralStringFactor>
@@ -111,35 +127,35 @@ imported to other Confee file using **Import** statement.
 <exprLiteralStringFactor> ::= <parenthesesOpen> <exprLiteralString> <parenthesesClose>
                             | <string>
                             | <word>
-                            
+
 <exprLiteralStringOperator> ::= <addition> | <subtraction>
 
 <exprLiteralNumber> ::= <exprLiteralNumberFactor> <exprLiteralNumberOperator> <exprLiteralNumber>
                       | <exprLiteralNumberFactor> <exprLiteralNumberOperator> <exprLiteralNumberFactor>
                       | <exprLiteralNumberFactor>
-                      
+
 <exprLiteralNumberFactor> ::= <parenthesesOpen> <exprLiteralNumber> <parenthesesClose>
                             | <number>
                             | <word>
-                            
+
 <exprLiteralNumberOperator> ::= <addition>
                               | <subtraction>
                               | <division>
                               | <multiplication>
                               | <modulus>
-                              
+
 <exprLiteralArray> ::= <bracketOpen> <exprLiteralArrayItems> <bracketClose>
 
 <exprLiteralArrayItems> ::= <exprLiteralArrayItem> <separator> <exprLiteralArrayItems>
                           | <exprLiteralArrayItem>
-                          
+
 <exprLiteralArrayItem> ::= <exprLiteral>
 
 <exprLiteralObject> ::= <braceOpen> <exprLiteralObjectItems> <braceClose>
 
 <exprLiteralObjectItems> ::= <exprLiteralObjectItem> <exprLiteralObjectItems>
                            | <exprLiteralObjectItem>
-                           
+
 <exprLiteralProto> ::= <word> <exprLiteralObject> 
 ```
 
