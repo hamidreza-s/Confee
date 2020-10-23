@@ -15,7 +15,10 @@ object ConfeeEvaluator {
     }
 
   def evaluateLiteralBoolWord(word: LiteralBoolWord): LiteralBoolFactor =
-    throw new Exception("Literal Bool Word must have been referenced in binder step")
+    throw ConfeeException(
+      Location(word.pos.line, word.pos.column),
+      "Literal Bool Word must have been referenced in binder step"
+    )
 
   @scala.annotation.tailrec
   def evaluateLiteralBoolUnit(unit: LiteralBoolUnit): LiteralBoolFactor = unit match {
@@ -64,7 +67,10 @@ object ConfeeEvaluator {
     }
 
   def evaluateLiteralStringWord(word: LiteralStringWord): LiteralStringFactor =
-    throw new Exception("Literal String Word must have been referenced in binder step")
+    throw ConfeeException(
+      Location(word.pos.line, word.pos.column),
+      "Literal String Word must have been referenced in binder step"
+    )
 
   @scala.annotation.tailrec
   def evaluateLiteralStringGroup(group: LiteralStringGroup): LiteralStringFactor = group match {
@@ -95,7 +101,10 @@ object ConfeeEvaluator {
     }
 
   def evaluateLiteralNumberWord(word: LiteralNumberWord): LiteralNumberFactor =
-    throw new Exception("Literal Number Word must have been referenced in binder step")
+    throw ConfeeException(
+      Location(word.pos.line, word.pos.column),
+      "Literal Number Word must have been referenced in binder step"
+    )
 
   @scala.annotation.tailrec
   def evaluateLiteralNumberGroup(group: LiteralNumberGroup): LiteralNumberFactor = group match {
@@ -183,21 +192,22 @@ object ConfeeEvaluator {
     case otherwise => otherwise
   }
 
-  def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = {
-    ast match {
-      case Grammar(stmts: List[Stmt]) =>
-        Try(stmts.map {
-          case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = evaluateConfItems(items))
-          case otherwise                        => otherwise
-        }) match {
-          case Success(evaluatedStmts) =>
-            Right(Grammar(evaluatedStmts))
-          case Failure(exception) =>
-            Left(ConfeeEvaluatorError(exception.getMessage))
-        }
-      case _ =>
-        Left(ConfeeEvaluatorError("AST does not contain valid grammar structure"))
-    }
+  def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
+    case Grammar(stmts: List[Stmt]) =>
+      Try(stmts.map {
+        case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = evaluateConfItems(items))
+        case otherwise                        => otherwise
+      }) match {
+        case Success(evaluatedStmts)      => Right(Grammar(evaluatedStmts))
+        case Failure(ex: ConfeeException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
+        case Failure(ex)                  => Left(ConfeeUnknownError(ex))
+      }
+    case otherwise =>
+      Left(
+        ConfeeEvaluatorError(
+          Location(otherwise.pos.line, otherwise.pos.column),
+          "AST does not contain valid grammar structure"
+        )
+      )
   }
-
 }

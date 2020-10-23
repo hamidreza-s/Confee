@@ -52,14 +52,20 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                            |     bar = true
                            |     bat = false and bar
                            |}""".stripMargin) shouldEqual Left(
-        ConfeeEvaluatorError("Literal Bool Word must have been referenced in binder step")
+        ConfeeEvaluatorError(
+          Location(3, 22),
+          "Literal Bool Word must have been referenced in binder step"
+        )
       )
 
       assertEvaluatedAST("""conf foo : Foo {
                            |     bar = true
                            |     bat = bar or true
                            |}""".stripMargin) shouldEqual Left(
-        ConfeeEvaluatorError("Literal Bool Word must have been referenced in binder step")
+        ConfeeEvaluatorError(
+          Location(3, 12),
+          "Literal Bool Word must have been referenced in binder step"
+        )
       )
     }
   }
@@ -163,14 +169,20 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                            |     bar = "abc"
                            |     bat = "abc" + bar
                            |}""".stripMargin) shouldEqual Left(
-        ConfeeEvaluatorError("Literal String Word must have been referenced in binder step")
+        ConfeeEvaluatorError(
+          Location(3, 20),
+          "Literal String Word must have been referenced in binder step"
+        )
       )
 
       assertEvaluatedAST("""conf foo : Foo {
                            |     bar = "abc"
                            |     bat = bar + "abc"
                            |}""".stripMargin) shouldEqual Left(
-        ConfeeEvaluatorError("Literal String Word must have been referenced in binder step")
+        ConfeeEvaluatorError(
+          Location(3, 12),
+          "Literal String Word must have been referenced in binder step"
+        )
       )
     }
 
@@ -237,14 +249,20 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                            |     bar = 123
                            |     bat = 123 + bar
                            |}""".stripMargin) shouldEqual Left(
-        ConfeeEvaluatorError("Literal Number Word must have been referenced in binder step")
+        ConfeeEvaluatorError(
+          Location(3, 18),
+          "Literal Number Word must have been referenced in binder step"
+        )
       )
 
       assertEvaluatedAST("""conf foo : Foo {
                            |     bar = 123
                            |     bat = bar + 123
                            |}""".stripMargin) shouldEqual Left(
-        ConfeeEvaluatorError("Literal Number Word must have been referenced in binder step")
+        ConfeeEvaluatorError(
+          Location(3, 12),
+          "Literal Number Word must have been referenced in binder step"
+        )
       )
     }
   }
