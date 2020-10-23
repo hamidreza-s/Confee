@@ -541,7 +541,8 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
   describe("Evaluator on literal proto") {
     it("should evaluate literal proto of evaluated bool, string, number, array & nested object") {
       assertEvaluatedAST("""conf foo : Foo {
-                           |     bar = [
+                           |     bar = ban { bat = true and true bal = "a" + "b"}
+                           |     baw = [
                            |          ban { bat = true and true bal = "a" + "b" },
                            |          baz { bay = "abc" - "b" bax = (1 + 2) * 3 }
                            |     ]
@@ -555,6 +556,18 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
                 List(
                   ConfItem(
                     WordToken("bar"),
+                    LiteralProto(
+                      WordToken("ban"),
+                      LiteralObjectItems(
+                        List(
+                          LiteralObjectItem(WordToken("bat"), LiteralBoolFactor(BoolToken(true))),
+                          LiteralObjectItem(WordToken("bal"), LiteralStringFactor(StringToken("ab")))
+                        )
+                      )
+                    )
+                  ),
+                  ConfItem(
+                    WordToken("baw"),
                     LiteralArray(
                       List(
                         LiteralProto(

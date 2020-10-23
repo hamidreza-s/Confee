@@ -4,6 +4,45 @@ import scala.util.{Failure, Success, Try}
 
 object ConfeeEvaluator {
 
+  def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
+    case Grammar(stmts: List[Stmt]) =>
+      Try(stmts.map {
+        case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = evaluateConfItems(items))
+        case otherwise                        => otherwise
+      }) match {
+        case Success(evaluatedStmts)      => Right(Grammar(evaluatedStmts))
+        case Failure(ex: ConfeeException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
+        case Failure(ex)                  => Left(ConfeeUnknownError(ex))
+      }
+    case otherwise =>
+      Left(
+        ConfeeEvaluatorError(
+          Location(otherwise.pos.line, otherwise.pos.column),
+          "AST in evaluation input does not contain valid grammar structure"
+        )
+      )
+  }
+
+  /* ----- config statement items ----- */
+
+  def evaluateConfItems(confItems: ConfItems): ConfItems =
+    ConfItems(confItems.items.map(evaluateConfItem))
+
+  def evaluateConfItem(confItem: ConfItem): ConfItem = confItem match {
+    case item @ ConfItem(_, itemVal: LiteralBool) =>
+      item.copy(itemVal = evaluateLiteralBool(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralString) =>
+      item.copy(itemVal = evaluateLiteralString(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralNumber) =>
+      item.copy(itemVal = evaluateLiteralNumber(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralArray) =>
+      item.copy(itemVal = evaluateLiteralArray(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralObject) =>
+      item.copy(itemVal = evaluateLiteralObject(itemVal))
+    case item @ ConfItem(_, itemVal: LiteralProto) =>
+      item.copy(itemVal = evaluateLiteralProto(itemVal))
+  }
+
   /* ----- literal bool expression ----- */
 
   def evaluateLiteralBool(literalBool: LiteralBool): LiteralBoolFactor =
@@ -172,42 +211,4 @@ object ConfeeEvaluator {
 
   def evaluateLiteralProto(literalProto: LiteralProto): LiteralProto =
     literalProto.copy(items = evaluateLiteralObjectItems(literalProto.items))
-
-  /* ----- evaluator entry on config item values ----- */
-
-  def evaluateConfItems(confItems: ConfItems): ConfItems =
-    ConfItems(confItems.items.map(evaluateConfItem))
-
-  def evaluateConfItem(confItem: ConfItem): ConfItem = confItem match {
-    case item @ ConfItem(_, itemVal: LiteralBool) =>
-      item.copy(itemVal = evaluateLiteralBool(itemVal))
-    case item @ ConfItem(_, itemVal: LiteralString) =>
-      item.copy(itemVal = evaluateLiteralString(itemVal))
-    case item @ ConfItem(_, itemVal: LiteralNumber) =>
-      item.copy(itemVal = evaluateLiteralNumber(itemVal))
-    case item @ ConfItem(_, itemVal: LiteralArray) =>
-      item.copy(itemVal = evaluateLiteralArray(itemVal))
-    case item @ ConfItem(_, itemVal: LiteralObject) =>
-      item.copy(itemVal = evaluateLiteralObject(itemVal))
-    case otherwise => otherwise
-  }
-
-  def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
-    case Grammar(stmts: List[Stmt]) =>
-      Try(stmts.map {
-        case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = evaluateConfItems(items))
-        case otherwise                        => otherwise
-      }) match {
-        case Success(evaluatedStmts)      => Right(Grammar(evaluatedStmts))
-        case Failure(ex: ConfeeException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
-        case Failure(ex)                  => Left(ConfeeUnknownError(ex))
-      }
-    case otherwise =>
-      Left(
-        ConfeeEvaluatorError(
-          Location(otherwise.pos.line, otherwise.pos.column),
-          "AST does not contain valid grammar structure"
-        )
-      )
-  }
 }
