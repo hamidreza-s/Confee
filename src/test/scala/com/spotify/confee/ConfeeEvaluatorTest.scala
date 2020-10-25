@@ -6,7 +6,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal bool (bitwise)") {
     it("should evaluate bitwise operator on literal bool group") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = not false
                            |     bat = true and false
                            |     ban = true or false
@@ -48,7 +48,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     }
 
     it("should fail when a literal word presents and has not been referenced in binder step") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = true
                            |     bat = false and bar
                            |}""".stripMargin) shouldEqual Left(
@@ -58,7 +58,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
         )
       )
 
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = true
                            |     bat = bar or true
                            |}""".stripMargin) shouldEqual Left(
@@ -72,7 +72,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal string") {
     it("should evaluate concat operator on literal string group") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = "a" + "b"
                            |}""".stripMargin) shouldEqual Right(
         Grammar(
@@ -92,7 +92,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     }
 
     it("should evaluate remove operator on literal string group") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = "a" - "b"
                            |     bat = "abc" - "b"
                            |     ban = "abcabc" - "abc"
@@ -116,7 +116,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     }
 
     it("should evaluate concat operator on literal string group in group (recursive)") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = "a" + "bc" + "d"
                            |     bat = ("a" + "bc") + "d"
                            |     ban = "a" + ("bc" + "d")
@@ -143,7 +143,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
     it("should evaluate remove operator on literal string group in group (recursive)") {
       // NOTE: by default when there is no grouping string operators are right-associative
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = "abc" - "efg" - "abc"
                            |     bat = "ab" - "bc" - "c"
                            |}""".stripMargin) shouldEqual Right(
@@ -165,7 +165,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     }
 
     it("should fail when a literal word presents and has not been referenced in binder step") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = "abc"
                            |     bat = "abc" + bar
                            |}""".stripMargin) shouldEqual Left(
@@ -175,7 +175,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
         )
       )
 
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = "abc"
                            |     bat = bar + "abc"
                            |}""".stripMargin) shouldEqual Left(
@@ -190,7 +190,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal number") {
     it("should evaluate arithmetic operator on literal number group") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = 10 + 2
                            |     bat = 10 - 2
                            |     ban = 10 * 2
@@ -219,7 +219,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
     it("should evaluate arithmetic operator on literal number group in group (recursive)") {
       // NOTE: by default when there is no grouping arithmetic operators are right-associative
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = 1 + (2 + 3) + 4
                            |     bat = 2 * (3 + 2)
                            |     ban = (4 - 2) * ((3 + 3) / (4 - 2)) + 5
@@ -245,7 +245,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     }
 
     it("should fail when a literal word presents and has not been referenced in binder step") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = 123
                            |     bat = 123 + bar
                            |}""".stripMargin) shouldEqual Left(
@@ -255,7 +255,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
         )
       )
 
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = 123
                            |     bat = bar + 123
                            |}""".stripMargin) shouldEqual Left(
@@ -269,7 +269,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal array") {
     it("should evaluate literal array of evaluated bool, string, number, array, object & proto") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
           |     bar = [not false, false and true, false or true]
           |     bat = ["abc" - "c", "def" - "d", "ghi" - "ghi"]
           |     ban = ["a" + "b" + "c", "d" + "ef", "gh" + "i"]
@@ -427,7 +427,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal object") {
     it("should evaluate literal object of evaluated bool, string, number, array, object & proto") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = {
                            |          ban = not ((true and true) xor not false)
                            |          bat = "a" + "bcde" - "de"
@@ -540,7 +540,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
 
   describe("Evaluator on literal proto") {
     it("should evaluate literal proto of evaluated bool, string, number, array & nested object") {
-      assertEvaluatedAST("""conf foo : Foo {
+      evaluatedAST("""conf foo : Foo {
                            |     bar = ban { bat = true and true bal = "a" + "b"}
                            |     baw = [
                            |          ban { bat = true and true bal = "a" + "b" },
@@ -612,7 +612,7 @@ class ConfeeEvaluatorTest extends FunSpec with Matchers {
     }
   }
 
-  def assertEvaluatedAST(input: String): Either[ConfeeError, ConfeeAST] = {
+  def evaluatedAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
       tokens    <- ConfeeLexer(input).right
       parsed    <- ConfeeParser(tokens).right

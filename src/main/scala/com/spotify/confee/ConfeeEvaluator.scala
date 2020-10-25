@@ -23,7 +23,7 @@ object ConfeeEvaluator {
       )
   }
 
-  /* ----- config statement items ----- */
+  /* ----- evaluate config statement items ----- */
 
   def evaluateConfItems(confItems: ConfItems): ConfItems =
     ConfItems(confItems.items.map(evaluateConfItem))
@@ -45,13 +45,12 @@ object ConfeeEvaluator {
 
   /* ----- literal bool expression ----- */
 
-  def evaluateLiteralBool(literalBool: LiteralBool): LiteralBoolFactor =
-    literalBool match {
-      case factor: LiteralBoolFactor => factor
-      case word: LiteralBoolWord     => evaluateLiteralBoolWord(word)
-      case unit: LiteralBoolUnit     => evaluateLiteralBoolUnit(unit)
-      case group: LiteralBoolGroup   => evaluateLiteralBoolGroup(group)
-    }
+  def evaluateLiteralBool(literalBool: LiteralBool): LiteralBoolFactor = literalBool match {
+    case factor: LiteralBoolFactor => factor
+    case word: LiteralBoolWord     => evaluateLiteralBoolWord(word)
+    case unit: LiteralBoolUnit     => evaluateLiteralBoolUnit(unit)
+    case group: LiteralBoolGroup   => evaluateLiteralBoolGroup(group)
+  }
 
   def evaluateLiteralBoolWord(word: LiteralBoolWord): LiteralBoolFactor =
     throw ConfeeException(
