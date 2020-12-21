@@ -23,23 +23,23 @@ object ConfeeLexer extends RegexParsers {
 
   def number: Parser[ConfeeToken] = """(\-|\+)?\d+(\.\d+)?""".r ^^ { s => NumberToken(s.toDouble) }
 
-  def trueBool: Parser[ConfeeToken] = "true" ^^ { _ => BoolToken(true) }
+  def trueBool: Parser[ConfeeToken] = """\btrue\b""".r ^^ { _ => BoolToken(true) }
 
-  def falseBool: Parser[ConfeeToken] = "false" ^^ { _ => BoolToken(false) }
+  def falseBool: Parser[ConfeeToken] = """\bfalse\b""".r ^^ { _ => BoolToken(false) }
 
-  def not: Parser[ConfeeToken] = "not" ^^ { _ => NotToken() }
+  def not: Parser[ConfeeToken] = """\bnot\b""".r ^^ { _ => NotToken() }
 
-  def and: Parser[ConfeeToken] = "and" ^^ { _ => AndToken() }
+  def and: Parser[ConfeeToken] = """\band\b""".r ^^ { _ => AndToken() }
 
-  def or: Parser[ConfeeToken] = "or" ^^ { _ => OrToken() }
+  def or: Parser[ConfeeToken] = """\bor\b""".r ^^ { _ => OrToken() }
 
-  def xor: Parser[ConfeeToken] = "xor" ^^ { _ => XorToken() }
+  def xor: Parser[ConfeeToken] = """\bxor\b""".r ^^ { _ => XorToken() }
 
-  def typeKeyword: Parser[ConfeeToken] = "type" ^^ { _ => TypeKeywordToken() }
+  def typeKeyword: Parser[ConfeeToken] = """\btype\b""".r ^^ { _ => TypeKeywordToken() }
 
-  def confKeyword: Parser[ConfeeToken] = "conf" ^^ { _ => ConfKeywordToken() }
+  def confKeyword: Parser[ConfeeToken] = """\bconf\b""".r ^^ { _ => ConfKeywordToken() }
 
-  def importKeyword: Parser[ConfeeToken] = "import" ^^ { _ => ImportKeywordToken() }
+  def importKeyword: Parser[ConfeeToken] = """\bimport\b""".r ^^ { _ => ImportKeywordToken() }
 
   def word: Parser[ConfeeToken] = """[a-z][a-zA-Z0-9_]*""".r ^^ { s => WordToken(s) }
 

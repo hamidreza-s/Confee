@@ -631,6 +631,190 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
           )
         )
       }
+
+      it("should parse conf definition with references") {
+        assertAST(
+          """conf foo : Foo {
+            |     a1 = true
+            |     b1 = "something"
+            |     c1 = 123
+            |     d1 = [1, 2, 3]
+            |     e1 = { x = 1 y = 2 }
+            |     f1 = e1 { z = 3 }
+            |     a2 = a1
+            |     b2 = b1
+            |     c2 = c1
+            |     d2 = d1
+            |     e2 = e1
+            |     f2 = f1
+            |}""".stripMargin,
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(Left(NameToken("Foo")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(WordToken("a1"), LiteralBoolFactor(BoolToken(true))),
+                    ConfItem(WordToken("b1"), LiteralStringFactor(StringToken("something"))),
+                    ConfItem(WordToken("c1"), LiteralNumberFactor(NumberToken(123.0))),
+                    ConfItem(
+                      WordToken("d1"),
+                      LiteralArray(
+                        List(
+                          LiteralNumberFactor(NumberToken(1.0)),
+                          LiteralNumberFactor(NumberToken(2.0)),
+                          LiteralNumberFactor(NumberToken(3.0))
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("e1"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(1.0))
+                            ),
+                            LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(2.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("f1"),
+                      LiteralProto(
+                        WordToken("e1"),
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("z"), LiteralNumberFactor(NumberToken(3.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(WordToken("a2"), LiteralNumberWord(WordToken("a1"))),
+                    ConfItem(WordToken("b2"), LiteralNumberWord(WordToken("b1"))),
+                    ConfItem(WordToken("c2"), LiteralNumberWord(WordToken("c1"))),
+                    ConfItem(WordToken("d2"), LiteralNumberWord(WordToken("d1"))),
+                    ConfItem(WordToken("e2"), LiteralNumberWord(WordToken("e1"))),
+                    ConfItem(WordToken("f2"), LiteralNumberWord(WordToken("f1")))
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      it("should parse conf definition with keyword in reference names") {
+        assertAST(
+          """conf foo : Foo {
+            |     a = import_keyword + type_keyword + conf_keyword
+            |     b = keyword_import + keyword_type + keyword_conf
+            |     c = key_import_word + key_type_word + key_conf_word
+            |     d = and_keyword + or_keyword + xor_keyword + not_keyword
+            |     e = keyword_and + keyword_or + keyword_xor + keyword_not
+            |     f = key_and_word + key_or_word + key_xor_word + key_not_word
+            |}""".stripMargin,
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(Left(NameToken("Foo")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(
+                      WordToken("a"),
+                      LiteralNumberGroup(
+                        LiteralNumberOperatorAdd(),
+                        LiteralNumberWord(WordToken("import_keyword")),
+                        LiteralNumberGroup(
+                          LiteralNumberOperatorAdd(),
+                          LiteralNumberWord(WordToken("type_keyword")),
+                          LiteralNumberWord(WordToken("conf_keyword"))
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("b"),
+                      LiteralNumberGroup(
+                        LiteralNumberOperatorAdd(),
+                        LiteralNumberWord(WordToken("keyword_import")),
+                        LiteralNumberGroup(
+                          LiteralNumberOperatorAdd(),
+                          LiteralNumberWord(WordToken("keyword_type")),
+                          LiteralNumberWord(WordToken("keyword_conf"))
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("c"),
+                      LiteralNumberGroup(
+                        LiteralNumberOperatorAdd(),
+                        LiteralNumberWord(WordToken("key_import_word")),
+                        LiteralNumberGroup(
+                          LiteralNumberOperatorAdd(),
+                          LiteralNumberWord(WordToken("key_type_word")),
+                          LiteralNumberWord(WordToken("key_conf_word"))
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("d"),
+                      LiteralNumberGroup(
+                        LiteralNumberOperatorAdd(),
+                        LiteralNumberWord(WordToken("and_keyword")),
+                        LiteralNumberGroup(
+                          LiteralNumberOperatorAdd(),
+                          LiteralNumberWord(WordToken("or_keyword")),
+                          LiteralNumberGroup(
+                            LiteralNumberOperatorAdd(),
+                            LiteralNumberWord(WordToken("xor_keyword")),
+                            LiteralNumberWord(WordToken("not_keyword"))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("e"),
+                      LiteralNumberGroup(
+                        LiteralNumberOperatorAdd(),
+                        LiteralNumberWord(WordToken("keyword_and")),
+                        LiteralNumberGroup(
+                          LiteralNumberOperatorAdd(),
+                          LiteralNumberWord(WordToken("keyword_or")),
+                          LiteralNumberGroup(
+                            LiteralNumberOperatorAdd(),
+                            LiteralNumberWord(WordToken("keyword_xor")),
+                            LiteralNumberWord(WordToken("keyword_not"))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("f"),
+                      LiteralNumberGroup(
+                        LiteralNumberOperatorAdd(),
+                        LiteralNumberWord(WordToken("key_and_word")),
+                        LiteralNumberGroup(
+                          LiteralNumberOperatorAdd(),
+                          LiteralNumberWord(WordToken("key_or_word")),
+                          LiteralNumberGroup(
+                            LiteralNumberOperatorAdd(),
+                            LiteralNumberWord(WordToken("key_xor_word")),
+                            LiteralNumberWord(WordToken("key_not_word"))
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
     }
   }
 

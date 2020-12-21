@@ -206,6 +206,17 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
       )
     }
 
+    it("should tokenize names contain keywords") {
+      assertTokens(
+        "ImportKeyword KeywordImport KeyImportWord",
+        List(
+          NameToken("ImportKeyword"),
+          NameToken("KeywordImport"),
+          NameToken("KeyImportWord")
+        )
+      )
+    }
+
     it("should tokenize words") {
       assertTokens(
         "wordsStartWithLowerCase foo bar",
@@ -213,6 +224,17 @@ class ConfeeLexerTest extends FunSpec with Matchers with BeforeAndAfterEach {
           WordToken("wordsStartWithLowerCase"),
           WordToken("foo"),
           WordToken("bar")
+        )
+      )
+    }
+
+    it("should tokenize words contain keywords") {
+      assertTokens(
+        "import_keyword keyword_import key_import_word",
+        List(
+          WordToken("import_keyword"),
+          WordToken("keyword_import"),
+          WordToken("key_import_word")
         )
       )
     }
