@@ -44,13 +44,37 @@ object ConfeeBinder {
       items.items
         .foldLeft(List.empty[IndexRow]) {
           case (acc, item) =>
-            indexItem(
+            indexConfItem(
               name = item.name,
               parent = List(name),
               expr = item.itemVal,
               index = acc
             )
         }
+  }
+
+  def indexConfItem(
+      name: WordToken,
+      expr: Expr,
+      parent: List[WordToken] = List.empty[WordToken],
+      index: List[IndexRow] = List.empty[IndexRow]
+  ): List[IndexRow] = expr match {
+    case LiteralObject(items: LiteralObjectItems) =>
+      index ::: IndexRow(name, parent, expr, hasReference(expr)) :: indexObjectItems(
+        items,
+        name,
+        expr,
+        parent
+      )
+    case LiteralProto(_, items: LiteralObjectItems) =>
+      index ::: IndexRow(name, parent, expr, hasReference(expr)) :: indexObjectItems(
+        items,
+        name,
+        expr,
+        parent
+      )
+    case _ =>
+      index ::: IndexRow(name, parent, expr, hasReference(expr)) :: Nil
   }
 
   def indexObjectItems(
@@ -60,32 +84,8 @@ object ConfeeBinder {
       parent: List[WordToken]
   ): List[IndexRow] =
     objectItems.items.flatMap { item =>
-      indexItem(name = item.name, expr = item.itemVal, parent = name :: parent)
+      indexConfItem(name = item.name, expr = item.itemVal, parent = name :: parent)
     }
-
-  def indexItem(
-      name: WordToken,
-      expr: Expr,
-      parent: List[WordToken] = List.empty[WordToken],
-      index: List[IndexRow] = List.empty[IndexRow]
-  ): List[IndexRow] = expr match {
-    case LiteralObject(items: LiteralObjectItems) =>
-      IndexRow(name, parent, expr, hasReference(expr)) :: indexObjectItems(
-        items,
-        name,
-        expr,
-        parent
-      ) ++ index
-    case LiteralProto(_, items: LiteralObjectItems) =>
-      IndexRow(name, parent, expr, hasReference(expr)) :: indexObjectItems(
-        items,
-        name,
-        expr,
-        parent
-      ) ++ index
-    case _ =>
-      IndexRow(name, parent, expr, hasReference(expr)) :: index
-  }
 
   def hasReference(expr: Expr): Boolean = expr match {
     // literal bool expressions

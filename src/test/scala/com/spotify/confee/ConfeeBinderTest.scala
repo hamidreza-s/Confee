@@ -16,46 +16,27 @@ class ConfeeBinderTest extends FunSpec with Matchers {
                  |     f = g {bar = 1 bat = {ban = 2}}
                  |}""".stripMargin) shouldEqual List(
         IndexRow(
-          WordToken("f"),
+          WordToken("a"),
           List(WordToken("foo")),
-          LiteralProto(
-            WordToken("g"),
-            LiteralObjectItems(
-              List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
-                LiteralObjectItem(
-                  WordToken("bat"),
-                  LiteralObject(
-                    LiteralObjectItems(
-                      List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
-                    )
-                  )
-                )
-              )
-            )
-          ),
+          LiteralBoolFactor(BoolToken(true)),
           hasReference = false
         ),
         IndexRow(
-          WordToken("bar"),
-          List(WordToken("f"), WordToken("foo")),
+          WordToken("b"),
+          List(WordToken("foo")),
+          LiteralStringFactor(StringToken("abc")),
+          hasReference = false
+        ),
+        IndexRow(
+          WordToken("c"),
+          List(WordToken("foo")),
           LiteralNumberFactor(NumberToken(1)),
           hasReference = false
         ),
         IndexRow(
-          WordToken("bat"),
-          List(WordToken("f"), WordToken("foo")),
-          LiteralObject(
-            LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
-            )
-          ),
-          hasReference = false
-        ),
-        IndexRow(
-          WordToken("ban"),
-          List(WordToken("bat"), WordToken("f"), WordToken("foo")),
-          LiteralNumberFactor(NumberToken(2)),
+          WordToken("d"),
+          List(WordToken("foo")),
+          LiteralArray(List(LiteralNumberFactor(NumberToken(1.0)))),
           hasReference = false
         ),
         IndexRow(
@@ -101,27 +82,46 @@ class ConfeeBinderTest extends FunSpec with Matchers {
           hasReference = false
         ),
         IndexRow(
-          WordToken("d"),
+          WordToken("f"),
           List(WordToken("foo")),
-          LiteralArray(List(LiteralNumberFactor(NumberToken(1.0)))),
+          LiteralProto(
+            WordToken("g"),
+            LiteralObjectItems(
+              List(
+                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
+                LiteralObjectItem(
+                  WordToken("bat"),
+                  LiteralObject(
+                    LiteralObjectItems(
+                      List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
+                    )
+                  )
+                )
+              )
+            )
+          ),
           hasReference = false
         ),
         IndexRow(
-          WordToken("c"),
-          List(WordToken("foo")),
+          WordToken("bar"),
+          List(WordToken("f"), WordToken("foo")),
           LiteralNumberFactor(NumberToken(1)),
           hasReference = false
         ),
         IndexRow(
-          WordToken("b"),
-          List(WordToken("foo")),
-          LiteralStringFactor(StringToken("abc")),
+          WordToken("bat"),
+          List(WordToken("f"), WordToken("foo")),
+          LiteralObject(
+            LiteralObjectItems(
+              List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
+            )
+          ),
           hasReference = false
         ),
         IndexRow(
-          WordToken("a"),
-          List(WordToken("foo")),
-          LiteralBoolFactor(BoolToken(true)),
+          WordToken("ban"),
+          List(WordToken("bat"), WordToken("f"), WordToken("foo")),
+          LiteralNumberFactor(NumberToken(2)),
           hasReference = false
         )
       )
@@ -137,48 +137,39 @@ class ConfeeBinderTest extends FunSpec with Matchers {
                  |     f = g {bar = 1 bat = {ban = ref6}}
                  |}""".stripMargin) shouldEqual List(
         IndexRow(
-          WordToken("f"),
+          WordToken("a"),
           List(WordToken("foo")),
-          LiteralProto(
-            WordToken("g"),
-            LiteralObjectItems(
-              List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
-                LiteralObjectItem(
-                  WordToken("bat"),
-                  LiteralObject(
-                    LiteralObjectItems(
-                      List(
-                        LiteralObjectItem(WordToken("ban"), LiteralNumberWord(WordToken("ref6")))
-                      )
-                    )
-                  )
-                )
-              )
-            )
+          LiteralBoolGroup(
+            LiteralBoolOperatorAnd(),
+            LiteralBoolFactor(BoolToken(false)),
+            LiteralBoolWord(WordToken("ref1"))
           ),
           hasReference = true
         ),
         IndexRow(
-          WordToken("bar"),
-          List(WordToken("f"), WordToken("foo")),
-          LiteralNumberFactor(NumberToken(1)),
-          hasReference = false
-        ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("f"), WordToken("foo")),
-          LiteralObject(
-            LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralNumberWord(WordToken("ref6"))))
-            )
+          WordToken("b"),
+          List(WordToken("foo")),
+          LiteralStringGroup(
+            LiteralStringOperatorConcat(),
+            LiteralStringFactor(StringToken("abc")),
+            LiteralStringWord(WordToken("ref2"))
           ),
           hasReference = true
         ),
         IndexRow(
-          WordToken("ban"),
-          List(WordToken("bat"), WordToken("f"), WordToken("foo")),
-          LiteralNumberWord(WordToken("ref6")),
+          WordToken("c"),
+          List(WordToken("foo")),
+          LiteralNumberGroup(
+            LiteralNumberOperatorAdd(),
+            LiteralNumberFactor(NumberToken(1)),
+            LiteralNumberWord(WordToken("ref3"))
+          ),
+          hasReference = true
+        ),
+        IndexRow(
+          WordToken("d"),
+          List(WordToken("foo")),
+          LiteralArray(List(LiteralNumberWord(WordToken("ref4")))),
           hasReference = true
         ),
         IndexRow(
@@ -226,39 +217,48 @@ class ConfeeBinderTest extends FunSpec with Matchers {
           hasReference = true
         ),
         IndexRow(
-          WordToken("d"),
+          WordToken("f"),
           List(WordToken("foo")),
-          LiteralArray(List(LiteralNumberWord(WordToken("ref4")))),
-          hasReference = true
-        ),
-        IndexRow(
-          WordToken("c"),
-          List(WordToken("foo")),
-          LiteralNumberGroup(
-            LiteralNumberOperatorAdd(),
-            LiteralNumberFactor(NumberToken(1)),
-            LiteralNumberWord(WordToken("ref3"))
+          LiteralProto(
+            WordToken("g"),
+            LiteralObjectItems(
+              List(
+                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
+                LiteralObjectItem(
+                  WordToken("bat"),
+                  LiteralObject(
+                    LiteralObjectItems(
+                      List(
+                        LiteralObjectItem(WordToken("ban"), LiteralNumberWord(WordToken("ref6")))
+                      )
+                    )
+                  )
+                )
+              )
+            )
           ),
           hasReference = true
         ),
         IndexRow(
-          WordToken("b"),
-          List(WordToken("foo")),
-          LiteralStringGroup(
-            LiteralStringOperatorConcat(),
-            LiteralStringFactor(StringToken("abc")),
-            LiteralStringWord(WordToken("ref2"))
+          WordToken("bar"),
+          List(WordToken("f"), WordToken("foo")),
+          LiteralNumberFactor(NumberToken(1)),
+          hasReference = false
+        ),
+        IndexRow(
+          WordToken("bat"),
+          List(WordToken("f"), WordToken("foo")),
+          LiteralObject(
+            LiteralObjectItems(
+              List(LiteralObjectItem(WordToken("ban"), LiteralNumberWord(WordToken("ref6"))))
+            )
           ),
           hasReference = true
         ),
         IndexRow(
-          WordToken("a"),
-          List(WordToken("foo")),
-          LiteralBoolGroup(
-            LiteralBoolOperatorAnd(),
-            LiteralBoolFactor(BoolToken(false)),
-            LiteralBoolWord(WordToken("ref1"))
-          ),
+          WordToken("ban"),
+          List(WordToken("bat"), WordToken("f"), WordToken("foo")),
+          LiteralNumberWord(WordToken("ref6")),
           hasReference = true
         )
       )
