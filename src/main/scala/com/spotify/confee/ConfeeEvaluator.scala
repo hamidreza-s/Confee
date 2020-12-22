@@ -29,6 +29,8 @@ object ConfeeEvaluator {
     ConfItems(confItems.items.map(evaluateConfItem))
 
   def evaluateConfItem(confItem: ConfItem): ConfItem = confItem match {
+    case item @ ConfItem(_, itemVal: LiteralWord) =>
+      item.copy(itemVal = evaluateLiteralWord(itemVal))
     case item @ ConfItem(_, itemVal: LiteralBool) =>
       item.copy(itemVal = evaluateLiteralBool(itemVal))
     case item @ ConfItem(_, itemVal: LiteralString) =>
@@ -42,6 +44,10 @@ object ConfeeEvaluator {
     case item @ ConfItem(_, itemVal: LiteralProto) =>
       item.copy(itemVal = evaluateLiteralProto(itemVal))
   }
+
+  /* ----- literal word expression ----- */
+
+  def evaluateLiteralWord(literalWord: LiteralWord): LiteralWord = literalWord
 
   /* ----- literal bool expression ----- */
 
@@ -175,6 +181,7 @@ object ConfeeEvaluator {
     LiteralArray(literalArray.items.map(evaluateArrayItem))
 
   def evaluateArrayItem(arrayItem: LiteralExpr): LiteralExpr = arrayItem match {
+    case literalWord: LiteralWord     => evaluateLiteralWord(literalWord)
     case literalBool: LiteralBool     => evaluateLiteralBool(literalBool)
     case literalString: LiteralString => evaluateLiteralString(literalString)
     case literalNumber: LiteralNumber => evaluateLiteralNumber(literalNumber)
@@ -192,6 +199,8 @@ object ConfeeEvaluator {
     LiteralObjectItems(literalObjectItems.items.map(evaluateObjectItem))
 
   def evaluateObjectItem(objectItem: LiteralObjectItem): LiteralObjectItem = objectItem match {
+    case item @ LiteralObjectItem(_, itemVal: LiteralWord) =>
+      item.copy(itemVal = evaluateLiteralWord(itemVal))
     case item @ LiteralObjectItem(_, itemVal: LiteralBool) =>
       item.copy(itemVal = evaluateLiteralBool(itemVal))
     case item @ LiteralObjectItem(_, itemVal: LiteralString) =>

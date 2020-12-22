@@ -130,7 +130,13 @@ object ConfeeParser extends Parsers {
 
   def exprLiteral: Parser[LiteralExpr] = positioned {
     exprLiteralBool ||| exprLiteralString ||| exprLiteralNumber |||
-    exprLiteralArray ||| exprLiteralObject ||| exprLiteralProto
+    exprLiteralArray ||| exprLiteralObject ||| exprLiteralProto ||| exprLiteralWord
+  }
+
+  /* ----- literal word expression ----- */
+
+  def exprLiteralWord: Parser[LiteralWord] = positioned {
+    word ^^ { w => LiteralWord(w) }
   }
 
   /* ----- literal boolean (bitwise) expression ----- */

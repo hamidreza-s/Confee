@@ -693,12 +693,12 @@ class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
                         )
                       )
                     ),
-                    ConfItem(WordToken("a2"), LiteralNumberWord(WordToken("a1"))),
-                    ConfItem(WordToken("b2"), LiteralNumberWord(WordToken("b1"))),
-                    ConfItem(WordToken("c2"), LiteralNumberWord(WordToken("c1"))),
-                    ConfItem(WordToken("d2"), LiteralNumberWord(WordToken("d1"))),
-                    ConfItem(WordToken("e2"), LiteralNumberWord(WordToken("e1"))),
-                    ConfItem(WordToken("f2"), LiteralNumberWord(WordToken("f1")))
+                    ConfItem(WordToken("a2"), LiteralWord(WordToken("a1"))),
+                    ConfItem(WordToken("b2"), LiteralWord(WordToken("b1"))),
+                    ConfItem(WordToken("c2"), LiteralWord(WordToken("c1"))),
+                    ConfItem(WordToken("d2"), LiteralWord(WordToken("d1"))),
+                    ConfItem(WordToken("e2"), LiteralWord(WordToken("e1"))),
+                    ConfItem(WordToken("f2"), LiteralWord(WordToken("f1")))
                   )
                 )
               )

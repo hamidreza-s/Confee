@@ -40,6 +40,8 @@ case class ImportStmt(path: StringToken) extends Stmt
 
 sealed trait LiteralExpr extends Expr
 
+case class LiteralWord(value: WordToken) extends LiteralExpr
+
 /* literal boolean (bitwise) expression */
 
 sealed trait LiteralBool extends LiteralExpr
