@@ -15,7 +15,7 @@ object ConfeeCompiler {
     //  - lexer -> tokens [done]
     //  - parser -> ast [done]
     //  - linker (import) -> ast
-    //  - binder (reference) -> ast
+    //  - binder (reference) -> ast [done]
     //  - evaluator (expression) -> ast [done]
     //  - executor (lambda) -> ast
     //  - checker (type) -> ast
