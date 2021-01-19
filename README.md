@@ -4,33 +4,7 @@ Confee
 Type safe, prototypal, modular alternative to config files. 
 A Confee notation file is compiled to JSON, YAML or other config notation files.
 
-AST Structure
-===
-
-- Grammar is the root, Statement and Expression are non-terminal, Node is terminal
-- Grammar is a list of Statements
-- Statement can contain another Statement, an Expression or a Node
-- Statement has scope and can be defined in top-level (type, conf, import)
-- Expression can contain another Expression or a Node
-- Expression can not be defined in top-level (literal, lambda, condition, case)
-- Literal Expression can be bool, string, number, array, object, proto or other Expressions
-- Node is an abstraction which contains a value or points to it
-- Node can be a Token which generated in the lexing phase
-- Node can also point to a Statement, an Expression, or another Node
-
-``` 
-                                                Grammar
-                                                /     \
-                                              Stmt  Stmt
-                                              /  \      \
-                                           Expr  Stmt   Node -> Stmt | Expr | Node
-                                           /  \
-  Literal | Lambda | Condition | Case <= Expr Node
-                                                \\
-                                                Token
-```
-
-Expression
+Core features
 ==
 
 In confee, every config item value is an expression which means it is evaluated and then returns 
@@ -55,16 +29,41 @@ same scope.
 - **Proto**: It is a clone of an object by which we can reuse an already defined object while being
   able to override its item values. 
 
-Context-Free Grammar (BNF)
+
+The `type` statement is used to define the types of a `conf` statement, and they both can be
+imported to other Confee file using `import` statement. 
+
+
+AST and Context-Free Grammar (BNF)
 ===
+
+- Grammar is the root, Statement and Expression are non-terminal, Node is terminal
+- Grammar is a list of Statements
+- Statement can contain another Statement, an Expression or a Node
+- Statement has scope and can be defined in top-level (type, conf, import, export, format)
+- Expression can contain another Expression or a Node
+- Expression can not be defined in top-level (literal, lambda, condition, case)
+- Literal Expression can be bool, string, number, array, object, proto or other Expressions
+- Node is an abstraction which contains a value or points to it
+- Node can be a Token which is generated in the lexing phase
+- Node can also point to a Statement, an Expression, or another Node
+
+``` 
+                                                Grammar
+                                                /     \
+                                              Stmt  Stmt
+                                              /  \      \
+                                           Expr  Stmt   Node -> Stmt | Expr | Node
+                                           /  \
+  Literal | Lambda | Condition | Case <= Expr Node
+                                                \\
+                                                Token
+```
 
 The context-free grammar of Confee contains data types we have in most common config file notations
 such as **Bool**, **String**, **Number**, **Array** and **Object**. 
 It also contains a special data type called **Proto** which is a clone of an object letting us 
 override its fields.
-
-The **Type** statement is used to define the types of a **Conf** statement, and they both can be
-imported to other Confee file using **Import** statement.
 
 ```
 <grammar> ::= <stmt> <grammar>

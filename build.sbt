@@ -10,6 +10,9 @@ lazy val root = (project in file("."))
     name := "confee",
     libraryDependencies ++= Seq(
       parserCombinators % Compile,
+      circeCore % Compile,
+      circeGeneric % Compile,
+      circeParser % Compile,
       scalaTest % Test
     )
   )

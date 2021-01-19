@@ -21,7 +21,7 @@ object ConfeeBinder {
       Left(
         ConfeeBinderError(
           Location(otherwise.pos.line, otherwise.pos.column),
-          "AST in binder input does not contain valid grammar structure"
+          "AST in binder step does not contain valid grammar structure"
         )
       )
   }

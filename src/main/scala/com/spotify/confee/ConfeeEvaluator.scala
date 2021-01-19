@@ -18,7 +18,7 @@ object ConfeeEvaluator {
       Left(
         ConfeeEvaluatorError(
           Location(otherwise.pos.line, otherwise.pos.column),
-          "AST in evaluation input does not contain valid grammar structure"
+          "AST in evaluation step does not contain valid grammar structure"
         )
       )
   }
