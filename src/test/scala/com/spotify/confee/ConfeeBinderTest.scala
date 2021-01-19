@@ -590,7 +590,7 @@ class ConfeeBinderTest extends FunSpec with Matchers {
                     |}""".stripMargin) shouldEqual Left(
           ConfeeBinderError(
             Location(5, 15),
-            "Reference error: 'bar' is not defined"
+            "Reference error: 'bar' has a circular reference"
           )
         )
       }

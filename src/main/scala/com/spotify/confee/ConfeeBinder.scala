@@ -115,10 +115,18 @@ object ConfeeBinder {
   private def indexLookup(word: WordToken, pos: Position, index: List[IndexRow]): Expr = {
     index
       .find {
-        case IndexRow(name, _, _, hasReference) =>
-          name.word.equals(word.word) && !hasReference
+        case IndexRow(name, _, _, _) =>
+          name.word.equals(word.word)
       } match {
-      case Some(indexRow) => indexRow.expr
+      case Some(indexRow) =>
+        if (indexRow.hasReference) {
+          throw ConfeeException(
+            Location(pos.line, pos.column),
+            s"Reference error: '${word.word}' has a circular reference"
+          )
+        } else {
+          indexRow.expr
+        }
       case None =>
         throw ConfeeException(
           Location(pos.line, pos.column),
@@ -273,9 +281,12 @@ object ConfeeBinder {
       literalObjectItems: LiteralObjectItems,
       index: List[IndexRow]
   ): LiteralObjectItems =
-    LiteralObjectItems(literalObjectItems.items.map(item => evaluateObjectItem(item, index)))
+    LiteralObjectItems(literalObjectItems.items.map(item => bindLiteralObjectItem(item, index)))
 
-  def evaluateObjectItem(objectItem: LiteralObjectItem, index: List[IndexRow]): LiteralObjectItem =
+  def bindLiteralObjectItem(
+      objectItem: LiteralObjectItem,
+      index: List[IndexRow]
+  ): LiteralObjectItem =
     objectItem match {
       case item @ LiteralObjectItem(_, itemVal: LiteralWord) =>
         item.copy(itemVal = bindLiteralWord(itemVal, index))
