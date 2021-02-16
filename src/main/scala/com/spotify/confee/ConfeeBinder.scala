@@ -1,5 +1,6 @@
 package com.spotify.confee
 
+import scala.collection.immutable
 import scala.util.parsing.input.Position
 import scala.util.{Failure, Success, Try}
 
@@ -113,23 +114,34 @@ object ConfeeBinder {
     case e: LiteralProto => e.items.items.exists(i => hasReference(i.itemVal))
   }
 
-  private def isSameWord(a: WordToken, b: WordToken): Boolean =
-    a.word == b.word & a.pos.line == b.pos.line & a.pos.column == b.pos.column
-
   private def indexLookup(
       name: WordToken,
       pos: Position,
       parents: List[WordToken],
       index: List[IndexRow]
-  ): Expr = {
+  ): Expr =
     index
-      .foldLeft(List.empty[IndexRow]) {
-        case (acc, indexRow @ IndexRow(indexedName, indexedParents, _, _)) =>
-          val hasSameName              = indexedName.word.equals(name.word)
-          val hasSameExactParents      = indexedParents.eq(parents)
-          val hasSameUpperLevelParents = indexedParents.forall(parents.contains)
-          if (hasSameName & (hasSameExactParents | hasSameUpperLevelParents)) List(indexRow)
-          else acc
+      .foldLeft(List.empty[(Int, Int, IndexRow)]) {
+        case (acc, indexRow) =>
+          val equalityHighPriority     = 0
+          val equalityLowPriority      = 1
+          val proximityPriority        = parents.size - indexRow.parents.size
+          val hasSameName              = indexRow.name.word.equals(name.word)
+          val hasSameExactParents      = indexRow.parents.equals(parents)
+          val hasSameUpperLevelParents = indexRow.parents.forall(parents.contains)
+
+          (hasSameName, hasSameExactParents, hasSameUpperLevelParents) match {
+            case (true, true, _) => (equalityHighPriority, proximityPriority, indexRow) :: acc
+            case (true, _, true) => (equalityLowPriority, proximityPriority, indexRow) :: acc
+            case _               => acc
+          }
+      }
+      .sortBy {
+        case (parentalEqualityPriority, parentalProximityPriority, _) =>
+          (parentalEqualityPriority, parentalProximityPriority)
+      }
+      .map {
+        case (_, _, indexRow) => indexRow
       }
       .headOption match {
       case Some(indexRow) =>
@@ -147,7 +159,6 @@ object ConfeeBinder {
           s"Reference error: '${name.word}' is not defined"
         )
     }
-  }
 
   /* ----- bind config statement items ----- */
 

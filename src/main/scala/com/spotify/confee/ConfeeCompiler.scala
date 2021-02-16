@@ -10,7 +10,7 @@ object ConfeeCompiler {
   case object PYTHON extends Target
   case object RUBY extends Target
 
-  // TODO: Make binding to work regardless of value definition order
+  // TODO: Make binding to work regardless of value definition order [done]
   // TODO: Proto literal must be converted to object in binding/evaluator step
   // TODO: Type should just start with Uppercase (fix test and readme)
   // TODO: Conf Value should always start with Lowercase (fix test and readme)

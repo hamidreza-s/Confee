@@ -673,7 +673,7 @@ class ConfeeBinderTest extends FunSpec with Matchers {
         )
       }
 
-      ignore("should bind a reference to its closest relative in family hierarchy (2-level/reversed)") {
+      it("should bind a reference to its closest relative in family hierarchy (2-level/reversed)") {
         bindAST("""conf foo : Foo {
                   |     f = { a = x }
                   |     e = x
@@ -884,8 +884,8 @@ class ConfeeBinderTest extends FunSpec with Matchers {
           )
         )
       }
-
-      ignore("should bind a reference to its closest relative in family hierarchy (3-level/reversed)") {
+      
+      it("should bind a reference to its closest relative in family hierarchy (3-level/reversed)") {
         bindAST("""conf foo : Foo {
                   |     e = { x = 6 b = { c = x } }
                   |     d = { x = 4 a = x b = { c = x x = 5 } }
@@ -905,7 +905,10 @@ class ConfeeBinderTest extends FunSpec with Matchers {
                       LiteralObject(
                         LiteralObjectItems(
                           List(
-                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(6.0))),
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(6.0))
+                            ),
                             LiteralObjectItem(
                               WordToken("b"),
                               LiteralObject(
@@ -928,8 +931,14 @@ class ConfeeBinderTest extends FunSpec with Matchers {
                       LiteralObject(
                         LiteralObjectItems(
                           List(
-                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(4.0))),
-                            LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(4.0))),
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(4.0))
+                            ),
+                            LiteralObjectItem(
+                              WordToken("a"),
+                              LiteralNumberFactor(NumberToken(4.0))
+                            ),
                             LiteralObjectItem(
                               WordToken("b"),
                               LiteralObject(
@@ -956,7 +965,10 @@ class ConfeeBinderTest extends FunSpec with Matchers {
                       LiteralObject(
                         LiteralObjectItems(
                           List(
-                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(3.0))),
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(3.0))
+                            ),
                             LiteralObjectItem(
                               WordToken("b"),
                               LiteralObject(
