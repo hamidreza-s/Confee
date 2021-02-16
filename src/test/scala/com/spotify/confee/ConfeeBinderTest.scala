@@ -595,6 +595,421 @@ class ConfeeBinderTest extends FunSpec with Matchers {
         )
       }
     }
+
+    describe("Binder on multi-level config") {
+      it("should bind a reference to its closest relative in family hierarchy (2-level)") {
+        bindAST("""conf foo : Foo {
+                  |     a = { x = 1 }
+                  |     x = 2
+                  |     b = x
+                  |     c = { x = 3 a = x }
+                  |     d = { a = x x = 4 }
+                  |     e = x
+                  |     f = { a = x }
+                  |}""".stripMargin) shouldEqual Right(
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(Left(NameToken("Foo")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(
+                      WordToken("a"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(1.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(WordToken("x"), LiteralNumberFactor(NumberToken(2.0))),
+                    ConfItem(WordToken("b"), LiteralNumberFactor(NumberToken(2.0))),
+                    ConfItem(
+                      WordToken("c"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(3.0))
+                            ),
+                            LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(3.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("d"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("a"),
+                              LiteralNumberFactor(NumberToken(4.0))
+                            ),
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(4.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(WordToken("e"), LiteralNumberFactor(NumberToken(2.0))),
+                    ConfItem(
+                      WordToken("f"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(2.0)))
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      ignore("should bind a reference to its closest relative in family hierarchy (2-level/reversed)") {
+        bindAST("""conf foo : Foo {
+                  |     f = { a = x }
+                  |     e = x
+                  |     d = { a = x x = 4 }
+                  |     c = { x = 3 a = x }
+                  |     b = x
+                  |     x = 2
+                  |     a = { x = 1 }
+                  |}""".stripMargin) shouldEqual Right(
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(Left(NameToken("Foo")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(
+                      WordToken("f"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(2.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(WordToken("e"), LiteralNumberFactor(NumberToken(2.0))),
+                    ConfItem(
+                      WordToken("d"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("a"),
+                              LiteralNumberFactor(NumberToken(4.0))
+                            ),
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(4.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("c"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(3.0))
+                            ),
+                            LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(3.0)))
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(WordToken("b"), LiteralNumberFactor(NumberToken(2.0))),
+                    ConfItem(WordToken("x"), LiteralNumberFactor(NumberToken(2.0))),
+                    ConfItem(
+                      WordToken("a"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(1.0)))
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      it("should bind a reference to its closest relative in family hierarchy (3-level)") {
+        bindAST("""conf foo : Foo {
+                  |     x = 1
+                  |     a = { b = { x = 2 c = x } }
+                  |     c = { x = 3 b = { c = x } }
+                  |     d = { x = 4 a = x b = { c = x x = 5 } }
+                  |     e = { x = 6 b = { c = x } }
+                  |}""".stripMargin) shouldEqual Right(
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(Left(NameToken("Foo")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(WordToken("x"), LiteralNumberFactor(NumberToken(1.0))),
+                    ConfItem(
+                      WordToken("a"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("x"),
+                                      LiteralNumberFactor(NumberToken(2.0))
+                                    ),
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(2.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("c"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(3.0))
+                            ),
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(3.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("d"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(4.0))
+                            ),
+                            LiteralObjectItem(
+                              WordToken("a"),
+                              LiteralNumberFactor(NumberToken(4.0))
+                            ),
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(5.0))
+                                    ),
+                                    LiteralObjectItem(
+                                      WordToken("x"),
+                                      LiteralNumberFactor(NumberToken(5.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("e"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("x"),
+                              LiteralNumberFactor(NumberToken(6.0))
+                            ),
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(6.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      ignore("should bind a reference to its closest relative in family hierarchy (3-level/reversed)") {
+        bindAST("""conf foo : Foo {
+                  |     e = { x = 6 b = { c = x } }
+                  |     d = { x = 4 a = x b = { c = x x = 5 } }
+                  |     c = { x = 3 b = { c = x } }
+                  |     a = { b = { x = 2 c = x } }
+                  |     x = 1
+                  |}""".stripMargin) shouldEqual Right(
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(Left(NameToken("Foo")), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(
+                      WordToken("e"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(6.0))),
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(6.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("d"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(4.0))),
+                            LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(4.0))),
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(5.0))
+                                    ),
+                                    LiteralObjectItem(
+                                      WordToken("x"),
+                                      LiteralNumberFactor(NumberToken(5.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("c"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(3.0))),
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(3.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      WordToken("a"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              WordToken("b"),
+                              LiteralObject(
+                                LiteralObjectItems(
+                                  List(
+                                    LiteralObjectItem(
+                                      WordToken("x"),
+                                      LiteralNumberFactor(NumberToken(2.0))
+                                    ),
+                                    LiteralObjectItem(
+                                      WordToken("c"),
+                                      LiteralNumberFactor(NumberToken(2.0))
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(WordToken("x"), LiteralNumberFactor(NumberToken(1.0)))
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+    }
   }
 
   def indexAST(input: String): List[IndexRow] = {

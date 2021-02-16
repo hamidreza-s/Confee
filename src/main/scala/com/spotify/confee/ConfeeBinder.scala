@@ -9,8 +9,9 @@ object ConfeeBinder {
     case Grammar(stmts: List[Stmt]) =>
       val index: List[IndexRow] = indexStmts(stmts)
       Try(stmts.map {
-        case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = bindConfItems(items, index))
-        case otherwise                        => otherwise
+        case confStmt @ ConfStmt(name, _, items) =>
+          confStmt.copy(items = bindConfItems(items, name :: Nil, index))
+        case otherwise => otherwise
       }) match {
         case Success(boundStmts)          => Right(Grammar(boundStmts))
         case Failure(ex: ConfeeException) => Left(ConfeeBinderError(ex.location, ex.msg))
@@ -30,7 +31,7 @@ object ConfeeBinder {
 
   case class IndexRow(
       name: WordToken,
-      parent: List[WordToken] = List.empty[WordToken],
+      parents: List[WordToken] = List.empty[WordToken],
       expr: Expr,
       hasReference: Boolean
   )
@@ -47,7 +48,7 @@ object ConfeeBinder {
           case (acc, item) =>
             indexConfItem(
               name = item.name,
-              parent = List(name),
+              parents = List(name),
               expr = item.itemVal,
               index = acc
             )
@@ -57,25 +58,25 @@ object ConfeeBinder {
   def indexConfItem(
       name: WordToken,
       expr: Expr,
-      parent: List[WordToken] = List.empty[WordToken],
+      parents: List[WordToken] = List.empty[WordToken],
       index: List[IndexRow] = List.empty[IndexRow]
   ): List[IndexRow] = expr match {
     case LiteralObject(items: LiteralObjectItems) =>
-      index ::: IndexRow(name, parent, expr, hasReference(expr)) :: indexObjectItems(
+      index ::: IndexRow(name, parents, expr, hasReference(expr)) :: indexObjectItems(
         items,
         name,
         expr,
-        parent
+        parents
       )
     case LiteralProto(_, items: LiteralObjectItems) =>
-      index ::: IndexRow(name, parent, expr, hasReference(expr)) :: indexObjectItems(
+      index ::: IndexRow(name, parents, expr, hasReference(expr)) :: indexObjectItems(
         items,
         name,
         expr,
-        parent
+        parents
       )
     case _ =>
-      index ::: IndexRow(name, parent, expr, hasReference(expr)) :: Nil
+      index ::: IndexRow(name, parents, expr, hasReference(expr)) :: Nil
   }
 
   def indexObjectItems(
@@ -85,7 +86,7 @@ object ConfeeBinder {
       parent: List[WordToken]
   ): List[IndexRow] =
     objectItems.items.flatMap { item =>
-      indexConfItem(name = item.name, expr = item.itemVal, parent = name :: parent)
+      indexConfItem(name = item.name, expr = item.itemVal, parents = name :: parent)
     }
 
   def hasReference(expr: Expr): Boolean = expr match {
@@ -112,17 +113,30 @@ object ConfeeBinder {
     case e: LiteralProto => e.items.items.exists(i => hasReference(i.itemVal))
   }
 
-  private def indexLookup(word: WordToken, pos: Position, index: List[IndexRow]): Expr = {
+  private def isSameWord(a: WordToken, b: WordToken): Boolean =
+    a.word == b.word & a.pos.line == b.pos.line & a.pos.column == b.pos.column
+
+  private def indexLookup(
+      name: WordToken,
+      pos: Position,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): Expr = {
     index
-      .find {
-        case IndexRow(name, _, _, _) =>
-          name.word.equals(word.word)
-      } match {
+      .foldLeft(List.empty[IndexRow]) {
+        case (acc, indexRow @ IndexRow(indexedName, indexedParents, _, _)) =>
+          val hasSameName              = indexedName.word.equals(name.word)
+          val hasSameExactParents      = indexedParents.eq(parents)
+          val hasSameUpperLevelParents = indexedParents.forall(parents.contains)
+          if (hasSameName & (hasSameExactParents | hasSameUpperLevelParents)) List(indexRow)
+          else acc
+      }
+      .headOption match {
       case Some(indexRow) =>
         if (indexRow.hasReference) {
           throw ConfeeException(
             Location(pos.line, pos.column),
-            s"Reference error: '${word.word}' has a circular reference"
+            s"Reference error: '${name.word}' has a circular reference"
           )
         } else {
           indexRow.expr
@@ -130,183 +144,256 @@ object ConfeeBinder {
       case None =>
         throw ConfeeException(
           Location(pos.line, pos.column),
-          s"Reference error: '${word.word}' is not defined"
+          s"Reference error: '${name.word}' is not defined"
         )
     }
   }
 
   /* ----- bind config statement items ----- */
 
-  def bindConfItems(confItems: ConfItems, index: List[IndexRow]): ConfItems =
-    ConfItems(confItems.items.map(item => bindConfItem(item, index)))
+  def bindConfItems(
+      confItems: ConfItems,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): ConfItems =
+    ConfItems(confItems.items.map(item => bindConfItem(item, parents, index)))
 
-  def bindConfItem(confItem: ConfItem, index: List[IndexRow]): ConfItem = confItem match {
-    case item @ ConfItem(_, itemVal: LiteralWord) =>
-      item.copy(itemVal = bindLiteralWord(itemVal, index))
-    case item @ ConfItem(_, itemVal: LiteralBool) =>
-      item.copy(itemVal = bindLiteralBool(itemVal, index))
-    case item @ ConfItem(_, itemVal: LiteralString) =>
-      item.copy(itemVal = bindLiteralString(itemVal, index))
-    case item @ ConfItem(_, itemVal: LiteralNumber) =>
-      item.copy(itemVal = bindLiteralNumber(itemVal, index))
-    case item @ ConfItem(_, itemVal: LiteralArray) =>
-      item.copy(itemVal = bindLiteralArray(itemVal, index))
-    case item @ ConfItem(_, itemVal: LiteralObject) =>
-      item.copy(itemVal = bindLiteralObject(itemVal, index))
-    case item @ ConfItem(_, itemVal: LiteralProto) =>
-      item.copy(itemVal = bindLiteralProto(itemVal, index))
-  }
+  def bindConfItem(confItem: ConfItem, parents: List[WordToken], index: List[IndexRow]): ConfItem =
+    confItem match {
+      case item @ ConfItem(_, itemVal: LiteralWord) =>
+        item.copy(itemVal = bindLiteralWord(itemVal, parents, index))
+      case item @ ConfItem(_, itemVal: LiteralBool) =>
+        item.copy(itemVal = bindLiteralBool(itemVal, parents, index))
+      case item @ ConfItem(_, itemVal: LiteralString) =>
+        item.copy(itemVal = bindLiteralString(itemVal, parents, index))
+      case item @ ConfItem(_, itemVal: LiteralNumber) =>
+        item.copy(itemVal = bindLiteralNumber(itemVal, parents, index))
+      case item @ ConfItem(_, itemVal: LiteralArray) =>
+        item.copy(itemVal = bindLiteralArray(itemVal, parents, index))
+      case item @ ConfItem(name, itemVal: LiteralObject) =>
+        item.copy(itemVal = bindLiteralObject(itemVal, name :: parents, index))
+      case item @ ConfItem(name, itemVal: LiteralProto) =>
+        item.copy(itemVal = bindLiteralProto(itemVal, name :: parents, index))
+    }
 
   /* ----- literal word expression ----- */
 
-  def bindLiteralWord(word: LiteralWord, index: List[IndexRow]): LiteralExpr =
-    indexLookup(word.value, word.pos, index).asInstanceOf[LiteralExpr]
+  def bindLiteralWord(
+      word: LiteralWord,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralExpr =
+    indexLookup(word.value, word.pos, parents, index).asInstanceOf[LiteralExpr]
 
   /* ----- literal bool expression ----- */
 
-  def bindLiteralBool(literalBool: LiteralBool, index: List[IndexRow]): LiteralBool =
+  def bindLiteralBool(
+      literalBool: LiteralBool,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralBool =
     literalBool match {
       case factor: LiteralBoolFactor => factor
-      case word: LiteralBoolWord     => bindLiteralBoolWord(word, index)
-      case unit: LiteralBoolUnit     => bindLiteralBoolUnit(unit, index)
-      case group: LiteralBoolGroup   => bindLiteralBoolGroup(group, index)
+      case word: LiteralBoolWord     => bindLiteralBoolWord(word, parents, index)
+      case unit: LiteralBoolUnit     => bindLiteralBoolUnit(unit, parents, index)
+      case group: LiteralBoolGroup   => bindLiteralBoolGroup(group, parents, index)
     }
 
-  def bindLiteralBoolWord(word: LiteralBoolWord, index: List[IndexRow]): LiteralBool =
-    indexLookup(word.value, word.pos, index).asInstanceOf[LiteralBool]
+  def bindLiteralBoolWord(
+      word: LiteralBoolWord,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralBool =
+    indexLookup(word.value, word.pos, parents, index).asInstanceOf[LiteralBool]
 
   @scala.annotation.tailrec
-  def bindLiteralBoolUnit(unit: LiteralBoolUnit, index: List[IndexRow]): LiteralBool = unit match {
+  def bindLiteralBoolUnit(
+      unit: LiteralBoolUnit,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralBool = unit match {
     case same @ LiteralBoolUnit(_, _: LiteralBoolFactor) => same
     case LiteralBoolUnit(operator, unit) =>
       bindLiteralBoolUnit(
         LiteralBoolUnit(
           operator = operator,
-          unit = bindLiteralBool(unit, index)
+          unit = bindLiteralBool(unit, parents, index)
         ),
+        parents,
         index
       )
   }
 
   @scala.annotation.tailrec
-  def bindLiteralBoolGroup(group: LiteralBoolGroup, index: List[IndexRow]): LiteralBool =
+  def bindLiteralBoolGroup(
+      group: LiteralBoolGroup,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralBool =
     group match {
       case same @ LiteralBoolGroup(_, _: LiteralBoolFactor, _: LiteralBoolFactor) => same
       case LiteralBoolGroup(operator, left, right) =>
         bindLiteralBoolGroup(
           LiteralBoolGroup(
             operator = operator,
-            left = bindLiteralBool(left, index),
-            right = bindLiteralBool(right, index)
+            left = bindLiteralBool(left, parents, index),
+            right = bindLiteralBool(right, parents, index)
           ),
+          parents,
           index
         )
     }
 
   /* ----- literal string expression ----- */
 
-  def bindLiteralString(literalString: LiteralString, index: List[IndexRow]): LiteralString =
+  def bindLiteralString(
+      literalString: LiteralString,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralString =
     literalString match {
       case factor: LiteralStringFactor => factor
-      case word: LiteralStringWord     => bindLiteralStringWord(word, index)
-      case group: LiteralStringGroup   => bindLiteralStringGroup(group, index)
+      case word: LiteralStringWord     => bindLiteralStringWord(word, parents, index)
+      case group: LiteralStringGroup   => bindLiteralStringGroup(group, parents, index)
     }
 
-  def bindLiteralStringWord(word: LiteralStringWord, index: List[IndexRow]): LiteralString =
-    indexLookup(word.value, word.pos, index).asInstanceOf[LiteralString]
+  def bindLiteralStringWord(
+      word: LiteralStringWord,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralString =
+    indexLookup(word.value, word.pos, parents, index).asInstanceOf[LiteralString]
 
   @scala.annotation.tailrec
-  def bindLiteralStringGroup(group: LiteralStringGroup, index: List[IndexRow]): LiteralString =
+  def bindLiteralStringGroup(
+      group: LiteralStringGroup,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralString =
     group match {
       case same @ LiteralStringGroup(_, _: LiteralStringFactor, _: LiteralStringFactor) => same
       case LiteralStringGroup(operator, left, right) =>
         bindLiteralStringGroup(
           LiteralStringGroup(
             operator = operator,
-            left = bindLiteralString(left, index),
-            right = bindLiteralString(right, index)
+            left = bindLiteralString(left, parents, index),
+            right = bindLiteralString(right, parents, index)
           ),
+          parents,
           index
         )
     }
 
   /* ----- literal number expression ----- */
 
-  def bindLiteralNumber(literalNumber: LiteralNumber, index: List[IndexRow]): LiteralNumber =
+  def bindLiteralNumber(
+      literalNumber: LiteralNumber,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralNumber =
     literalNumber match {
       case factor: LiteralNumberFactor => factor
-      case word: LiteralNumberWord     => bindLiteralNumberWord(word, index)
-      case group: LiteralNumberGroup   => bindLiteralNumberGroup(group, index)
+      case word: LiteralNumberWord     => bindLiteralNumberWord(word, parents, index)
+      case group: LiteralNumberGroup   => bindLiteralNumberGroup(group, parents, index)
     }
 
-  def bindLiteralNumberWord(word: LiteralNumberWord, index: List[IndexRow]): LiteralNumber =
-    indexLookup(word.value, word.pos, index).asInstanceOf[LiteralNumber]
+  def bindLiteralNumberWord(
+      word: LiteralNumberWord,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralNumber =
+    indexLookup(word.value, word.pos, parents, index).asInstanceOf[LiteralNumber]
 
   @scala.annotation.tailrec
-  def bindLiteralNumberGroup(group: LiteralNumberGroup, index: List[IndexRow]): LiteralNumber =
+  def bindLiteralNumberGroup(
+      group: LiteralNumberGroup,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralNumber =
     group match {
       case same @ LiteralNumberGroup(_, _: LiteralNumberFactor, _: LiteralNumberFactor) => same
       case LiteralNumberGroup(operator, left, right) =>
         bindLiteralNumberGroup(
           LiteralNumberGroup(
             operator = operator,
-            left = bindLiteralNumber(left, index),
-            right = bindLiteralNumber(right, index)
+            left = bindLiteralNumber(left, parents, index),
+            right = bindLiteralNumber(right, parents, index)
           ),
+          parents,
           index
         )
     }
 
   /* ----- literal array expression ----- */
 
-  def bindLiteralArray(literalArray: LiteralArray, index: List[IndexRow]): LiteralArray =
-    LiteralArray(literalArray.items.map(item => bindArrayItem(item, index)))
+  def bindLiteralArray(
+      literalArray: LiteralArray,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralArray =
+    LiteralArray(literalArray.items.map(item => bindArrayItem(item, parents, index)))
 
-  def bindArrayItem(arrayItem: LiteralExpr, index: List[IndexRow]): LiteralExpr = arrayItem match {
-    case literalWord: LiteralWord     => bindLiteralWord(literalWord, index)
-    case literalBool: LiteralBool     => bindLiteralBool(literalBool, index)
-    case literalString: LiteralString => bindLiteralString(literalString, index)
-    case literalNumber: LiteralNumber => bindLiteralNumber(literalNumber, index)
-    case literalArray: LiteralArray   => bindLiteralArray(literalArray, index)
-    case literalObject: LiteralObject => bindLiteralObject(literalObject, index)
-    case literalProto: LiteralProto   => bindLiteralProto(literalProto, index)
+  def bindArrayItem(
+      arrayItem: LiteralExpr,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralExpr = arrayItem match {
+    case literalWord: LiteralWord     => bindLiteralWord(literalWord, parents, index)
+    case literalBool: LiteralBool     => bindLiteralBool(literalBool, parents, index)
+    case literalString: LiteralString => bindLiteralString(literalString, parents, index)
+    case literalNumber: LiteralNumber => bindLiteralNumber(literalNumber, parents, index)
+    case literalArray: LiteralArray   => bindLiteralArray(literalArray, parents, index)
+    case literalObject: LiteralObject => bindLiteralObject(literalObject, parents, index)
+    case literalProto: LiteralProto   => bindLiteralProto(literalProto, parents, index)
   }
 
   /* ----- literal object expression ----- */
 
-  def bindLiteralObject(literalObject: LiteralObject, index: List[IndexRow]): LiteralObject =
-    literalObject.copy(items = bindLiteralObjectItems(literalObject.items, index))
+  def bindLiteralObject(
+      literalObject: LiteralObject,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralObject =
+    literalObject.copy(items = bindLiteralObjectItems(literalObject.items, parents, index))
 
   def bindLiteralObjectItems(
       literalObjectItems: LiteralObjectItems,
+      parents: List[WordToken],
       index: List[IndexRow]
   ): LiteralObjectItems =
-    LiteralObjectItems(literalObjectItems.items.map(item => bindLiteralObjectItem(item, index)))
+    LiteralObjectItems(
+      literalObjectItems.items.map(item => bindLiteralObjectItem(item, parents, index))
+    )
 
   def bindLiteralObjectItem(
       objectItem: LiteralObjectItem,
+      parents: List[WordToken],
       index: List[IndexRow]
   ): LiteralObjectItem =
     objectItem match {
       case item @ LiteralObjectItem(_, itemVal: LiteralWord) =>
-        item.copy(itemVal = bindLiteralWord(itemVal, index))
+        item.copy(itemVal = bindLiteralWord(itemVal, parents, index))
       case item @ LiteralObjectItem(_, itemVal: LiteralBool) =>
-        item.copy(itemVal = bindLiteralBool(itemVal, index))
+        item.copy(itemVal = bindLiteralBool(itemVal, parents, index))
       case item @ LiteralObjectItem(_, itemVal: LiteralString) =>
-        item.copy(itemVal = bindLiteralString(itemVal, index))
+        item.copy(itemVal = bindLiteralString(itemVal, parents, index))
       case item @ LiteralObjectItem(_, itemVal: LiteralNumber) =>
-        item.copy(itemVal = bindLiteralNumber(itemVal, index))
+        item.copy(itemVal = bindLiteralNumber(itemVal, parents, index))
       case item @ LiteralObjectItem(_, itemVal: LiteralArray) =>
-        item.copy(itemVal = bindLiteralArray(itemVal, index))
-      case item @ LiteralObjectItem(_, itemVal: LiteralObject) =>
-        item.copy(itemVal = bindLiteralObject(itemVal, index))
-      case item @ LiteralObjectItem(_, itemVal: LiteralProto) =>
-        item.copy(itemVal = bindLiteralProto(itemVal, index))
+        item.copy(itemVal = bindLiteralArray(itemVal, parents, index))
+      case item @ LiteralObjectItem(name, itemVal: LiteralObject) =>
+        item.copy(itemVal = bindLiteralObject(itemVal, name :: parents, index))
+      case item @ LiteralObjectItem(name, itemVal: LiteralProto) =>
+        item.copy(itemVal = bindLiteralProto(itemVal, name :: parents, index))
     }
 
   /* ----- literal proto expression ----- */
 
-  def bindLiteralProto(literalProto: LiteralProto, index: List[IndexRow]): LiteralProto =
-    literalProto.copy(items = bindLiteralObjectItems(literalProto.items, index))
+  def bindLiteralProto(
+      literalProto: LiteralProto,
+      parents: List[WordToken],
+      index: List[IndexRow]
+  ): LiteralProto =
+    literalProto.copy(items = bindLiteralObjectItems(literalProto.items, parents, index))
 
 }
