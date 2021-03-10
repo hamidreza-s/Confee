@@ -166,8 +166,9 @@ Here is an example to define data pipelines to be used as the `data-info.yaml` f
 The types can be used in a global space to be used by every data pipeline project:
 ```
 type DataInfo {
-     id: Text
+     projectName: Text
      description: Text
+     storage: Text
      facts: DataFact
 }
 
@@ -177,8 +178,7 @@ type DataFact {
 }
 
 type DataWorkflow {
-     id: Text
-     order: Number
+     name: Text
      account: Text
      schedule: Text
      dockerArgs: [String]
@@ -191,21 +191,30 @@ Then by importing the types and then defining the proto, we can define the confi
 import "/path/to/DataInfoTypes.confee"
 
 conf workflow : DataWorkflow {
-     order = 10
+     name = "default-workflow-name"
      account = "admin@dataflow.com"
      dockerArgs = ["--wrap-luigi", "--development"]
 }
 
 conf dataInfo : DataInfo {
-     id = "e73d6402"
+     projectName = "cool-project"
      description = "sample desc"
+     storageType = "gcs"
      facts = {
-          doc = "sample doc"
+          doc = "It is a very cool project."
           workFlows = [
-               workflow { id = "a1dc6109" order = order + 1 schedule = "monthly" },
-               workflow { id = "320a0de1" order = order + 2 schedule = "monthly" },
-               workflow { id = "ac62a310" order = order + 3 schedule = "daily" },
-               workflow { id = "68b703f8" order = order + 4 schedule = "daily" }
+               workflow { 
+                    name = projectName + ".cool-job." schedule + "." + storageType
+                    schedule = "hourly" 
+               },
+               workflow { 
+                    name = projectName + ".cool-job." + schedule + "." + storageType 
+                    schedule = "daily" 
+               },
+               workflow { 
+                    name = projectName + ".cool-job." + schedule + "." + storageType
+                    schedule = "monthly" 
+               }
           ]
      }
 }

@@ -1,6 +1,7 @@
 package com.spotify.confee
 
-import scala.collection.immutable
+import com.spotify.confee.ConfeeHelper.hasReference
+
 import scala.util.parsing.input.Position
 import scala.util.{Failure, Success, Try}
 
@@ -64,16 +65,14 @@ object ConfeeBinder {
   ): List[IndexRow] = expr match {
     case LiteralObject(items: LiteralObjectItems) =>
       index ::: IndexRow(name, parents, expr, hasReference(expr)) :: indexObjectItems(
-        items,
         name,
-        expr,
+        items,
         parents
       )
     case LiteralProto(_, items: LiteralObjectItems) =>
       index ::: IndexRow(name, parents, expr, hasReference(expr)) :: indexObjectItems(
-        items,
         name,
-        expr,
+        items,
         parents
       )
     case _ =>
@@ -81,38 +80,13 @@ object ConfeeBinder {
   }
 
   def indexObjectItems(
-      objectItems: LiteralObjectItems,
       name: WordToken,
-      expr: Expr,
-      parent: List[WordToken]
+      objectItems: LiteralObjectItems,
+      parents: List[WordToken]
   ): List[IndexRow] =
     objectItems.items.flatMap { item =>
-      indexConfItem(name = item.name, expr = item.itemVal, parents = name :: parent)
+      indexConfItem(name = item.name, expr = item.itemVal, parents = name :: parents)
     }
-
-  def hasReference(expr: Expr): Boolean = expr match {
-    // literal word expressions
-    case _: LiteralWord => true
-    // literal bool expressions
-    case _: LiteralBoolFactor => false
-    case _: LiteralBoolWord   => true
-    case e: LiteralBoolUnit   => hasReference(e.unit)
-    case e: LiteralBoolGroup  => hasReference(e.left) || hasReference(e.right)
-    // literal string expressions
-    case _: LiteralStringFactor => false
-    case _: LiteralStringWord   => true
-    case e: LiteralStringGroup  => hasReference(e.left) || hasReference(e.right)
-    // literal number expressions
-    case _: LiteralNumberFactor => false
-    case _: LiteralNumberWord   => true
-    case e: LiteralNumberGroup  => hasReference(e.left) || hasReference(e.right)
-    // literal Array expressions
-    case e: LiteralArray => e.items.exists(hasReference)
-    // literal object expressions
-    case e: LiteralObject => e.items.items.exists(i => hasReference(i.itemVal))
-    // literal proto expressions
-    case e: LiteralProto => e.items.items.exists(i => hasReference(i.itemVal))
-  }
 
   private def indexLookup(
       name: WordToken,
