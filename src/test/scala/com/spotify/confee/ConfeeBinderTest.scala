@@ -1,6 +1,6 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeBinder.IndexRow
+import com.spotify.confee.ConfeeIndexer.IndexRow
 import org.scalatest.{FunSpec, Matchers}
 
 class ConfeeBinderTest extends FunSpec with Matchers {
@@ -884,7 +884,7 @@ class ConfeeBinderTest extends FunSpec with Matchers {
           )
         )
       }
-      
+
       it("should bind a reference to its closest relative in family hierarchy (3-level/reversed)") {
         bindAST("""conf foo : Foo {
                   |     e = { x = 6 b = { c = x } }
@@ -1024,7 +1024,7 @@ class ConfeeBinderTest extends FunSpec with Matchers {
     }
   }
 
-  def indexAST(input: String): List[IndexRow] = {
+  def indexAST(input: String): List[IndexRow[Expr]] = {
     (for {
       tokens <- ConfeeLexer(input).right
       parsed <- ConfeeParser(tokens).right

@@ -1,6 +1,6 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeConstructor.IndexRow
+import com.spotify.confee.ConfeeIndexer.IndexRow
 import org.scalatest.{FunSpec, Matchers}
 
 class ConfeeConstructorTest extends FunSpec with Matchers {
@@ -295,7 +295,10 @@ class ConfeeConstructorTest extends FunSpec with Matchers {
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("index"), LiteralNumberFactor(NumberToken(1.0)))
+                          LiteralObjectItem(
+                            WordToken("index"),
+                            LiteralNumberFactor(NumberToken(1.0))
+                          )
                         )
                       )
                     )
@@ -305,7 +308,10 @@ class ConfeeConstructorTest extends FunSpec with Matchers {
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("index"), LiteralNumberFactor(NumberToken(2.0)))
+                          LiteralObjectItem(
+                            WordToken("index"),
+                            LiteralNumberFactor(NumberToken(2.0))
+                          )
                         )
                       )
                     )
@@ -319,7 +325,7 @@ class ConfeeConstructorTest extends FunSpec with Matchers {
     }
   }
 
-  def indexAST(input: String): List[IndexRow] = {
+  def indexAST(input: String): List[IndexRow[LiteralObject]] = {
     (for {
       tokens <- ConfeeLexer(input).right
       parsed <- ConfeeParser(tokens).right
