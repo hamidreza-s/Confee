@@ -1,9 +1,10 @@
 package com.spotify.confee
 
 import com.spotify.confee.ConfeeIndexer.IndexRow
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ConfeeBinderTest extends FunSpec with Matchers {
+class ConfeeBinderTest extends AnyFunSpec with Matchers {
 
   describe("Indexer on config items") {
     it("should index config items and its object or proto children WITHOUT reference") {

@@ -79,13 +79,13 @@ object ConfeeLexer extends RegexParsers {
 
   def dot: Parser[ConfeeToken] = """\.""".r ^^ { _ => DotToken() }
 
-  def singleComment: Parser[Unit] = "//" ~ rep(not("\n") ~ ".".r) ^^^ Unit
+  def singleComment: Parser[Unit] = "//" ~ rep(not("\n") ~ ".".r) ^^^ ()
 
-  def multiComment: Parser[Unit] = "/*" ~ rep(not("*/") ~ "(?s).".r) ~ "*/" ^^^ Unit
+  def multiComment: Parser[Unit] = "/*" ~ rep(not("*/") ~ "(?s).".r) ~ "*/" ^^^ ()
 
   def comment: Parser[Unit] = singleComment | multiComment
 
-  def skip: Parser[Unit] = rep(whiteSpace | comment) ^^^ Unit
+  def skip: Parser[Unit] = rep(whiteSpace | comment) ^^^ ()
 
   def token: Parser[ConfeeToken] = positioned {
     string | number | trueBool | falseBool |

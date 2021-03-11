@@ -1,8 +1,10 @@
 package com.spotify.confee
 
-import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ConfeeParserTest extends FunSpec with Matchers with BeforeAndAfterEach {
+class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach {
 
   describe("Parser on type statement") {
 

@@ -1,8 +1,9 @@
 package com.spotify.confee
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ConfeeEvaluatorTest extends FunSpec with Matchers {
+class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
 
   describe("Evaluator on literal bool (bitwise)") {
     it("should evaluate bitwise operator on literal bool group") {

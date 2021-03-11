@@ -1,8 +1,9 @@
 package com.spotify.confee
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ConfeeFormatterTest extends FunSpec with Matchers {
+class ConfeeFormatterTest extends AnyFunSpec with Matchers {
   describe("JSON Formatter") {
     it("should format a config with bool, number, string, array and object") {
       formatJSON(
