@@ -128,12 +128,12 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
       target: ConfeeCompiler.Target
   ): Either[ConfeeError, String] = {
     for {
-      tokens      <- ConfeeLexer(input).right
-      parsed      <- ConfeeParser(tokens).right
-      bound       <- ConfeeBinder(parsed).right
-      evaluated   <- ConfeeEvaluator(bound).right
-      constructed <- ConfeeConstructor(evaluated).right
-      checked     <- ConfeeChecker(constructed).right
+      tokens      <- ConfeeLexer(input)
+      parsed      <- ConfeeParser(tokens)
+      bound       <- ConfeeBinder(parsed)
+      evaluated   <- ConfeeEvaluator(bound)
+      constructed <- ConfeeConstructor(evaluated)
+      checked     <- ConfeeChecker(constructed)
       formatted   <- ConfeeFormatter(checked, conf, target)
     } yield formatted
   }

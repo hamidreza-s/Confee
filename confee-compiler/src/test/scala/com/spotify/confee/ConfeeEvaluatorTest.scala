@@ -615,8 +615,8 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
 
   def evaluatedAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
-      tokens    <- ConfeeLexer(input).right
-      parsed    <- ConfeeParser(tokens).right
+      tokens    <- ConfeeLexer(input)
+      parsed    <- ConfeeParser(tokens)
       evaluated <- ConfeeEvaluator(parsed)
     } yield evaluated
   }

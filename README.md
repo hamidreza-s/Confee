@@ -4,6 +4,85 @@ Confee
 Type safe, prototypal, modular alternative to config files. 
 A Confee notation file is compiled to JSON, YAML or other config notation files.
 
+Here is an example to define data pipelines to be used as the `data-info.yaml` for Luigi.
+The types can be used in a global space to be used by every data pipeline project:
+```
+type DataInfo {
+     projectName: Text
+     description: Text
+     storage: Text
+     facts: DataFact
+}
+
+type DataFact {
+     doc: Text
+     workFlows: [DataWorkflow]
+}
+
+type DataWorkflow {
+     name: Text
+     account: Text
+     schedule: Text
+     dockerArgs: [String]
+}
+```
+
+Then by importing the types and then defining the proto, we can define the configs:
+
+```
+import "/path/to/DataInfoTypes.confee"
+
+conf workflow : DataWorkflow {
+     name = "default-workflow-name"
+     account = "admin@dataflow.com"
+     dockerArgs = ["--wrap-luigi", "--development"]
+}
+
+conf dataInfo : DataInfo {
+     projectName = "cool-project"
+     description = "sample desc"
+     storageType = "gcs"
+     facts = {
+          doc = "It is a very cool project."
+          workFlows = [
+               workflow { 
+                    name = projectName + ".cool-job." schedule + "." + storageType
+                    schedule = "hourly" 
+               },
+               workflow { 
+                    name = projectName + ".cool-job." + schedule + "." + storageType 
+                    schedule = "daily" 
+               },
+               workflow { 
+                    name = projectName + ".cool-job." + schedule + "." + storageType
+                    schedule = "monthly" 
+               }
+          ]
+     }
+}
+```
+
+Confee CLI
+===
+
+Confee config files can be compiled using `confee-cli` with the following flags:
+```
+confeec - Confee Compiler 0.0.1
+Usage: confeec [options]
+
+  -c, --config <name>     config name to be formatted
+  -t, --target JSON|YAML  target format of confee file
+  -i, --input <path>      path to confee input file
+  -o, --output <path>     path to confee output file (optional)
+  --help                  prints this usage text
+```
+
+It can be executed by `sbt` from the root path of the project and prints the compiled config file
+when then output path flag is not set:
+```
+# sbt 'confee-cli/run -c dataInfo -i ./confee-cli/src/main/resources/example/data-info.confee -t JSON'
+```
+
 Core features
 ==
 
@@ -156,89 +235,6 @@ override its fields.
                            | <exprLiteralObjectItem>
 
 <exprLiteralProto> ::= <word> <exprLiteralObject> 
-```
-
-Example
-===
-
-Here is an example to define data pipelines to be used as the `data-info.yaml` for Luigi.
-
-The types can be used in a global space to be used by every data pipeline project:
-```
-type DataInfo {
-     projectName: Text
-     description: Text
-     storage: Text
-     facts: DataFact
-}
-
-type DataFact {
-     doc: Text
-     workFlows: [DataWorkflow]
-}
-
-type DataWorkflow {
-     name: Text
-     account: Text
-     schedule: Text
-     dockerArgs: [String]
-}
-```
-
-Then by importing the types and then defining the proto, we can define the configs:
-
-```
-import "/path/to/DataInfoTypes.confee"
-
-conf workflow : DataWorkflow {
-     name = "default-workflow-name"
-     account = "admin@dataflow.com"
-     dockerArgs = ["--wrap-luigi", "--development"]
-}
-
-conf dataInfo : DataInfo {
-     projectName = "cool-project"
-     description = "sample desc"
-     storageType = "gcs"
-     facts = {
-          doc = "It is a very cool project."
-          workFlows = [
-               workflow { 
-                    name = projectName + ".cool-job." schedule + "." + storageType
-                    schedule = "hourly" 
-               },
-               workflow { 
-                    name = projectName + ".cool-job." + schedule + "." + storageType 
-                    schedule = "daily" 
-               },
-               workflow { 
-                    name = projectName + ".cool-job." + schedule + "." + storageType
-                    schedule = "monthly" 
-               }
-          ]
-     }
-}
-```
-
-Confee CLI
-===
-
-Confee config files can be compiled using `confee-cli` with the following flags:
-```
-confeec - Confee Compiler 0.0.1
-Usage: confeec [options]
-
-  -c, --config <name>     config name to be formatted
-  -t, --target JSON|YAML  target format of confee file
-  -i, --input <path>      path to confee input file
-  -o, --output <path>     path to confee output file (optional)
-  --help                  prints this usage text
-```
-
-It can be executed by `sbt` from the root path of the project and prints the compiled config file 
-when then output path flag is not set:
-```
-# sbt 'confee-cli/run -c dataInfo -i ./confee-cli/src/main/resources/example/data-info.confee -t JSON'
 ```
 
 Copyright

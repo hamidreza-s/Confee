@@ -1036,7 +1036,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
 
   def assertAST(input: String, expectedOutput: ConfeeAST): Unit = {
     (for {
-      tokens <- ConfeeLexer(input).right
+      tokens <- ConfeeLexer(input)
       ast    <- ConfeeParser(tokens)
     } yield ast) match {
       case Right(ast)  => ast shouldEqual expectedOutput

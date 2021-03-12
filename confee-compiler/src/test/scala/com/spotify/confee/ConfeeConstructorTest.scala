@@ -404,8 +404,8 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
 
   def indexAST(input: String): List[IndexRow[LiteralObject]] = {
     (for {
-      tokens <- ConfeeLexer(input).right
-      parsed <- ConfeeParser(tokens).right
+      tokens <- ConfeeLexer(input)
+      parsed <- ConfeeParser(tokens)
     } yield parsed) match {
       case Right(Grammar(stmts: List[Stmt])) => ConfeeConstructor.indexObjects(stmts)
       case error                             => fail(error.toString)
@@ -414,12 +414,12 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
 
   def constructedAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
-      tokens      <- ConfeeLexer(input).right
-      parsed      <- ConfeeParser(tokens).right
-      linked      <- ConfeeLinker(parsed).right
-      bound       <- ConfeeBinder(linked).right
-      evaluated   <- ConfeeEvaluator(bound).right
-      constructed <- ConfeeConstructor(evaluated).right
+      tokens      <- ConfeeLexer(input)
+      parsed      <- ConfeeParser(tokens)
+      linked      <- ConfeeLinker(parsed)
+      bound       <- ConfeeBinder(linked)
+      evaluated   <- ConfeeEvaluator(bound)
+      constructed <- ConfeeConstructor(evaluated)
     } yield constructed
   }
 

@@ -5,10 +5,6 @@ object ConfeeCompiler {
   sealed trait Target
   case object JSON extends Target
   case object YAML extends Target
-  case object SQL extends Target
-  case object INI extends Target
-  case object PYTHON extends Target
-  case object RUBY extends Target
 
   // TODO: Make binding to work regardless of value definition order [done]
   // TODO: Proto literal must be converted to object in binding/evaluator step [done]
@@ -46,11 +42,7 @@ object ConfeeCompiler {
     //  - checker (type) -> ast [wip]
     //  - generator (lint, optimize, etc.) -> irc [skipped]
     //  - formatter (conf, target) -> json [done]
-    //  - formatter (conf, target) -> yaml [wip]
-    //  - formatter (conf, target) -> sql [wip]
-    //  - formatter (conf, target) -> ini [wip]
-    //  - formatter (conf, target) -> python [wip]
-    //  - formatter (conf, target) -> ruby [wip]
+    //  - formatter (conf, target) -> yaml [done]
     for {
       tokens      <- ConfeeLexer(code)
       parsed      <- ConfeeParser(tokens)

@@ -1027,8 +1027,8 @@ class ConfeeBinderTest extends AnyFunSpec with Matchers {
 
   def indexAST(input: String): List[IndexRow[Expr]] = {
     (for {
-      tokens <- ConfeeLexer(input).right
-      parsed <- ConfeeParser(tokens).right
+      tokens <- ConfeeLexer(input)
+      parsed <- ConfeeParser(tokens)
     } yield parsed) match {
       case Right(Grammar(stmts: List[Stmt])) => ConfeeBinder.indexStmts(stmts)
       case error                             => fail(error.toString)
@@ -1037,8 +1037,8 @@ class ConfeeBinderTest extends AnyFunSpec with Matchers {
 
   def bindAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
-      tokens <- ConfeeLexer(input).right
-      parsed <- ConfeeParser(tokens).right
+      tokens <- ConfeeLexer(input)
+      parsed <- ConfeeParser(tokens)
       bound  <- ConfeeBinder(parsed)
     } yield bound
   }

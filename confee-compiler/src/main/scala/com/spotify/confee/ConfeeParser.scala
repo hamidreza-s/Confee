@@ -20,10 +20,14 @@ object ConfeeParser extends Parsers {
   def apply(tokens: Seq[ConfeeToken]): Either[ConfeeParserError, ConfeeAST] = {
     val reader: ConfeeTokenReader = new ConfeeTokenReader(tokens)
     grammar(reader) match {
+      case Success(result, _) =>
+        Right(result)
       case NoSuccess(msg, next) =>
         Left(ConfeeParserError(Location(next.pos.line, next.pos.column), msg))
-      case Success(result, next) =>
-        Right(result)
+      case Error(msg, next) =>
+        Left(ConfeeParserError(Location(next.pos.line, next.pos.column), msg))
+      case Failure(msg, next) =>
+        Left(ConfeeParserError(Location(next.pos.line, next.pos.column), msg))
     }
   }
 
@@ -35,7 +39,9 @@ object ConfeeParser extends Parsers {
 
     val a = stmt ~ grammar ^^ { case x ~ xs => Grammar(x :: xs.stmts) }
 
-    val b = stmt ^^ { x => Grammar(x :: List.empty) }
+    val b = stmt ^^ { x =>
+      Grammar(x :: List.empty)
+    }
 
     a | b
   }
@@ -62,7 +68,7 @@ object ConfeeParser extends Parsers {
 
     val b = opt(typeStmtItem) ^^ {
       case Some(x) => TypeItems(x :: List.empty)
-      case None => TypeItems(List.empty)
+      case None    => TypeItems(List.empty)
     }
 
     a | b
@@ -95,7 +101,7 @@ object ConfeeParser extends Parsers {
 
     val b = opt(confStmtItem) ^^ {
       case Some(x) => ConfItems(x :: List.empty)
-      case None => ConfItems(List.empty)
+      case None    => ConfItems(List.empty)
     }
 
     a | b
@@ -107,9 +113,13 @@ object ConfeeParser extends Parsers {
 
   def confStmtType: Parser[TypeDef] = positioned {
 
-    val a = word ^^ { w => TypeDef(Right(w), isList = false) }
+    val a = word ^^ { w =>
+      TypeDef(Right(w), isList = false)
+    }
 
-    val b = name ^^ { n => TypeDef(Left(n), isList = false) }
+    val b = name ^^ { n =>
+      TypeDef(Left(n), isList = false)
+    }
 
     a | b
   }
@@ -130,13 +140,15 @@ object ConfeeParser extends Parsers {
 
   def exprLiteral: Parser[LiteralExpr] = positioned {
     exprLiteralBool ||| exprLiteralString ||| exprLiteralNumber |||
-    exprLiteralArray ||| exprLiteralObject ||| exprLiteralProto ||| exprLiteralWord
+      exprLiteralArray ||| exprLiteralObject ||| exprLiteralProto ||| exprLiteralWord
   }
 
   /* ----- literal word expression ----- */
 
   def exprLiteralWord: Parser[LiteralWord] = positioned {
-    word ^^ { w => LiteralWord(w) }
+    word ^^ { w =>
+      LiteralWord(w)
+    }
   }
 
   /* ----- literal boolean (bitwise) expression ----- */
@@ -159,7 +171,9 @@ object ConfeeParser extends Parsers {
       case x ~ op ~ y => LiteralBoolGroup(op, x, y)
     }
 
-    val e = exprLiteralBoolFactor ^^ { f => f }
+    val e = exprLiteralBoolFactor ^^ { f =>
+      f
+    }
 
     a | b | c | d | e
   }
@@ -168,26 +182,40 @@ object ConfeeParser extends Parsers {
 
     val a = parenthesesOpen ~ exprLiteralBool ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
 
-    val b = trueBool ^^ { f => LiteralBoolFactor(f) }
+    val b = trueBool ^^ { f =>
+      LiteralBoolFactor(f)
+    }
 
-    val c = falseBool ^^ { f => LiteralBoolFactor(f) }
+    val c = falseBool ^^ { f =>
+      LiteralBoolFactor(f)
+    }
 
-    val d = word ^^ { w => LiteralBoolWord(w) }
+    val d = word ^^ { w =>
+      LiteralBoolWord(w)
+    }
 
     a | b | c | d
   }
 
   def exprLiteralBoolUnaryOperator: Parser[LiteralBoolUnaryOperator] = positioned {
-    not ^^ { _ => LiteralBoolOperatorNot() }
+    not ^^ { _ =>
+      LiteralBoolOperatorNot()
+    }
   }
 
   def exprLiteralBoolBinaryOperator: Parser[LiteralBoolBinaryOperator] = positioned {
 
-    val a = and ^^ { _ => LiteralBoolOperatorAnd() }
+    val a = and ^^ { _ =>
+      LiteralBoolOperatorAnd()
+    }
 
-    val b = or ^^ { _ => LiteralBoolOperatorOr() }
+    val b = or ^^ { _ =>
+      LiteralBoolOperatorOr()
+    }
 
-    val c = xor ^^ { _ => LiteralBoolOperatorXor() }
+    val c = xor ^^ { _ =>
+      LiteralBoolOperatorXor()
+    }
 
     a | b | c
   }
@@ -204,7 +232,9 @@ object ConfeeParser extends Parsers {
       case x ~ op ~ y => LiteralStringGroup(op, x, y)
     }
 
-    val c = exprLiteralStringFactor ^^ { f => f }
+    val c = exprLiteralStringFactor ^^ { f =>
+      f
+    }
 
     a | b | c
   }
@@ -213,18 +243,26 @@ object ConfeeParser extends Parsers {
 
     val a = parenthesesOpen ~ exprLiteralString ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
 
-    val b = string ^^ { s => LiteralStringFactor(s) }
+    val b = string ^^ { s =>
+      LiteralStringFactor(s)
+    }
 
-    val c = word ^^ { w => LiteralStringWord(w) }
+    val c = word ^^ { w =>
+      LiteralStringWord(w)
+    }
 
     a | b | c
   }
 
   def exprLiteralStringOperator: Parser[LiteralStringOperator] = positioned {
 
-    val a = addition ^^ { _ => LiteralStringOperatorConcat() }
+    val a = addition ^^ { _ =>
+      LiteralStringOperatorConcat()
+    }
 
-    val b = subtraction ^^ { _ => LiteralStringOperatorRemove() }
+    val b = subtraction ^^ { _ =>
+      LiteralStringOperatorRemove()
+    }
 
     a | b
   }
@@ -241,7 +279,9 @@ object ConfeeParser extends Parsers {
       case x ~ op ~ y => LiteralNumberGroup(op, x, y)
     }
 
-    val c = exprLiteralNumberFactor ^^ { f => f }
+    val c = exprLiteralNumberFactor ^^ { f =>
+      f
+    }
 
     a | b | c
   }
@@ -250,24 +290,38 @@ object ConfeeParser extends Parsers {
 
     val a = parenthesesOpen ~ exprLiteralNumber ~ parenthesesClose ^^ { case _ ~ e ~ _ => e }
 
-    val b = number ^^ { n => LiteralNumberFactor(n) }
+    val b = number ^^ { n =>
+      LiteralNumberFactor(n)
+    }
 
-    val c = word ^^ { w => LiteralNumberWord(w) }
+    val c = word ^^ { w =>
+      LiteralNumberWord(w)
+    }
 
     a | b | c
   }
 
   def exprLiteralNumberOperator: Parser[LiteralNumberOperator] = positioned {
 
-    val a = addition ^^ { _ => LiteralNumberOperatorAdd() }
+    val a = addition ^^ { _ =>
+      LiteralNumberOperatorAdd()
+    }
 
-    val b = subtraction ^^ { _ => LiteralNumberOperatorSub() }
+    val b = subtraction ^^ { _ =>
+      LiteralNumberOperatorSub()
+    }
 
-    val c = division ^^ { _ => LiteralNumberOperatorDiv() }
+    val c = division ^^ { _ =>
+      LiteralNumberOperatorDiv()
+    }
 
-    val d = multiplication ^^ { _ => LiteralNumberOperatorMul() }
+    val d = multiplication ^^ { _ =>
+      LiteralNumberOperatorMul()
+    }
 
-    val e = modulus ^^ { _ => LiteralNumberOperatorMod() }
+    val e = modulus ^^ { _ =>
+      LiteralNumberOperatorMod()
+    }
 
     a | b | c | d | e
   }
@@ -283,12 +337,12 @@ object ConfeeParser extends Parsers {
   def exprLiteralArrayItems: Parser[LiteralArray] = positioned {
 
     val a = exprLiteralArrayItem ~ separator ~ exprLiteralArrayItems ^^ {
-      case x ~ _ ~  xs => LiteralArray(x :: xs.items)
+      case x ~ _ ~ xs => LiteralArray(x :: xs.items)
     }
 
     val b = opt(exprLiteralArrayItem) ^^ {
       case Some(x) => LiteralArray(x :: List.empty)
-      case None => LiteralArray(List.empty)
+      case None    => LiteralArray(List.empty)
     }
 
     a | b
@@ -314,7 +368,7 @@ object ConfeeParser extends Parsers {
 
     val b = opt(exprLiteralObjectItem) ^^ {
       case Some(x) => LiteralObjectItems(x :: List.empty)
-      case None => LiteralObjectItems(List.empty)
+      case None    => LiteralObjectItems(List.empty)
     }
 
     a | b
@@ -333,123 +387,123 @@ object ConfeeParser extends Parsers {
   /* ========== AST terminals ========== */
 
   def string: Parser[StringToken] = positioned {
-    accept("string", { case token@StringToken(_) => token })
+    accept("string", { case token @ StringToken(_) => token })
   }
 
   def number: Parser[NumberToken] = positioned {
-    accept("number", { case token@NumberToken(_) => token })
+    accept("number", { case token @ NumberToken(_) => token })
   }
 
   def trueBool: Parser[BoolToken] = positioned {
-    accept("trueBool", { case token@BoolToken(_) => token })
+    accept("trueBool", { case token @ BoolToken(_) => token })
   }
 
   def falseBool: Parser[BoolToken] = positioned {
-    accept("falseBool", { case token@BoolToken(_) => token })
+    accept("falseBool", { case token @ BoolToken(_) => token })
   }
 
   def not: Parser[NotToken] = positioned {
-    accept("not", { case token@NotToken() => token })
+    accept("not", { case token @ NotToken() => token })
   }
 
   def and: Parser[AndToken] = positioned {
-    accept("and", { case token@AndToken() => token })
+    accept("and", { case token @ AndToken() => token })
   }
 
   def or: Parser[OrToken] = positioned {
-    accept("or", { case token@OrToken() => token })
+    accept("or", { case token @ OrToken() => token })
   }
 
   def xor: Parser[XorToken] = positioned {
-    accept("xor", { case token@XorToken() => token })
+    accept("xor", { case token @ XorToken() => token })
   }
 
   def typeKeyword: Parser[TypeKeywordToken] = positioned {
-    accept("typeKeyword", { case token@TypeKeywordToken() => token })
+    accept("typeKeyword", { case token @ TypeKeywordToken() => token })
   }
 
   def confKeyword: Parser[ConfKeywordToken] = positioned {
-    accept("confKeyword", { case token@ConfKeywordToken() => token })
+    accept("confKeyword", { case token @ ConfKeywordToken() => token })
   }
 
   def importKeyword: Parser[ImportKeywordToken] = positioned {
-    accept("importKeyword", { case token@ImportKeywordToken() => token })
+    accept("importKeyword", { case token @ ImportKeywordToken() => token })
   }
 
   def word: Parser[WordToken] = positioned {
-    accept("word", { case token@WordToken(_) => token })
+    accept("word", { case token @ WordToken(_) => token })
   }
 
   def name: Parser[NameToken] = positioned {
-    accept("name", { case token@NameToken(_) => token })
+    accept("name", { case token @ NameToken(_) => token })
   }
 
   def addition: Parser[AdditionToken] = positioned {
-    accept("addition", { case token@AdditionToken() => token })
+    accept("addition", { case token @ AdditionToken() => token })
   }
 
   def subtraction: Parser[SubtractionToken] = positioned {
-    accept("subtraction", { case token@SubtractionToken() => token })
+    accept("subtraction", { case token @ SubtractionToken() => token })
   }
 
   def division: Parser[DivisionToken] = positioned {
-    accept("division", { case token@DivisionToken() => token })
+    accept("division", { case token @ DivisionToken() => token })
   }
 
   def multiplication: Parser[MultiplicationToken] = positioned {
-    accept("multiplication", { case token@MultiplicationToken() => token })
+    accept("multiplication", { case token @ MultiplicationToken() => token })
   }
 
   def modulus: Parser[ModulusToken] = positioned {
-    accept("modulus", { case token@ModulusToken() => token })
+    accept("modulus", { case token @ ModulusToken() => token })
   }
 
   def assignment: Parser[AssignmentToken] = positioned {
-    accept("assignment", { case token@AssignmentToken() => token })
+    accept("assignment", { case token @ AssignmentToken() => token })
   }
 
   def parenthesesOpen: Parser[ParenthesesOpenToken] = positioned {
-    accept("parenthesesOpen", { case token@ParenthesesOpenToken() => token })
+    accept("parenthesesOpen", { case token @ ParenthesesOpenToken() => token })
   }
 
   def parenthesesClose: Parser[ParenthesesCloseToken] = positioned {
-    accept("parenthesesClose", { case token@ParenthesesCloseToken() => token })
+    accept("parenthesesClose", { case token @ ParenthesesCloseToken() => token })
   }
 
   def bracketOpen: Parser[BracketOpenToken] = positioned {
-    accept("bracketOpen", { case token@BracketOpenToken() => token })
+    accept("bracketOpen", { case token @ BracketOpenToken() => token })
   }
 
   def bracketClose: Parser[BracketCloseToken] = positioned {
-    accept("bracketClose", { case token@BracketCloseToken() => token })
+    accept("bracketClose", { case token @ BracketCloseToken() => token })
   }
 
   def braceOpen: Parser[BraceOpenToken] = positioned {
-    accept("braceOpen", { case token@BraceOpenToken() => token })
+    accept("braceOpen", { case token @ BraceOpenToken() => token })
   }
 
   def braceClose: Parser[BraceCloseToken] = positioned {
-    accept("braceClose", { case token@BraceCloseToken() => token })
+    accept("braceClose", { case token @ BraceCloseToken() => token })
   }
 
   def separator: Parser[SeparatorToken] = positioned {
-    accept("separator", { case token@SeparatorToken() => token })
+    accept("separator", { case token @ SeparatorToken() => token })
   }
 
   def colon: Parser[ColonToken] = positioned {
-    accept("colon", { case token@ColonToken() => token })
+    accept("colon", { case token @ ColonToken() => token })
   }
 
   def semiColon: Parser[SemiColonToken] = positioned {
-    accept("semiColon", { case token@SemiColonToken() => token })
+    accept("semiColon", { case token @ SemiColonToken() => token })
   }
 
   def hash: Parser[HashToken] = positioned {
-    accept("hash", { case token@HashToken() => token })
+    accept("hash", { case token @ HashToken() => token })
   }
 
   def dot: Parser[DotToken] = positioned {
-    accept("dot", { case token@DotToken() => token })
+    accept("dot", { case token @ DotToken() => token })
   }
 
 }
