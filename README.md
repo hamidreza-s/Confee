@@ -220,9 +220,30 @@ conf dataInfo : DataInfo {
 }
 ```
 
+Confee CLI
+===
+
+Confee config files can be compiled using `confee-cli` with the following flags:
+```
+confeec - Confee Compiler 0.0.1
+Usage: confeec [options]
+
+  -c, --config <name>     config name to be formatted
+  -t, --target JSON|YAML  target format of confee file
+  -i, --input <path>      path to confee input file
+  -o, --output <path>     path to confee output file (optional)
+  --help                  prints this usage text
+```
+
+It can be executed by `sbt` from the root path of the project and prints the compiled config file 
+when then output path flag is not set:
+```
+# sbt 'confee-cli/run -c dataInfo -i ./confee-cli/src/main/resources/example/data-info.confee -t JSON'
+```
+
 Copyright
 ===
 
 ```
-Copyright (c) 2019 Spotify AB
+Copyright (c) 2021 Spotify AB
 ```

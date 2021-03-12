@@ -1,11 +1,12 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "2.13.4"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
-ThisBuild / organizationName := "example"
+ThisBuild / scalaVersion := "2.13.4"
+ThisBuild / version := "0.0.1-SNAPSHOT"
+ThisBuild / organization := "com.spotify"
+ThisBuild / organizationName := "spotify"
 
-lazy val root = (project in file("."))
+lazy val root = project
+  .in(file("."))
   .settings(name := "confee-parent")
   .aggregate(`confee-compiler`, `confee-cli`)
 
@@ -28,9 +29,8 @@ lazy val `confee-cli` = project
   .in(file("confee-cli"))
   .settings(
     name := "confee-cli",
-    libraryDependencies ++=Seq(
-      "com.github.scopt" %%% "scopt" % "4.0.1" % Compile
+    libraryDependencies ++= Seq(
+      scopt % Compile
     )
   )
-  .enablePlugins(ScalaNativePlugin)
   .dependsOn(`confee-compiler`)

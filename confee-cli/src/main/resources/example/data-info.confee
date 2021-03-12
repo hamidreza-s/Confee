@@ -1,0 +1,17 @@
+conf dataInfo : DataInfo {
+     id = "e73d6402"
+     description = "sample desc"
+     workflow = {
+          account = "admin@dataflow.com"
+          dockerArgs = ["--wrap-luigi"]
+     }
+     facts = {
+          doc = "sample doc"
+          workFlows = [
+               workflow { id = "a1dc6109" schedule = "monthly" },
+               workflow { id = "320a0de1" schedule = "monthly" },
+               workflow { id = "ac62a310" schedule = "daily" },
+               workflow { id = "68b703f8" schedule = "daily" }
+          ]
+     }
+}

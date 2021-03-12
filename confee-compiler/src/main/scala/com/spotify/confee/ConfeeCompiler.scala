@@ -17,9 +17,10 @@ object ConfeeCompiler {
   // TODO: Type should just start with Uppercase (fix test and readme)
   // TODO: Conf Value should always start with Lowercase (fix test and readme)
   // TODO: Conf value should accept array value as well as obj
-  // TODO: add "private" keyword for the items you don't want to expose
-  // TODO: add "proto." keyword for proto items to get access to items of referenced objects
-  // TODO: add unit tests for ConfeeHelper/ConfeeIndexer
+  // TODO: Add "private" keyword for the items you don't want to expose
+  // TODO: Add "proto." keyword for proto items to get access to items of referenced objects
+  // TODO: Add unit tests for ConfeeHelper/ConfeeIndexer
+  // TODO: Make compiler/cli compatible with ScalaNative
 
   /** Compiler Steps:
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns
