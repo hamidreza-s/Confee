@@ -1,11 +1,18 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeCompiler.JSON
+import com.spotify.confee.ConfeeCompiler.{JSON, Target, YAML}
 import io.circe.Json
+import io.circe.yaml.syntax._
 
 import scala.util.{Failure, Success, Try}
 
 object ConfeeFormatter {
+
+  /* ----- to yaml formatter ----- */
+
+  def toYaml(confStmt: ConfStmt): Either[ConfeeError, YamlSyntax] = toJson(confStmt).map(_.asYaml)
+
+  /* ----- to json formatter ----- */
 
   def toJsonLiteralBoolFactor(literalBoolFactor: LiteralBoolFactor): Json =
     Json.fromBoolean(literalBoolFactor.value.value)
@@ -54,7 +61,7 @@ object ConfeeFormatter {
         )
     }
 
-  def toJson(confStmt: ConfStmt): Either[ConfeeError, String] =
+  def toJson(confStmt: ConfStmt): Either[ConfeeError, Json] =
     Try(confStmt.items.items.map {
       case ConfItem(name, itemVal: LiteralBoolFactor) =>
         (name.word, toJsonLiteralBoolFactor(itemVal))
@@ -72,7 +79,7 @@ object ConfeeFormatter {
           "Not allowed literal expression in formatting step!"
         )
     }) match {
-      case Success(items)               => Right(Json.obj(items: _*).spaces4)
+      case Success(items)               => Right(Json.obj(items: _*))
       case Failure(ex: ConfeeException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
       case Failure(ex)                  => Left(ConfeeUnknownError(ex))
     }
@@ -95,16 +102,17 @@ object ConfeeFormatter {
       )
   }
 
-  def formatConf(confStmt: ConfStmt, target: ConfeeCompiler.Target): Either[ConfeeError, String] =
+  def formatConf(confStmt: ConfStmt, target: Target): Either[ConfeeError, String] =
     target match {
-      case JSON => toJson(confStmt)
+      case JSON => toJson(confStmt).map(_.spaces4)
+      case YAML => toYaml(confStmt).map(_.spaces4)
       case _    => Left(ConfeeNotImplementedError(s"$target target is not implemented!"))
     }
 
   def apply(
       ast: ConfeeAST,
       conf: String,
-      target: ConfeeCompiler.Target
+      target: Target
   ): Either[ConfeeError, String] = pickConf(ast, conf) match {
     case Right(confStmt) => formatConf(confStmt, target)
     case Left(error)     => Left(error)

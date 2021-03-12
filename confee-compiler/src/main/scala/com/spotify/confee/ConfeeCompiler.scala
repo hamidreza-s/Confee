@@ -52,15 +52,15 @@ object ConfeeCompiler {
     //  - formatter (conf, target) -> python [wip]
     //  - formatter (conf, target) -> ruby [wip]
     for {
-      tokens      <- ConfeeLexer(code).right
-      parsed      <- ConfeeParser(tokens).right
-      linked      <- ConfeeLinker(parsed).right
-      bound       <- ConfeeBinder(linked).right
-      evaluated   <- ConfeeEvaluator(bound).right
-      constructed <- ConfeeConstructor(evaluated).right
-      executed    <- ConfeeExecutor(constructed).right
-      checked     <- ConfeeChecker(executed).right
-      output      <- ConfeeFormatter(checked, conf, target).right
+      tokens      <- ConfeeLexer(code)
+      parsed      <- ConfeeParser(tokens)
+      linked      <- ConfeeLinker(parsed)
+      bound       <- ConfeeBinder(linked)
+      evaluated   <- ConfeeEvaluator(bound)
+      constructed <- ConfeeConstructor(evaluated)
+      executed    <- ConfeeExecutor(constructed)
+      checked     <- ConfeeChecker(executed)
+      output      <- ConfeeFormatter(checked, conf, target)
     } yield output
 
 }
