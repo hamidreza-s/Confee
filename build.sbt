@@ -18,7 +18,9 @@ lazy val `confee-compiler` = project
       circeCore         % Compile,
       circeGeneric      % Compile,
       circeParser       % Compile,
-      scalaTest         % Test
+      scopt             % Compile,
+      scalaTest         % Test,
+      scalactic         % Test
     )
   )
 

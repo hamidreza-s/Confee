@@ -90,12 +90,34 @@ object ConfeeConstructor {
       index: List[IndexRow[LiteralObject]]
   ): ConfItem =
     confItem match {
+      case item @ ConfItem(name, itemVal: LiteralArray) =>
+        item.copy(itemVal = constructLiteralArray(itemVal, name :: parents, index))
       case item @ ConfItem(name, itemVal: LiteralObject) =>
         item.copy(itemVal = constructLiteralObject(itemVal, name :: parents, index))
       case item @ ConfItem(name, itemVal: LiteralProto) =>
         item.copy(itemVal = constructLiteralProto(itemVal, name :: parents, index))
       case item => item
     }
+
+  /* ----- construct literal expression ----- */
+
+  def constructLiteralArray(
+      literalArray: LiteralArray,
+      parents: List[WordToken],
+      index: List[IndexRow[LiteralObject]]
+  ): LiteralArray =
+    LiteralArray(literalArray.items.map(constructLiteralArrayItem(_, parents, index)))
+
+  def constructLiteralArrayItem(
+      arrayItem: LiteralExpr,
+      parents: List[WordToken],
+      index: List[IndexRow[LiteralObject]]
+  ): LiteralExpr = arrayItem match {
+    case literalArray: LiteralArray   => constructLiteralArray(literalArray, parents, index)
+    case literalObject: LiteralObject => constructLiteralObject(literalObject, parents, index)
+    case literalProto: LiteralProto   => constructLiteralProto(literalProto, parents, index)
+    case item                         => item
+  }
 
   /* ----- construct object expression ----- */
 
@@ -121,6 +143,8 @@ object ConfeeConstructor {
       index: List[IndexRow[LiteralObject]]
   ): LiteralObjectItem =
     objectItem match {
+      case item @ LiteralObjectItem(name, itemVal: LiteralArray) =>
+        item.copy(itemVal = constructLiteralArray(itemVal, name :: parents, index))
       case item @ LiteralObjectItem(name, itemVal: LiteralObject) =>
         item.copy(itemVal = constructLiteralObject(itemVal, name :: parents, index))
       case item @ LiteralObjectItem(name, itemVal: LiteralProto) =>

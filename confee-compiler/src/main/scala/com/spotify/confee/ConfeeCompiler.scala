@@ -12,6 +12,7 @@ object ConfeeCompiler {
 
   // TODO: Make binding to work regardless of value definition order [done]
   // TODO: Proto literal must be converted to object in binding/evaluator step [done]
+  // TODO: Make it possible to use a conf as object/proto in another conf
   // TODO: Don't let objects and protos have duplicated item name before constructor step
   // TODO: Type should just start with Uppercase (fix test and readme)
   // TODO: Conf Value should always start with Lowercase (fix test and readme)

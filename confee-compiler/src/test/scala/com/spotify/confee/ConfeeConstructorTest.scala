@@ -146,6 +146,82 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
       )
     }
 
+    it("should construct an object from a proto inside an array") {
+      constructedAST("""conf foo : Foo {
+                       |     a = {
+                       |          x = true
+                       |          y = 1.0
+                       |          z = "Z"
+                       |     }
+                       |     b = [
+                       |          a {
+                       |               x = false
+                       |               y = 2.0
+                       |          },
+                       |          a {
+                       |               x = true
+                       |               y = 3.0
+                       |          }
+                       |     ]
+                       |}""".stripMargin) shouldEqual Right(
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(
+                    WordToken("a"),
+                    LiteralObject(
+                      LiteralObjectItems(
+                        List(
+                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
+                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(1.0))),
+                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                        )
+                      )
+                    )
+                  ),
+                  ConfItem(
+                    WordToken("b"),
+                    LiteralArray(
+                      List(
+                        LiteralObject(
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(false))),
+                              LiteralObjectItem(
+                                WordToken("y"),
+                                LiteralNumberFactor(NumberToken(2.0))
+                              ),
+                              LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                            )
+                          )
+                        ),
+                        LiteralObject(
+                          LiteralObjectItems(
+                            List(
+                              LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
+                              LiteralObjectItem(
+                                WordToken("y"),
+                                LiteralNumberFactor(NumberToken(3.0))
+                              ),
+                              LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
     it("should construct an object from a proto both at same level with new item") {
       constructedAST("""conf foo : Foo {
           |     a = {
