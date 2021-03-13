@@ -6,12 +6,14 @@ object ConfeeCompiler {
   case object JSON extends Target
   case object YAML extends Target
 
-  // TODO: Make binding to work regardless of value definition order [done]
-  // TODO: Proto literal must be converted to object in binding/evaluator step [done]
-  // TODO: Add unit tests for ConfeeIndexer [done]
-  // TODO: Make it possible to use a conf as object in another conf in binder [done]
-  // TODO: Make it possible to use a conf as proto in another conf in constructor (*** priority 1 ***)
-  // TODO: Don't let objects and protos have duplicated item name before constructor step
+  // DONE: Make binding to work regardless of value definition order [done]
+  // DONE: Proto literal must be converted to object in binding/evaluator step [done]
+  // DONE: Add unit tests for ConfeeIndexer [done]
+  // DONE: Make it possible to use a conf as an object in another conf in binder [done]
+  // DONE: Make it possible to use a conf as a proto in another conf in constructor (*** priority 1 ***)
+
+  // TODO: Don't let confs, objects and protos have same item name before constructor step
+  // TODO: Don't let confs have same name
   // TODO: Type should just start with Uppercase (fix test and readme)
   // TODO: Conf Value should always start with Lowercase (fix test and readme)
   // TODO: Conf value should accept array value as well as obj
@@ -19,7 +21,8 @@ object ConfeeCompiler {
   // TODO: Add "proto." keyword for proto items to get access to items of referenced objects
   // TODO: Add unit tests for ConfeeHelper
   // TODO: Make compiler/cli compatible with ScalaNative
-  // TODO: Add REST API + GUI for debugging/testing (*** priority 2 ***)
+  // TODO: Add REST API + GUI for debugging/testing (*** priority 3 ***)
+  // TODO: Implement type checker before binder and then fix the todo items in ConfeeIndexer (*** priority 2 ***)
   // TODO: Add 'list-confs'/'list-types' to ConfeeCompiler + ConfeeCLI + ConfeeRest
   // TODO: Cache index not to create twice in binding and constructing steps
 
@@ -44,7 +47,7 @@ object ConfeeCompiler {
     //  - evaluator (expression) -> ast [done]
     //  - constructor (proto) -> ast [done]
     //  - executor (lambda) -> ast [wip]
-    //  - checker (type) -> ast [wip] (*** priority 3 ***)
+    //  - checker (type) -> ast [wip]
     //  - generator (lint, optimize, etc.) -> irc [skipped]
     //  - formatter (conf, target) -> json [done]
     //  - formatter (conf, target) -> yaml [done]

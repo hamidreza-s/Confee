@@ -320,6 +320,54 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
         )
       )
     }
+
+    it("should construct object from a proto having reference to a conf") {
+      constructedAST("""
+                |conf foo : Foo {
+                |     a = 1
+                |     b = 2
+                |}
+                |
+                |conf bar : Bar {
+                |     a = foo { c = 3 }
+                |}
+                |""".stripMargin) shouldEqual Right(
+        Grammar(
+          List(
+            ConfStmt(
+              WordToken("foo"),
+              TypeDef(Left(NameToken("Foo")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(WordToken("a"), LiteralNumberFactor(NumberToken(1.0))),
+                  ConfItem(WordToken("b"), LiteralNumberFactor(NumberToken(2.0)))
+                )
+              )
+            ),
+            ConfStmt(
+              WordToken("bar"),
+              TypeDef(Left(NameToken("Bar")), isList = false),
+              ConfItems(
+                List(
+                  ConfItem(
+                    WordToken("a"),
+                    LiteralObject(
+                      LiteralObjectItems(
+                        List(
+                          LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(1.0))),
+                          LiteralObjectItem(WordToken("b"), LiteralNumberFactor(NumberToken(2.0))),
+                          LiteralObjectItem(WordToken("c"), LiteralNumberFactor(NumberToken(3.0)))
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    }
   }
 
   def constructedAST(input: String): Either[ConfeeError, ConfeeAST] = {
