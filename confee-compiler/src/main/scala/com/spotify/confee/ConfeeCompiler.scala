@@ -16,17 +16,19 @@ object ConfeeCompiler {
   // DONE: All type/conf/object/proto item keys can be both uppercase and lowercase
 
   // TODO: Type Checker/Indexer: (*** priority 2 ***)
-  // - Index defined types in Indexer
+  // - Index defined types in Indexer [done]
   // - Add defined type (next to already existing inferred types) to index row
   // - Implement type checker before binder
   // - Fix the to-do items in ConfeeIndexer
   // - Don't let having wrong types in confs
   // - Don't let confs, objects and protos have same item name before constructor step
   // - Don't let confs have same name
+  // - Don't let types have same name
   // TODO: Conf value should accept array value as well as obj (+ test/readme) (*** priority 4 ***)
   // TODO: Add "private" keyword for the items you don't want to expose
   // TODO: Add "proto." keyword for proto items to get access to items of referenced objects
   // TODO: Add unit tests for ConfeeHelper
+  // TODO: Refactor value names of AST case classes (name, value, items, etc. can be better)
   // TODO: Make compiler/cli compatible with ScalaNative
   // TODO: Add REST API + GUI for debugging/testing (*** priority 3 ***)
   // TODO: Add 'list-confs'/'list-types' to ConfeeCompiler + ConfeeCLI + ConfeeRest

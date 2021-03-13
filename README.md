@@ -8,21 +8,21 @@ Here is an example to define data pipelines to be used as the `data-info.yaml` f
 The types can be used in a global space to be used by every data pipeline project:
 ```
 type DataInfo {
-     projectName: Text
-     description: Text
-     storage: Text
+     projectName: String
+     description: String
+     storage: String
      facts: DataFact
 }
 
 type DataFact {
-     doc: Text
+     doc: String
      workFlows: [DataWorkflow]
 }
 
 type DataWorkflow {
-     name: Text
-     account: Text
-     schedule: Text
+     name: String
+     account: String
+     schedule: String
      dockerArgs: [String]
 }
 ```

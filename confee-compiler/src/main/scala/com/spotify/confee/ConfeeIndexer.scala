@@ -13,38 +13,49 @@ object ConfeeIndexer {
   // TODO (3): When (1) and (2) are done, set the `hasSameType` condition to be true for all cases
 
   case class TypeIndex(
-      name: WordToken
+      name: String,
+      itemKey: String,
+      itemVal: String,
+      itemType: DefinedType,
+      isList: Boolean
   )
 
-  /**
-    * @param name           the name of the expression
-    * @param parents        list of parents' name of the expression
-    * @param expr           the expression
-    * @param hasReference   if there is a reference inside the expression
-    * @param isTopLevel     if the expression is a conf which is defined in top-level
-    */
+  class DefinedType()
+  object DefinedType {
+    def parse(name: String): DefinedType = name match {
+      case "Bool"   => BoolDefinedType
+      case "Number" => NumberDefinedType
+      case "String" => StringDefinedType
+      case _        => ObjectDefinedType
+    }
+  }
+  case object BoolDefinedType extends DefinedType
+  case object NumberDefinedType extends DefinedType
+  case object StringDefinedType extends DefinedType
+  case object ObjectDefinedType extends DefinedType
+
   case class ConfIndex(
       name: String,
       parents: List[String] = List.empty[String],
       expr: Expr,
-      exprType: ExprType,
+      exprType: InferredType,
       hasReference: Boolean,
       isTopLevel: Boolean = false
   )
 
-  sealed abstract class ExprType(val name: String)
-  case object WordType extends ExprType("Word")
-  case object BoolType extends ExprType("Bool")
-  case object NumberType extends ExprType("Number")
-  case object StringType extends ExprType("String")
-  case object ArrayType extends ExprType("Array")
-  case object ObjectType extends ExprType("Object")
-  case object ProtoType extends ExprType("Proto")
-  case object AnyType extends ExprType("Any")
+  sealed trait InferredType
+  case object WordInferredType extends InferredType
+  case object BoolInferredType extends InferredType
+  case object NumberInferredType extends InferredType
+  case object StringInferredType extends InferredType
+  case object ArrayInferredType extends InferredType
+  case object ObjectInferredType extends InferredType
+  case object ProtoInferredType extends InferredType
+  case object NoInferredType extends InferredType
 
   def indexLookup[T <: Expr](
       name: String,
-      exprType: ExprType,
+      exprType: InferredType,
       pos: Position,
       parents: List[String],
       index: List[ConfIndex]
@@ -98,17 +109,37 @@ object ConfeeIndexer {
         LiteralObjectItem(LiteralObjectItemKey(name.value), itemVal)
     }))
 
+  /* ----- index type statements ----- */
+
+  def indexTypeStmts(stmts: List[Stmt]): List[TypeIndex] = stmts.flatMap {
+    case typeStmt: TypeStmt => indexTypeStmt(typeStmt)
+    case _                  => None
+  }
+
+  def indexTypeStmt(typeStmt: TypeStmt): List[TypeIndex] = typeStmt match {
+    case TypeStmt(name, items: TypeItems) =>
+      items.items.map {
+        case TypeItem(itemKey: TypeItemKey, TypeDef(itemType, isList)) =>
+          TypeIndex(
+            name.name,
+            itemKey.value,
+            itemType.name,
+            DefinedType.parse(itemType.name),
+            isList
+          )
+      }
+  }
+
   /* ----- index conf statements and conf item expressions ----- */
 
-  def indexStmts(stmts: List[Stmt]): List[ConfIndex] = stmts.flatMap {
+  def indexConfStmts(stmts: List[Stmt]): List[ConfIndex] = stmts.flatMap {
     case confStmt: ConfStmt => indexConfStmt(confStmt)
     case _                  => None
   }
 
   def indexConfStmt(confStmt: ConfStmt): List[ConfIndex] = confStmt match {
     case ConfStmt(name, _, items) =>
-      /**
-        *  In order to index a confStmt, it needs to be converted to an object literal expression.
+      /** In order to index a confStmt, it needs to be converted to an object literal expression.
         *  Then it will be indexed as a top-level object in the index list, so it can be referenced
         *  inside other confStmts.
         */
@@ -117,7 +148,7 @@ object ConfeeIndexer {
         name.word,
         List.empty[String],
         confExpr,
-        ObjectType,
+        ObjectInferredType,
         hasReference(confExpr),
         isTopLevel = true
       )
@@ -140,23 +171,23 @@ object ConfeeIndexer {
       index: List[ConfIndex] = List.empty[ConfIndex]
   ): List[ConfIndex] = expr match {
     case w: LiteralWord =>
-      index ::: ConfIndex(name, parents, w, WordType, hasReference(w)) :: Nil
+      index ::: ConfIndex(name, parents, w, WordInferredType, hasReference(w)) :: Nil
     case b: LiteralBool =>
-      index ::: ConfIndex(name, parents, b, BoolType, hasReference(b)) :: Nil
+      index ::: ConfIndex(name, parents, b, BoolInferredType, hasReference(b)) :: Nil
     case n: LiteralNumber =>
-      index ::: ConfIndex(name, parents, n, NumberType, hasReference(n)) :: Nil
+      index ::: ConfIndex(name, parents, n, NumberInferredType, hasReference(n)) :: Nil
     case s: LiteralString =>
-      index ::: ConfIndex(name, parents, s, StringType, hasReference(s)) :: Nil
+      index ::: ConfIndex(name, parents, s, StringInferredType, hasReference(s)) :: Nil
     case a: LiteralArray =>
-      index ::: ConfIndex(name, parents, a, ArrayType, hasReference(a)) :: Nil
+      index ::: ConfIndex(name, parents, a, ArrayInferredType, hasReference(a)) :: Nil
     case o @ LiteralObject(items: LiteralObjectItems) =>
-      index ::: ConfIndex(name, parents, o, ObjectType, hasReference(o)) :: indexObjectItems(
+      index ::: ConfIndex(name, parents, o, ObjectInferredType, hasReference(o)) :: indexObjectItems(
         name,
         items,
         parents
       )
     case p @ LiteralProto(_, items: LiteralObjectItems) =>
-      index ::: ConfIndex(name, parents, p, ProtoType, hasReference(p)) :: indexObjectItems(
+      index ::: ConfIndex(name, parents, p, ProtoInferredType, hasReference(p)) :: indexObjectItems(
         name,
         items,
         parents

@@ -1,6 +1,6 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeIndexer.{ConfIndex, ObjectType, indexStmts}
+import com.spotify.confee.ConfeeIndexer.{ConfIndex, ObjectInferredType, indexConfStmts}
 
 import scala.util.{Failure, Success, Try}
 
@@ -8,7 +8,7 @@ object ConfeeConstructor {
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
-      val index: List[ConfIndex] = indexStmts(stmts)
+      val index: List[ConfIndex] = indexConfStmts(stmts)
       Try(stmts.map {
         case confStmt @ ConfStmt(name, _, items) =>
           confStmt.copy(items = constructConfItems(items, name.word :: Nil, index))
@@ -115,7 +115,7 @@ object ConfeeConstructor {
     val templateProto =
       ConfeeIndexer.indexLookup[LiteralObject](
         literalProto.name.value,
-        ObjectType,
+        ObjectInferredType,
         literalProto.pos,
         parents,
         index

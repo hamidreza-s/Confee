@@ -8,7 +8,7 @@ object ConfeeBinder {
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
-      val index: List[ConfIndex] = indexStmts(stmts)
+      val index: List[ConfIndex] = indexConfStmts(stmts)
       Try(stmts.map {
         case confStmt @ ConfStmt(name, _, items) =>
           confStmt.copy(items = bindConfItems(items, name.word :: Nil, index))
@@ -66,7 +66,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralExpr = {
-    ConfeeIndexer.indexLookup[LiteralExpr](word.value.word, AnyType, word.pos, parents, index)
+    ConfeeIndexer.indexLookup[LiteralExpr](word.value.word, NoInferredType, word.pos, parents, index)
   }
 
   /* ----- literal bool expression ----- */
@@ -88,7 +88,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralBool =
-    ConfeeIndexer.indexLookup[LiteralBool](word.value.word, BoolType, word.pos, parents, index)
+    ConfeeIndexer.indexLookup[LiteralBool](word.value.word, BoolInferredType, word.pos, parents, index)
 
   @scala.annotation.tailrec
   def bindLiteralBoolUnit(
@@ -146,7 +146,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralString =
-    ConfeeIndexer.indexLookup[LiteralString](word.value.word, StringType, word.pos, parents, index)
+    ConfeeIndexer.indexLookup[LiteralString](word.value.word, StringInferredType, word.pos, parents, index)
 
   @scala.annotation.tailrec
   def bindLiteralStringGroup(
@@ -186,7 +186,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralNumber =
-    ConfeeIndexer.indexLookup[LiteralNumber](word.value.word, NumberType, word.pos, parents, index)
+    ConfeeIndexer.indexLookup[LiteralNumber](word.value.word, NumberInferredType, word.pos, parents, index)
 
   @scala.annotation.tailrec
   def bindLiteralNumberGroup(
