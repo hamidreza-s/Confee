@@ -8,15 +8,20 @@ object ConfeeCompiler {
 
   // TODO: Make binding to work regardless of value definition order [done]
   // TODO: Proto literal must be converted to object in binding/evaluator step [done]
-  // TODO: Make it possible to use a conf as object/proto in another conf
+  // TODO: Add unit tests for ConfeeIndexer [done]
+  // TODO: Make it possible to use a conf as object in another conf in binder [done]
+  // TODO: Make it possible to use a conf as proto in another conf in constructor (*** priority 1 ***)
   // TODO: Don't let objects and protos have duplicated item name before constructor step
   // TODO: Type should just start with Uppercase (fix test and readme)
   // TODO: Conf Value should always start with Lowercase (fix test and readme)
   // TODO: Conf value should accept array value as well as obj
   // TODO: Add "private" keyword for the items you don't want to expose
   // TODO: Add "proto." keyword for proto items to get access to items of referenced objects
-  // TODO: Add unit tests for ConfeeHelper/ConfeeIndexer
+  // TODO: Add unit tests for ConfeeHelper
   // TODO: Make compiler/cli compatible with ScalaNative
+  // TODO: Add REST API + GUI for debugging/testing (*** priority 2 ***)
+  // TODO: Add 'list-confs'/'list-types' to ConfeeCompiler + ConfeeCLI + ConfeeRest
+  // TODO: Cache index not to create twice in binding and constructing steps
 
   /** Compiler Steps:
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns
@@ -39,7 +44,7 @@ object ConfeeCompiler {
     //  - evaluator (expression) -> ast [done]
     //  - constructor (proto) -> ast [done]
     //  - executor (lambda) -> ast [wip]
-    //  - checker (type) -> ast [wip]
+    //  - checker (type) -> ast [wip] (*** priority 3 ***)
     //  - generator (lint, optimize, etc.) -> irc [skipped]
     //  - formatter (conf, target) -> json [done]
     //  - formatter (conf, target) -> yaml [done]

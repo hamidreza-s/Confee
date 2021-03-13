@@ -1,98 +1,9 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeIndexer.IndexRow
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 class ConfeeConstructorTest extends AnyFunSpec with Matchers {
-
-  describe("Indexer on config objects") {
-    it("should index config objects and its children items WITHOUT reference") {
-      indexAST("""conf foo : Foo {
-                 |     a = true
-                 |     b = "abc"
-                 |     c = 1
-                 |     d = [1]
-                 |     e = {bar = 1 bat = {ban = 2}}
-                 |     f = g {bar = 1 bat = {ban = 2}}
-          |}""".stripMargin) shouldEqual List(
-        IndexRow(
-          WordToken("e"),
-          List(WordToken("foo")),
-          LiteralObject(
-            LiteralObjectItems(
-              List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1.0))),
-                LiteralObjectItem(
-                  WordToken("bat"),
-                  LiteralObject(
-                    LiteralObjectItems(
-                      List(
-                        LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2.0)))
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          ),
-          hasReference = false
-        ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("e"), WordToken("foo")),
-          LiteralObject(
-            LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2.0))))
-            )
-          ),
-          hasReference = false
-        )
-      )
-    }
-
-    it("should index config objects and its children items WITH reference") {
-      indexAST("""conf foo : Foo {
-          |     a = false and ref1
-          |     b = "abc" + ref2
-          |     c = 1 + ref3
-          |     d = [ref4]
-          |     e = {bar = 1 bat = {ban = ref5}}
-          |     f = g {bar = 1 bat = {ban = ref6}}
-          |}""".stripMargin) shouldEqual List(
-        IndexRow(
-          WordToken("e"),
-          List(WordToken("foo")),
-          LiteralObject(
-            LiteralObjectItems(
-              List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1.0))),
-                LiteralObjectItem(
-                  WordToken("bat"),
-                  LiteralObject(
-                    LiteralObjectItems(
-                      List(LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref5"))))
-                    )
-                  )
-                )
-              )
-            )
-          ),
-          hasReference = true
-        ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("e"), WordToken("foo")),
-          LiteralObject(
-            LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref5"))))
-            )
-          ),
-          hasReference = true
-        )
-      )
-    }
-  }
 
   describe("Constructor on literal proto") {
     it("should construct an object from a proto both at the same level") {
@@ -190,12 +101,18 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
                         LiteralObject(
                           LiteralObjectItems(
                             List(
-                              LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(false))),
+                              LiteralObjectItem(
+                                WordToken("x"),
+                                LiteralBoolFactor(BoolToken(false))
+                              ),
                               LiteralObjectItem(
                                 WordToken("y"),
                                 LiteralNumberFactor(NumberToken(2.0))
                               ),
-                              LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                              LiteralObjectItem(
+                                WordToken("z"),
+                                LiteralStringFactor(StringToken("Z"))
+                              )
                             )
                           )
                         ),
@@ -207,7 +124,10 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
                                 WordToken("y"),
                                 LiteralNumberFactor(NumberToken(3.0))
                               ),
-                              LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                              LiteralObjectItem(
+                                WordToken("z"),
+                                LiteralStringFactor(StringToken("Z"))
+                              )
                             )
                           )
                         )
@@ -399,16 +319,6 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           )
         )
       )
-    }
-  }
-
-  def indexAST(input: String): List[IndexRow[LiteralObject]] = {
-    (for {
-      tokens <- ConfeeLexer(input)
-      parsed <- ConfeeParser(tokens)
-    } yield parsed) match {
-      case Right(Grammar(stmts: List[Stmt])) => ConfeeConstructor.indexObjects(stmts)
-      case error                             => fail(error.toString)
     }
   }
 

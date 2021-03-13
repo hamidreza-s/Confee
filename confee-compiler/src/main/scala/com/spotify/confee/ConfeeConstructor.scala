@@ -1,7 +1,6 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeHelper.hasReference
-import com.spotify.confee.ConfeeIndexer.IndexRow
+import com.spotify.confee.ConfeeIndexer.{IndexRow, ObjectType, indexStmts}
 
 import scala.util.{Failure, Success, Try}
 
@@ -9,7 +8,7 @@ object ConfeeConstructor {
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
-      val index: List[IndexRow[LiteralObject]] = indexObjects(stmts)
+      val index: List[IndexRow] = indexStmts(stmts)
       Try(stmts.map {
         case confStmt @ ConfStmt(name, _, items) =>
           confStmt.copy(items = constructConfItems(items, name :: Nil, index))
@@ -28,66 +27,19 @@ object ConfeeConstructor {
       )
   }
 
-  /* ----- index objects ----- */
-
-  def indexObjects(stmts: List[Stmt]): List[IndexRow[LiteralObject]] = stmts.flatMap {
-    case confStmt: ConfStmt => indexObjects(confStmt)
-    case _                  => None
-  }
-
-  def indexObjects(confStmt: ConfStmt): List[IndexRow[LiteralObject]] = confStmt match {
-    case ConfStmt(parent, _, items) =>
-      items.items
-        .foldLeft(List.empty[IndexRow[LiteralObject]]) {
-          case (acc, ConfItem(name: WordToken, itemVal: LiteralObject)) =>
-            indexObjects(
-              name = name,
-              expr = itemVal,
-              parents = List(parent),
-              index = acc
-            )
-          case (acc, _) => acc
-        }
-  }
-
-  def indexObjects(
-      name: WordToken,
-      expr: Expr,
-      parents: List[WordToken] = List.empty[WordToken],
-      index: List[IndexRow[LiteralObject]] = List.empty[IndexRow[LiteralObject]]
-  ): List[IndexRow[LiteralObject]] = expr match {
-    case literalObject: LiteralObject =>
-      index ::: IndexRow(name, parents, literalObject, hasReference(literalObject)) :: indexObjectItems(
-        name,
-        literalObject.items,
-        parents
-      )
-    case _ =>
-      index
-  }
-
-  def indexObjectItems(
-      name: WordToken,
-      objectItems: LiteralObjectItems,
-      parents: List[WordToken]
-  ): List[IndexRow[LiteralObject]] =
-    objectItems.items.flatMap { item =>
-      indexObjects(name = item.name, expr = item.itemVal, parents = name :: parents)
-    }
-
   /* ----- evaluate config statement items ----- */
 
   def constructConfItems(
       confItems: ConfItems,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): ConfItems =
     ConfItems(confItems.items.map(item => constructConfItem(item, parents, index)))
 
   def constructConfItem(
       confItem: ConfItem,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): ConfItem =
     confItem match {
       case item @ ConfItem(name, itemVal: LiteralArray) =>
@@ -104,14 +56,14 @@ object ConfeeConstructor {
   def constructLiteralArray(
       literalArray: LiteralArray,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): LiteralArray =
     LiteralArray(literalArray.items.map(constructLiteralArrayItem(_, parents, index)))
 
   def constructLiteralArrayItem(
       arrayItem: LiteralExpr,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): LiteralExpr = arrayItem match {
     case literalArray: LiteralArray   => constructLiteralArray(literalArray, parents, index)
     case literalObject: LiteralObject => constructLiteralObject(literalObject, parents, index)
@@ -124,14 +76,14 @@ object ConfeeConstructor {
   def constructLiteralObject(
       literalObject: LiteralObject,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): LiteralObject =
     literalObject.copy(items = constructLiteralObjectItems(literalObject.items, parents, index))
 
   def constructLiteralObjectItems(
       literalObjectItems: LiteralObjectItems,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): LiteralObjectItems =
     LiteralObjectItems(
       literalObjectItems.items.map(item => constructLiteralObjectItem(item, parents, index))
@@ -140,7 +92,7 @@ object ConfeeConstructor {
   def constructLiteralObjectItem(
       objectItem: LiteralObjectItem,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): LiteralObjectItem =
     objectItem match {
       case item @ LiteralObjectItem(name, itemVal: LiteralArray) =>
@@ -157,11 +109,17 @@ object ConfeeConstructor {
   def constructLiteralProto(
       literalProto: LiteralProto,
       parents: List[WordToken],
-      index: List[IndexRow[LiteralObject]]
+      index: List[IndexRow]
   ): LiteralObject = {
     // Lookup the object which is referenced as prototype
     val templateProto =
-      ConfeeIndexer.indexLookup(literalProto.proto, literalProto.pos, parents, index)
+      ConfeeIndexer.indexLookup[LiteralObject](
+        literalProto.proto,
+        ObjectType,
+        literalProto.pos,
+        parents,
+        index
+      )
 
     // Make a map of items in the prototype as template to be used in the final constructed object
     val templateProtoItems = templateProto.items.items.foldLeft(Map.empty[WordToken, LiteralExpr]) {

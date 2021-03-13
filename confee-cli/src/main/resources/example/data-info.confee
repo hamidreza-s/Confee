@@ -1,10 +1,11 @@
+conf workflow : WorkFlow {
+     account = "admin@dataflow.com"
+     dockerArgs = ["--wrap-luigi"]
+}
+
 conf dataInfo : DataInfo {
      id = "e73d6402"
      description = "sample desc"
-     workflow = {
-          account = "admin@dataflow.com"
-          dockerArgs = ["--wrap-luigi"]
-     }
      facts = {
           doc = "sample doc"
           workFlows = [
@@ -15,3 +16,5 @@ conf dataInfo : DataInfo {
           ]
      }
 }
+
+
