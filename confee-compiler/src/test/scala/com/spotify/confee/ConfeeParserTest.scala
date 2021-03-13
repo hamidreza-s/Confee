@@ -9,11 +9,10 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
   describe("Parser on type statement") {
 
     it("should parse type definitions without type items") {
-      assertAST(
-        """
+      parsedAST("""
           |type Foo { }
           |type Bar { }
-          |""".stripMargin,
+          |""".stripMargin) shouldEqual Right(
         Grammar(
           List(
             TypeStmt(NameToken("Foo"), TypeItems(List.empty)),
@@ -24,17 +23,16 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse type definitions with type items in one line") {
-      assertAST(
-        "type Person { name: Text age: Int friends: [Person] }",
+      parsedAST("type Person { name: Text age: Int friends: [Person] }") shouldEqual Right(
         Grammar(
           List(
             TypeStmt(
               NameToken("Person"),
               TypeItems(
                 List(
-                  TypeItem(WordToken("name"), TypeDef(Left(NameToken("Text")), isList = false)),
-                  TypeItem(WordToken("age"), TypeDef(Left(NameToken("Int")), isList = false)),
-                  TypeItem(WordToken("friends"), TypeDef(Left(NameToken("Person")), isList = true))
+                  TypeItem(TypeItemKey("name"), TypeDef(NameToken("Text"), isList = false)),
+                  TypeItem(TypeItemKey("age"), TypeDef(NameToken("Int"), isList = false)),
+                  TypeItem(TypeItemKey("friends"), TypeDef(NameToken("Person"), isList = true))
                 )
               )
             )
@@ -43,38 +41,65 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       )
     }
 
-    it("should parse type definitions with type items") {
-      assertAST(
-        """type Person {
+    it("should parse type definitions with type item keys starting with lowercase") {
+      parsedAST("""type Person {
           |     name: Text
           |     age: Int
           |     friends: [Person]
-          |}""".stripMargin,
+          |}""".stripMargin) shouldEqual Right(
         Grammar(
           List(
             TypeStmt(
               NameToken("Person"),
               TypeItems(
                 List(
-                  TypeItem(WordToken("name"), TypeDef(Left(NameToken("Text")), isList = false)),
-                  TypeItem(WordToken("age"), TypeDef(Left(NameToken("Int")), isList = false)),
-                  TypeItem(WordToken("friends"), TypeDef(Left(NameToken("Person")), isList = true))
+                  TypeItem(TypeItemKey("name"), TypeDef(NameToken("Text"), isList = false)),
+                  TypeItem(TypeItemKey("age"), TypeDef(NameToken("Int"), isList = false)),
+                  TypeItem(TypeItemKey("friends"), TypeDef(NameToken("Person"), isList = true))
                 )
               )
             )
           )
         )
       )
+    }
+
+    it("should parse type definitions with type key starting with uppercase") {
+      parsedAST("""type Person {
+                  |     Name: Text
+                  |     Age: Int
+                  |     Friends: [Person]
+                  |}""".stripMargin) shouldEqual Right(
+        Grammar(
+          List(
+            TypeStmt(
+              NameToken("Person"),
+              TypeItems(
+                List(
+                  TypeItem(TypeItemKey("Name"), TypeDef(NameToken("Text"), isList = false)),
+                  TypeItem(TypeItemKey("Age"), TypeDef(NameToken("Int"), isList = false)),
+                  TypeItem(TypeItemKey("Friends"), TypeDef(NameToken("Person"), isList = true))
+                )
+              )
+            )
+          )
+        )
+      )
+    }
+
+    it("should NOT parse type definitions with a name which starts with lowercase") {
+      parsedAST("""type person {
+          |     name: Text
+          |}""".stripMargin) shouldEqual Left(ConfeeParserError(Location(1, 6), "name expected"))
     }
   }
 
   describe("Parser on import statement") {
     it("should parse two import statements") {
-      assertAST(
-        """
+      parsedAST("""
           |import "/path/to/foo.confee"
           |import "/path/to/bar.confee"
-        """.stripMargin,
+        """.stripMargin) shouldEqual Right(
         Grammar(
           List(
             ImportStmt(StringToken("/path/to/foo.confee")),
@@ -88,21 +113,20 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
   describe("Parser on conf statement") {
 
     it("should parse conf definition without conf items") {
-      assertAST(
-        """
+      parsedAST("""
           |conf foo : Foo { }
-          |conf bar : foo { }
-          |""".stripMargin,
+          |conf bar : Bar { }
+          |""".stripMargin) shouldEqual Right(
         Grammar(
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(List.empty)
             ),
             ConfStmt(
               WordToken("bar"),
-              TypeDef(Right(WordToken("foo")), isList = false),
+              TypeDef(NameToken("Bar"), isList = false),
               ConfItems(List.empty)
             )
           )
@@ -111,21 +135,20 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse conf definition with conf items in one line") {
-      assertAST(
-        """conf alice : Person {name = "Alice" age = 20}""",
+      parsedAST("""conf alice : Person {name = "Alice" age = 20}""") shouldEqual Right(
         Grammar(
           List(
             ConfStmt(
               WordToken("alice"),
-              TypeDef(Left(NameToken("Person")), isList = false),
+              TypeDef(NameToken("Person"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("name"),
+                    ConfItemKey("name"),
                     LiteralStringFactor(StringToken("Alice"))
                   ),
                   ConfItem(
-                    WordToken("age"),
+                    ConfItemKey("age"),
                     LiteralNumberFactor(NumberToken(20.0))
                   )
                 )
@@ -139,34 +162,33 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     describe("Parser on literal expression") {
 
       it("should parse conf definition with boolean, string and number") {
-        assertAST(
-          """conf alice : Person {
+        parsedAST("""conf alice : Person {
             |     name = "Alice"
             |     age = 20
             |     active = true
             |     flagged = false
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("alice"),
-                TypeDef(Left(NameToken("Person")), isList = false),
+                TypeDef(NameToken("Person"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("name"),
+                      ConfItemKey("name"),
                       LiteralStringFactor(StringToken("Alice"))
                     ),
                     ConfItem(
-                      WordToken("age"),
+                      ConfItemKey("age"),
                       LiteralNumberFactor(NumberToken(20.0))
                     ),
                     ConfItem(
-                      WordToken("active"),
+                      ConfItemKey("active"),
                       LiteralBoolFactor(BoolToken(true))
                     ),
                     ConfItem(
-                      WordToken("flagged"),
+                      ConfItemKey("flagged"),
                       LiteralBoolFactor(BoolToken(false))
                     )
                   )
@@ -178,35 +200,34 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with operator in bool") {
-        assertAST(
-          """conf report : StatusReport {
+        parsedAST("""conf report : StatusReport {
             |     is_in_progress = false
             |     is_done = not false
             |     is_valid = true xor false
             |     is_successful = is_done and is_valid
             |     is_acceptable = (is_done and is_valid) or is_in_progress
             |     is_not_acceptable = not (is_done and is_valid) or is_in_progress
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("report"),
-                TypeDef(Left(NameToken("StatusReport")), isList = false),
+                TypeDef(NameToken("StatusReport"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("is_in_progress"),
+                      ConfItemKey("is_in_progress"),
                       LiteralBoolFactor(BoolToken(false))
                     ),
                     ConfItem(
-                      WordToken("is_done"),
+                      ConfItemKey("is_done"),
                       LiteralBoolUnit(
                         LiteralBoolOperatorNot(),
                         LiteralBoolFactor(BoolToken(false))
                       )
                     ),
                     ConfItem(
-                      WordToken("is_valid"),
+                      ConfItemKey("is_valid"),
                       LiteralBoolGroup(
                         LiteralBoolOperatorXor(),
                         LiteralBoolFactor(
@@ -218,7 +239,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("is_successful"),
+                      ConfItemKey("is_successful"),
                       LiteralBoolGroup(
                         LiteralBoolOperatorAnd(),
                         LiteralBoolWord(WordToken("is_done")),
@@ -226,7 +247,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("is_acceptable"),
+                      ConfItemKey("is_acceptable"),
                       LiteralBoolGroup(
                         LiteralBoolOperatorOr(),
                         LiteralBoolGroup(
@@ -238,7 +259,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("is_not_acceptable"),
+                      ConfItemKey("is_not_acceptable"),
                       LiteralBoolUnit(
                         LiteralBoolOperatorNot(),
                         LiteralBoolGroup(
@@ -261,24 +282,23 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with operator in number") {
-        assertAST(
-          """conf report : TimeReport {
+        parsedAST("""conf report : TimeReport {
             |     sec = 60
             |     hour = 60 * sec
             |     week = day * 7
             |     working_days = week - (2 * day)
             |     random = 1 + 2 + (3 * 4 / (5 - 6) + 7) - sec
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("report"),
-                TypeDef(Left(NameToken("TimeReport")), isList = false),
+                TypeDef(NameToken("TimeReport"), isList = false),
                 ConfItems(
                   List(
-                    ConfItem(WordToken("sec"), LiteralNumberFactor(NumberToken(60.0))),
+                    ConfItem(ConfItemKey("sec"), LiteralNumberFactor(NumberToken(60.0))),
                     ConfItem(
-                      WordToken("hour"),
+                      ConfItemKey("hour"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorMul(),
                         LiteralNumberFactor(NumberToken(60.0)),
@@ -286,7 +306,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("week"),
+                      ConfItemKey("week"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorMul(),
                         LiteralNumberWord(WordToken("day")),
@@ -294,7 +314,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("working_days"),
+                      ConfItemKey("working_days"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorSub(),
                         LiteralNumberWord(WordToken("week")),
@@ -306,7 +326,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("random"),
+                      ConfItemKey("random"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberFactor(NumberToken(1.0)),
@@ -346,22 +366,21 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with operator in string") {
-        assertAST(
-          """conf report : SprintReport {
+        parsedAST("""conf report : SprintReport {
             |     project = "wheel"
             |     goal = "Inventing the " + project
             |     next = "Maintaining " + (goal - "Inventing ")
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("report"),
-                TypeDef(Left(NameToken("SprintReport")), isList = false),
+                TypeDef(NameToken("SprintReport"), isList = false),
                 ConfItems(
                   List(
-                    ConfItem(WordToken("project"), LiteralStringFactor(StringToken("wheel"))),
+                    ConfItem(ConfItemKey("project"), LiteralStringFactor(StringToken("wheel"))),
                     ConfItem(
-                      WordToken("goal"),
+                      ConfItemKey("goal"),
                       LiteralStringGroup(
                         LiteralStringOperatorConcat(),
                         LiteralStringFactor(StringToken("Inventing the ")),
@@ -369,7 +388,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("next"),
+                      ConfItemKey("next"),
                       LiteralStringGroup(
                         LiteralStringOperatorConcat(),
                         LiteralStringFactor(StringToken("Maintaining ")),
@@ -389,20 +408,19 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with list") {
-        assertAST(
-          """conf team : Team {
+        parsedAST("""conf team : Team {
             |     members = ["Alice", "Bob", "Joe"]
             |     records = [98, 97, 99]
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("team"),
-                TypeDef(Left(NameToken("Team")), isList = false),
+                TypeDef(NameToken("Team"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("members"),
+                      ConfItemKey("members"),
                       LiteralArray(
                         List(
                           LiteralStringFactor(StringToken("Alice")),
@@ -412,7 +430,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("records"),
+                      ConfItemKey("records"),
                       LiteralArray(
                         List(
                           LiteralNumberFactor(NumberToken(98.0)),
@@ -430,20 +448,19 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with list of list") {
-        assertAST(
-          """conf match : Match {
+        parsedAST("""conf match : Match {
             |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
             |     scores = [[7, 10], [23, 14]]
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("match"),
-                TypeDef(Left(NameToken("Match")), isList = false),
+                TypeDef(NameToken("Match"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("players"),
+                      ConfItemKey("players"),
                       LiteralArray(
                         List(
                           LiteralArray(
@@ -462,7 +479,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("scores"),
+                      ConfItemKey("scores"),
                       LiteralArray(
                         List(
                           LiteralArray(
@@ -489,8 +506,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with object") {
-        assertAST(
-          """
+        parsedAST("""
             |conf match : Match {
             |     info = {
             |          stadium = "Azadi"
@@ -498,29 +514,29 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
             |          renovated = [2012, 2016]
             |     }
             |}
-          """.stripMargin,
+          """.stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("match"),
-                TypeDef(Left(NameToken("Match")), isList = false),
+                TypeDef(NameToken("Match"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("info"),
+                      ConfItemKey("info"),
                       LiteralObject(
                         LiteralObjectItems(
                           List(
                             LiteralObjectItem(
-                              WordToken("stadium"),
+                              LiteralObjectItemKey("stadium"),
                               LiteralStringFactor(StringToken("Azadi"))
                             ),
                             LiteralObjectItem(
-                              WordToken("capacity"),
+                              LiteralObjectItemKey("capacity"),
                               LiteralNumberFactor(NumberToken(90000.0))
                             ),
                             LiteralObjectItem(
-                              WordToken("renovated"),
+                              LiteralObjectItemKey("renovated"),
                               LiteralArray(
                                 List(
                                   LiteralNumberFactor(NumberToken(2012.0)),
@@ -541,8 +557,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with object of object") {
-        assertAST(
-          """
+        parsedAST("""
             |conf match : Match {
             |     info = {
             |          size = {
@@ -551,26 +566,26 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
             |          }
             |     }
             |}
-          """.stripMargin,
+          """.stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("match"),
-                TypeDef(Left(NameToken("Match")), isList = false),
+                TypeDef(NameToken("Match"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("info"),
+                      ConfItemKey("info"),
                       LiteralObject(
                         LiteralObjectItems(
                           List(
                             LiteralObjectItem(
-                              WordToken("size"),
+                              LiteralObjectItemKey("size"),
                               LiteralObject(
                                 LiteralObjectItems(
                                   List(
                                     LiteralObjectItem(
-                                      WordToken("field"),
+                                      LiteralObjectItemKey("field"),
                                       LiteralArray(
                                         List(
                                           LiteralNumberFactor(NumberToken(110.0)),
@@ -579,7 +594,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                                       )
                                     ),
                                     LiteralObjectItem(
-                                      WordToken("scoreboard"),
+                                      LiteralObjectItemKey("scoreboard"),
                                       LiteralNumberFactor(NumberToken(104.0))
                                     )
                                   )
@@ -599,27 +614,26 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with proto") {
-        assertAST(
-          """
+        parsedAST("""
             |conf match : Match {
             |     info = templateInfo { quality = 5 }
             |}
-          """.stripMargin,
+          """.stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("match"),
-                TypeDef(Left(NameToken("Match")), isList = false),
+                TypeDef(NameToken("Match"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("info"),
+                      ConfItemKey("info"),
                       LiteralProto(
-                        WordToken("templateInfo"),
+                        LiteralProtoKey("templateInfo"),
                         LiteralObjectItems(
                           List(
                             LiteralObjectItem(
-                              WordToken("quality"),
+                              LiteralObjectItemKey("quality"),
                               LiteralNumberFactor(NumberToken(5.0))
                             )
                           )
@@ -635,8 +649,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with references") {
-        assertAST(
-          """conf foo : Foo {
+        parsedAST("""conf foo : Foo {
             |     a1 = true
             |     b1 = "something"
             |     c1 = 123
@@ -649,19 +662,19 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
             |     d2 = d1
             |     e2 = e1
             |     f2 = f1
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("foo"),
-                TypeDef(Left(NameToken("Foo")), isList = false),
+                TypeDef(NameToken("Foo"), isList = false),
                 ConfItems(
                   List(
-                    ConfItem(WordToken("a1"), LiteralBoolFactor(BoolToken(true))),
-                    ConfItem(WordToken("b1"), LiteralStringFactor(StringToken("something"))),
-                    ConfItem(WordToken("c1"), LiteralNumberFactor(NumberToken(123.0))),
+                    ConfItem(ConfItemKey("a1"), LiteralBoolFactor(BoolToken(true))),
+                    ConfItem(ConfItemKey("b1"), LiteralStringFactor(StringToken("something"))),
+                    ConfItem(ConfItemKey("c1"), LiteralNumberFactor(NumberToken(123.0))),
                     ConfItem(
-                      WordToken("d1"),
+                      ConfItemKey("d1"),
                       LiteralArray(
                         List(
                           LiteralNumberFactor(NumberToken(1.0)),
@@ -671,36 +684,42 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("e1"),
+                      ConfItemKey("e1"),
                       LiteralObject(
                         LiteralObjectItems(
                           List(
                             LiteralObjectItem(
-                              WordToken("x"),
+                              LiteralObjectItemKey("x"),
                               LiteralNumberFactor(NumberToken(1.0))
                             ),
-                            LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(2.0)))
+                            LiteralObjectItem(
+                              LiteralObjectItemKey("y"),
+                              LiteralNumberFactor(NumberToken(2.0))
+                            )
                           )
                         )
                       )
                     ),
                     ConfItem(
-                      WordToken("f1"),
+                      ConfItemKey("f1"),
                       LiteralProto(
-                        WordToken("e1"),
+                        LiteralProtoKey("e1"),
                         LiteralObjectItems(
                           List(
-                            LiteralObjectItem(WordToken("z"), LiteralNumberFactor(NumberToken(3.0)))
+                            LiteralObjectItem(
+                              LiteralObjectItemKey("z"),
+                              LiteralNumberFactor(NumberToken(3.0))
+                            )
                           )
                         )
                       )
                     ),
-                    ConfItem(WordToken("a2"), LiteralWord(WordToken("a1"))),
-                    ConfItem(WordToken("b2"), LiteralWord(WordToken("b1"))),
-                    ConfItem(WordToken("c2"), LiteralWord(WordToken("c1"))),
-                    ConfItem(WordToken("d2"), LiteralWord(WordToken("d1"))),
-                    ConfItem(WordToken("e2"), LiteralWord(WordToken("e1"))),
-                    ConfItem(WordToken("f2"), LiteralWord(WordToken("f1")))
+                    ConfItem(ConfItemKey("a2"), LiteralWord(WordToken("a1"))),
+                    ConfItem(ConfItemKey("b2"), LiteralWord(WordToken("b1"))),
+                    ConfItem(ConfItemKey("c2"), LiteralWord(WordToken("c1"))),
+                    ConfItem(ConfItemKey("d2"), LiteralWord(WordToken("d1"))),
+                    ConfItem(ConfItemKey("e2"), LiteralWord(WordToken("e1"))),
+                    ConfItem(ConfItemKey("f2"), LiteralWord(WordToken("f1")))
                   )
                 )
               )
@@ -710,24 +729,23 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with keyword in reference names") {
-        assertAST(
-          """conf foo : Foo {
+        parsedAST("""conf foo : Foo {
             |     a = import_keyword + type_keyword + conf_keyword
             |     b = keyword_import + keyword_type + keyword_conf
             |     c = key_import_word + key_type_word + key_conf_word
             |     d = and_keyword + or_keyword + xor_keyword + not_keyword
             |     e = keyword_and + keyword_or + keyword_xor + keyword_not
             |     f = key_and_word + key_or_word + key_xor_word + key_not_word
-            |}""".stripMargin,
+            |}""".stripMargin) shouldEqual Right(
           Grammar(
             List(
               ConfStmt(
                 WordToken("foo"),
-                TypeDef(Left(NameToken("Foo")), isList = false),
+                TypeDef(NameToken("Foo"), isList = false),
                 ConfItems(
                   List(
                     ConfItem(
-                      WordToken("a"),
+                      ConfItemKey("a"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberWord(WordToken("import_keyword")),
@@ -739,7 +757,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("b"),
+                      ConfItemKey("b"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberWord(WordToken("keyword_import")),
@@ -751,7 +769,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("c"),
+                      ConfItemKey("c"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberWord(WordToken("key_import_word")),
@@ -763,7 +781,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("d"),
+                      ConfItemKey("d"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberWord(WordToken("and_keyword")),
@@ -779,7 +797,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("e"),
+                      ConfItemKey("e"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberWord(WordToken("keyword_and")),
@@ -795,7 +813,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
                       )
                     ),
                     ConfItem(
-                      WordToken("f"),
+                      ConfItemKey("f"),
                       LiteralNumberGroup(
                         LiteralNumberOperatorAdd(),
                         LiteralNumberWord(WordToken("key_and_word")),
@@ -817,13 +835,66 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
           )
         )
       }
+
+      it("should parse conf / object / proto definitions with item key starting with uppercase") {
+        parsedAST("""conf foo : Foo {
+                    |     A = true
+                    |     B = [true]
+                    |     C = { Y = true }
+                    |     E = C { X = true }
+                    |}""".stripMargin) shouldEqual Right(
+          Grammar(
+            List(
+              ConfStmt(
+                WordToken("foo"),
+                TypeDef(NameToken("Foo"), isList = false),
+                ConfItems(
+                  List(
+                    ConfItem(ConfItemKey("A"), LiteralBoolFactor(BoolToken(true))),
+                    ConfItem(
+                      ConfItemKey("B"),
+                      LiteralArray(List(LiteralBoolFactor(BoolToken(true))))
+                    ),
+                    ConfItem(
+                      ConfItemKey("C"),
+                      LiteralObject(
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              LiteralObjectItemKey("Y"),
+                              LiteralBoolFactor(BoolToken(true))
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    ConfItem(
+                      ConfItemKey("E"),
+                      LiteralProto(
+                        LiteralProtoKey("C"),
+                        LiteralObjectItems(
+                          List(
+                            LiteralObjectItem(
+                              LiteralObjectItemKey("X"),
+                              LiteralBoolFactor(BoolToken(true))
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
     }
   }
 
   describe("Parser on a real example") {
     it("should parse type definitions") {
-      assertAST(
-        """
+      parsedAST("""
           |type DataInfo {
           |     id: Text
           |     description: Text
@@ -841,19 +912,19 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
           |     schedule: Text
           |     dockerArgs: [String]
           |}
-        """.stripMargin,
+        """.stripMargin) shouldEqual Right(
         Grammar(
           List(
             TypeStmt(
               NameToken("DataInfo"),
               TypeItems(
                 List(
-                  TypeItem(WordToken("id"), TypeDef(Left(NameToken("Text")), isList = false)),
+                  TypeItem(TypeItemKey("id"), TypeDef(NameToken("Text"), isList = false)),
                   TypeItem(
-                    WordToken("description"),
-                    TypeDef(Left(NameToken("Text")), isList = false)
+                    TypeItemKey("description"),
+                    TypeDef(NameToken("Text"), isList = false)
                   ),
-                  TypeItem(WordToken("facts"), TypeDef(Left(NameToken("DataFact")), isList = false))
+                  TypeItem(TypeItemKey("facts"), TypeDef(NameToken("DataFact"), isList = false))
                 )
               )
             ),
@@ -861,10 +932,10 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
               NameToken("DataFact"),
               TypeItems(
                 List(
-                  TypeItem(WordToken("doc"), TypeDef(Left(NameToken("Text")), isList = false)),
+                  TypeItem(TypeItemKey("doc"), TypeDef(NameToken("Text"), isList = false)),
                   TypeItem(
-                    WordToken("workFlows"),
-                    TypeDef(Left(NameToken("DataWorkflow")), isList = true)
+                    TypeItemKey("workFlows"),
+                    TypeDef(NameToken("DataWorkflow"), isList = true)
                   )
                 )
               )
@@ -873,12 +944,12 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
               NameToken("DataWorkflow"),
               TypeItems(
                 List(
-                  TypeItem(WordToken("id"), TypeDef(Left(NameToken("Text")), isList = false)),
-                  TypeItem(WordToken("account"), TypeDef(Left(NameToken("Text")), isList = false)),
-                  TypeItem(WordToken("schedule"), TypeDef(Left(NameToken("Text")), isList = false)),
+                  TypeItem(TypeItemKey("id"), TypeDef(NameToken("Text"), isList = false)),
+                  TypeItem(TypeItemKey("account"), TypeDef(NameToken("Text"), isList = false)),
+                  TypeItem(TypeItemKey("schedule"), TypeDef(NameToken("Text"), isList = false)),
                   TypeItem(
-                    WordToken("dockerArgs"),
-                    TypeDef(Left(NameToken("String")), isList = true)
+                    TypeItemKey("dockerArgs"),
+                    TypeDef(NameToken("String"), isList = true)
                   )
                 )
               )
@@ -889,8 +960,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse conf definitions based on the above types ") {
-      assertAST(
-        """
+      parsedAST("""
           |import "/path/to/DataInfoTypes.confee"
           |
           |conf workflow : DataWorkflow {
@@ -911,21 +981,21 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
           |          ]
           |     }
           |}
-        """.stripMargin,
+        """.stripMargin) shouldEqual Right(
         Grammar(
           List(
             ImportStmt(StringToken("/path/to/DataInfoTypes.confee")),
             ConfStmt(
               WordToken("workflow"),
-              TypeDef(Left(NameToken("DataWorkflow")), isList = false),
+              TypeDef(NameToken("DataWorkflow"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("account"),
+                    ConfItemKey("account"),
                     LiteralStringFactor(StringToken("admin@dataflow.com"))
                   ),
                   ConfItem(
-                    WordToken("dockerArgs"),
+                    ConfItemKey("dockerArgs"),
                     LiteralArray(
                       List(
                         LiteralStringFactor(StringToken("--wrap-luigi"))
@@ -937,82 +1007,82 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
             ),
             ConfStmt(
               WordToken("dataInfo"),
-              TypeDef(Left(NameToken("DataInfo")), isList = false),
+              TypeDef(NameToken("DataInfo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("id"), LiteralStringFactor(StringToken("e73d6402"))),
+                  ConfItem(ConfItemKey("id"), LiteralStringFactor(StringToken("e73d6402"))),
                   ConfItem(
-                    WordToken("description"),
+                    ConfItemKey("description"),
                     LiteralStringFactor(StringToken("sample desc"))
                   ),
                   ConfItem(
-                    WordToken("facts"),
+                    ConfItemKey("facts"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
                           LiteralObjectItem(
-                            WordToken("doc"),
+                            LiteralObjectItemKey("doc"),
                             LiteralStringFactor(StringToken("sample doc"))
                           ),
                           LiteralObjectItem(
-                            WordToken("workFlows"),
+                            LiteralObjectItemKey("workFlows"),
                             LiteralArray(
                               List(
                                 LiteralProto(
-                                  WordToken("workflow"),
+                                  LiteralProtoKey("workflow"),
                                   LiteralObjectItems(
                                     List(
                                       LiteralObjectItem(
-                                        WordToken("id"),
+                                        LiteralObjectItemKey("id"),
                                         LiteralStringFactor(StringToken("a1dc6109"))
                                       ),
                                       LiteralObjectItem(
-                                        WordToken("schedule"),
+                                        LiteralObjectItemKey("schedule"),
                                         LiteralStringFactor(StringToken("monthly"))
                                       )
                                     )
                                   )
                                 ),
                                 LiteralProto(
-                                  WordToken("workflow"),
+                                  LiteralProtoKey("workflow"),
                                   LiteralObjectItems(
                                     List(
                                       LiteralObjectItem(
-                                        WordToken("id"),
+                                        LiteralObjectItemKey("id"),
                                         LiteralStringFactor(StringToken("320a0de1"))
                                       ),
                                       LiteralObjectItem(
-                                        WordToken("schedule"),
+                                        LiteralObjectItemKey("schedule"),
                                         LiteralStringFactor(StringToken("monthly"))
                                       )
                                     )
                                   )
                                 ),
                                 LiteralProto(
-                                  WordToken("workflow"),
+                                  LiteralProtoKey("workflow"),
                                   LiteralObjectItems(
                                     List(
                                       LiteralObjectItem(
-                                        WordToken("id"),
+                                        LiteralObjectItemKey("id"),
                                         LiteralStringFactor(StringToken("ac62a310"))
                                       ),
                                       LiteralObjectItem(
-                                        WordToken("schedule"),
+                                        LiteralObjectItemKey("schedule"),
                                         LiteralStringFactor(StringToken("daily"))
                                       )
                                     )
                                   )
                                 ),
                                 LiteralProto(
-                                  WordToken("workflow"),
+                                  LiteralProtoKey("workflow"),
                                   LiteralObjectItems(
                                     List(
                                       LiteralObjectItem(
-                                        WordToken("id"),
+                                        LiteralObjectItemKey("id"),
                                         LiteralStringFactor(StringToken("68b703f8"))
                                       ),
                                       LiteralObjectItem(
-                                        WordToken("schedule"),
+                                        LiteralObjectItemKey("schedule"),
                                         LiteralStringFactor(StringToken("daily"))
                                       )
                                     )
@@ -1034,13 +1104,10 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
   }
 
-  def assertAST(input: String, expectedOutput: ConfeeAST): Unit = {
-    (for {
+  def parsedAST(input: String): Either[ConfeeError, ConfeeAST] = {
+    for {
       tokens <- ConfeeLexer(input)
       ast    <- ConfeeParser(tokens)
-    } yield ast) match {
-      case Right(ast)  => ast shouldEqual expectedOutput
-      case Left(error) => fail(error.toString)
-    }
+    } yield ast
   }
 }

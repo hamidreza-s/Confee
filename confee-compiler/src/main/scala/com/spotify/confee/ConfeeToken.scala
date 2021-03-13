@@ -26,9 +26,9 @@ case class ImportKeywordToken() extends ConfeeToken
 
 /* identifiers */
 
-case class WordToken(word: String) extends ConfeeToken
+case class WordToken(word: String) extends ConfeeToken // starts with lowercase
 
-case class NameToken(name: String) extends ConfeeToken
+case class NameToken(name: String) extends ConfeeToken // starts with uppercase
 
 /* bitwise operators */
 

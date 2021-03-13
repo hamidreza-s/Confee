@@ -1,6 +1,6 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeIndexer.{IndexRow, ObjectType, indexStmts}
+import com.spotify.confee.ConfeeIndexer.{ConfIndex, ObjectType, indexStmts}
 
 import scala.util.{Failure, Success, Try}
 
@@ -8,10 +8,10 @@ object ConfeeConstructor {
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
-      val index: List[IndexRow] = indexStmts(stmts)
+      val index: List[ConfIndex] = indexStmts(stmts)
       Try(stmts.map {
         case confStmt @ ConfStmt(name, _, items) =>
-          confStmt.copy(items = constructConfItems(items, name :: Nil, index))
+          confStmt.copy(items = constructConfItems(items, name.word :: Nil, index))
         case otherwise => otherwise
       }) match {
         case Success(constructedStmts)    => Right(Grammar(constructedStmts))
@@ -31,23 +31,23 @@ object ConfeeConstructor {
 
   def constructConfItems(
       confItems: ConfItems,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): ConfItems =
     ConfItems(confItems.items.map(item => constructConfItem(item, parents, index)))
 
   def constructConfItem(
       confItem: ConfItem,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): ConfItem =
     confItem match {
       case item @ ConfItem(name, itemVal: LiteralArray) =>
-        item.copy(itemVal = constructLiteralArray(itemVal, name :: parents, index))
+        item.copy(itemVal = constructLiteralArray(itemVal, name.value :: parents, index))
       case item @ ConfItem(name, itemVal: LiteralObject) =>
-        item.copy(itemVal = constructLiteralObject(itemVal, name :: parents, index))
+        item.copy(itemVal = constructLiteralObject(itemVal, name.value :: parents, index))
       case item @ ConfItem(name, itemVal: LiteralProto) =>
-        item.copy(itemVal = constructLiteralProto(itemVal, name :: parents, index))
+        item.copy(itemVal = constructLiteralProto(itemVal, name.value :: parents, index))
       case item => item
     }
 
@@ -55,15 +55,15 @@ object ConfeeConstructor {
 
   def constructLiteralArray(
       literalArray: LiteralArray,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): LiteralArray =
     LiteralArray(literalArray.items.map(constructLiteralArrayItem(_, parents, index)))
 
   def constructLiteralArrayItem(
       arrayItem: LiteralExpr,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): LiteralExpr = arrayItem match {
     case literalArray: LiteralArray   => constructLiteralArray(literalArray, parents, index)
     case literalObject: LiteralObject => constructLiteralObject(literalObject, parents, index)
@@ -75,15 +75,15 @@ object ConfeeConstructor {
 
   def constructLiteralObject(
       literalObject: LiteralObject,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): LiteralObject =
     literalObject.copy(items = constructLiteralObjectItems(literalObject.items, parents, index))
 
   def constructLiteralObjectItems(
       literalObjectItems: LiteralObjectItems,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): LiteralObjectItems =
     LiteralObjectItems(
       literalObjectItems.items.map(item => constructLiteralObjectItem(item, parents, index))
@@ -91,16 +91,16 @@ object ConfeeConstructor {
 
   def constructLiteralObjectItem(
       objectItem: LiteralObjectItem,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): LiteralObjectItem =
     objectItem match {
       case item @ LiteralObjectItem(name, itemVal: LiteralArray) =>
-        item.copy(itemVal = constructLiteralArray(itemVal, name :: parents, index))
+        item.copy(itemVal = constructLiteralArray(itemVal, name.value :: parents, index))
       case item @ LiteralObjectItem(name, itemVal: LiteralObject) =>
-        item.copy(itemVal = constructLiteralObject(itemVal, name :: parents, index))
+        item.copy(itemVal = constructLiteralObject(itemVal, name.value :: parents, index))
       case item @ LiteralObjectItem(name, itemVal: LiteralProto) =>
-        item.copy(itemVal = constructLiteralProto(itemVal, name :: parents, index))
+        item.copy(itemVal = constructLiteralProto(itemVal, name.value :: parents, index))
       case item => item
     }
 
@@ -108,13 +108,13 @@ object ConfeeConstructor {
 
   def constructLiteralProto(
       literalProto: LiteralProto,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): LiteralObject = {
     // Lookup the object which is referenced as prototype
     val templateProto =
       ConfeeIndexer.indexLookup[LiteralObject](
-        literalProto.proto,
+        literalProto.name.value,
         ObjectType,
         literalProto.pos,
         parents,
@@ -122,26 +122,26 @@ object ConfeeConstructor {
       )
 
     // Make a map of items in the prototype as template to be used in the final constructed object
-    val templateProtoItems = templateProto.items.items.foldLeft(Map.empty[WordToken, LiteralExpr]) {
-      case (acc, LiteralObjectItem(name: WordToken, itemVal: LiteralExpr)) =>
+    val templateProtoItems = templateProto.items.items.foldLeft(Map.empty[String, LiteralExpr]) {
+      case (acc, LiteralObjectItem(LiteralObjectItemKey(name), itemVal: LiteralExpr)) =>
         acc + (name -> itemVal)
     }
 
     // Make a map of final constructed object by overriding template items
     val literalProtoItems = literalProto.items.items.foldLeft(templateProtoItems) {
-      case (acc, LiteralObjectItem(name: WordToken, itemVal: LiteralExpr)) =>
+      case (acc, LiteralObjectItem(LiteralObjectItemKey(name), itemVal: LiteralExpr)) =>
         acc + (name -> itemVal)
     }
 
     // Make a list of final items of constructed literal objects
     val constructedItems = literalProtoItems.map {
-      case (name, itemVal) => LiteralObjectItem(name, itemVal)
+      case (name, itemVal) => LiteralObjectItem(LiteralObjectItemKey(name), itemVal)
     }
 
     // Replace proto reference by a constructed object
     val constructedObject = templateProto.copy(items = LiteralObjectItems(constructedItems.toList))
 
     // Call object constructor to construct referenced prototypes in its items if available
-    constructLiteralObject(constructedObject, literalProto.proto :: parents, index)
+    constructLiteralObject(constructedObject, literalProto.name.value :: parents, index)
   }
 }

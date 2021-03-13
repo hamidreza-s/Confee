@@ -45,15 +45,15 @@ object ConfeeFormatter {
   def toJsonLiteralObjectItems(literalObjectItems: LiteralObjectItems): List[(String, Json)] =
     literalObjectItems.items.map {
       case LiteralObjectItem(name, itemVal: LiteralBoolFactor) =>
-        (name.word, toJsonLiteralBoolFactor(itemVal))
+        (name.value, toJsonLiteralBoolFactor(itemVal))
       case LiteralObjectItem(name, itemVal: LiteralNumberFactor) =>
-        (name.word, toJsonLiteralNumberFactor(itemVal))
+        (name.value, toJsonLiteralNumberFactor(itemVal))
       case LiteralObjectItem(name, itemVal: LiteralStringFactor) =>
-        (name.word, toJsonLiteralStringFactor(itemVal))
+        (name.value, toJsonLiteralStringFactor(itemVal))
       case LiteralObjectItem(name, itemVal: LiteralArray) =>
-        (name.word, toJsonLiteralArray(itemVal))
+        (name.value, toJsonLiteralArray(itemVal))
       case LiteralObjectItem(name, itemVal: LiteralObject) =>
-        (name.word, toJsonLiteralObject(itemVal))
+        (name.value, toJsonLiteralObject(itemVal))
       case LiteralObjectItem(name, _: LiteralExpr) =>
         throw ConfeeException(
           Location(name.pos.line, name.pos.column),
@@ -64,15 +64,15 @@ object ConfeeFormatter {
   def toJson(confStmt: ConfStmt): Either[ConfeeError, Json] =
     Try(confStmt.items.items.map {
       case ConfItem(name, itemVal: LiteralBoolFactor) =>
-        (name.word, toJsonLiteralBoolFactor(itemVal))
+        (name.value, toJsonLiteralBoolFactor(itemVal))
       case ConfItem(name, itemVal: LiteralNumberFactor) =>
-        (name.word, toJsonLiteralNumberFactor(itemVal))
+        (name.value, toJsonLiteralNumberFactor(itemVal))
       case ConfItem(name, itemVal: LiteralStringFactor) =>
-        (name.word, toJsonLiteralStringFactor(itemVal))
+        (name.value, toJsonLiteralStringFactor(itemVal))
       case ConfItem(name, itemVal: LiteralArray) =>
-        (name.word, toJsonLiteralArray(itemVal))
+        (name.value, toJsonLiteralArray(itemVal))
       case ConfItem(name, itemVal: LiteralObject) =>
-        (name.word, toJsonLiteralObject(itemVal))
+        (name.value, toJsonLiteralObject(itemVal))
       case ConfItem(name, _: LiteralExpr) =>
         throw ConfeeException(
           Location(name.pos.line, name.pos.column),

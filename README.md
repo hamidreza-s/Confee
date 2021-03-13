@@ -83,6 +83,19 @@ when then output path flag is not set:
 # sbt 'confee-cli/run -c dataInfo -i ./confee-cli/src/main/resources/example/data-info.confee -t JSON'
 ```
 
+Syntax
+===
+
+`conf`: It is a top-level key-value structure which has a type and will be formatted to and object.
+- Conf name should always start with Lowercase
+- Conf item keys can start with lowercase or uppercase
+
+`type`: It is a top-level key-value structure similar to conf, but it just holds the types.
+- Type names should just start with Uppercase
+- Type item keys can start with lowercase or uppercase
+
+`import`: It is a top-level statement which is used to import Conf and Type to a given file.
+
 Core features
 ==
 
@@ -104,14 +117,12 @@ same scope.
   multidimensional arrays whose values have the same type.
 - **Object**: It is a dictionary data type composed of a collection of (key, value) pairs, such that 
   each possible key appears at most once in the collection. Each pair can have its own type and can
-  have another nested object as its value.
+  have another nested object as its value. Object item keys can start with lowercase or uppercase.
 - **Proto**: It is a clone of an object by which we can reuse an already defined object while being
-  able to override its item values. 
-
+  able to override its item values. Proto item keys can start with lowercase or uppercase.
 
 The `type` statement is used to define the types of a `conf` statement, and they both can be
-imported to other Confee file using `import` statement. 
-
+imported to other Confee file using `import` statement.
 
 AST and Context-Free Grammar (BNF)
 ===
@@ -157,18 +168,21 @@ override its fields.
 <typeStmtItems> ::= <typeStmtItem> <typeStmtItems>
                   | <typeStmtItem>
                   
-<typeStmtItem> ::= <word> <colon> <name>
-                 | <word> <colon> <bracketOpen> <name> <bracketClose>
+<typeStmtItem> ::= <typeItemKey> <colon> <name>
+                 | <typeItemKey> <colon> <bracketOpen> <name> <bracketClose>
+
+<typeItemKey> ::= <string>
 
 <confStmt> ::= <confKeyword> <word> <colon> <confStmtType> <braceOpen> <confStmtItems> <braceClose>
 
 <confStmtItems> ::= <confStmtItem> <confStmtItems>
                   | <confStmtItem>
              
-<confStmtItem> ::= <word> <assignment> <expr>
+<confStmtItem> ::= <confItemKey> <assignment> <expr>
 
-<confStmtType> ::= <word>
-                 | <name>
+<confStmtType> ::= <name>
+
+<confItemKey> ::= <string>
                  
 <importStmt> ::= <importKeyword> <string>
 

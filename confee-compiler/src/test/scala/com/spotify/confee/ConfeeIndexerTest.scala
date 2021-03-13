@@ -16,32 +16,38 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           |     e = {bar = 1 bat = {ban = 2}}
           |     f = g {bar = 1 bat = {ban = 2}}
           |}""".stripMargin) shouldEqual List(
-        IndexRow(
-          WordToken("foo"),
+        ConfIndex(
+          "foo",
           List(),
           LiteralObject(
             LiteralObjectItems(
               List(
-                LiteralObjectItem(WordToken("a"), LiteralBoolFactor(BoolToken(true))),
-                LiteralObjectItem(WordToken("b"), LiteralStringFactor(StringToken("abc"))),
-                LiteralObjectItem(WordToken("c"), LiteralNumberFactor(NumberToken(1.0))),
+                LiteralObjectItem(LiteralObjectItemKey("a"), LiteralBoolFactor(BoolToken(true))),
                 LiteralObjectItem(
-                  WordToken("d"),
+                  LiteralObjectItemKey("b"),
+                  LiteralStringFactor(StringToken("abc"))
+                ),
+                LiteralObjectItem(LiteralObjectItemKey("c"), LiteralNumberFactor(NumberToken(1.0))),
+                LiteralObjectItem(
+                  LiteralObjectItemKey("d"),
                   LiteralArray(List(LiteralNumberFactor(NumberToken(1.0))))
                 ),
                 LiteralObjectItem(
-                  WordToken("e"),
+                  LiteralObjectItemKey("e"),
                   LiteralObject(
                     LiteralObjectItems(
                       List(
-                        LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1.0))),
                         LiteralObjectItem(
-                          WordToken("bat"),
+                          LiteralObjectItemKey("bar"),
+                          LiteralNumberFactor(NumberToken(1.0))
+                        ),
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("bat"),
                           LiteralObject(
                             LiteralObjectItems(
                               List(
                                 LiteralObjectItem(
-                                  WordToken("ban"),
+                                  LiteralObjectItemKey("ban"),
                                   LiteralNumberFactor(NumberToken(2.0))
                                 )
                               )
@@ -53,19 +59,22 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
                   )
                 ),
                 LiteralObjectItem(
-                  WordToken("f"),
+                  LiteralObjectItemKey("f"),
                   LiteralProto(
-                    WordToken("g"),
+                    LiteralProtoKey("g"),
                     LiteralObjectItems(
                       List(
-                        LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1.0))),
                         LiteralObjectItem(
-                          WordToken("bat"),
+                          LiteralObjectItemKey("bar"),
+                          LiteralNumberFactor(NumberToken(1.0))
+                        ),
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("bat"),
                           LiteralObject(
                             LiteralObjectItems(
                               List(
                                 LiteralObjectItem(
-                                  WordToken("ban"),
+                                  LiteralObjectItemKey("ban"),
                                   LiteralNumberFactor(NumberToken(2.0))
                                 )
                               )
@@ -83,46 +92,51 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           hasReference = false,
           isTopLevel = true
         ),
-        IndexRow(
-          WordToken("a"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "a",
+          List("foo"),
           LiteralBoolFactor(BoolToken(true)),
           BoolType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("b"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "b",
+          List("foo"),
           LiteralStringFactor(StringToken("abc")),
           StringType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("c"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "c",
+          List("foo"),
           LiteralNumberFactor(NumberToken(1)),
           NumberType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("d"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "d",
+          List("foo"),
           LiteralArray(List(LiteralNumberFactor(NumberToken(1.0)))),
           ArrayType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("e"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "e",
+          List("foo"),
           LiteralObject(
             LiteralObjectItems(
               List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
+                LiteralObjectItem(LiteralObjectItemKey("bar"), LiteralNumberFactor(NumberToken(1))),
                 LiteralObjectItem(
-                  WordToken("bat"),
+                  LiteralObjectItemKey("bat"),
                   LiteralObject(
                     LiteralObjectItems(
-                      List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
+                      List(
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("ban"),
+                          LiteralNumberFactor(NumberToken(2))
+                        )
+                      )
                     )
                   )
                 )
@@ -132,44 +146,51 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           ObjectType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("bar"),
-          List(WordToken("e"), WordToken("foo")),
+        ConfIndex(
+          "bar",
+          List("e", "foo"),
           LiteralNumberFactor(NumberToken(1)),
           NumberType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("e"), WordToken("foo")),
+        ConfIndex(
+          "bat",
+          List("e", "foo"),
           LiteralObject(
             LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
+              List(
+                LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralNumberFactor(NumberToken(2)))
+              )
             )
           ),
           ObjectType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("ban"),
-          List(WordToken("bat"), WordToken("e"), WordToken("foo")),
+        ConfIndex(
+          "ban",
+          List("bat", "e", "foo"),
           LiteralNumberFactor(NumberToken(2)),
           NumberType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("f"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "f",
+          List("foo"),
           LiteralProto(
-            WordToken("g"),
+            LiteralProtoKey("g"),
             LiteralObjectItems(
               List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
+                LiteralObjectItem(LiteralObjectItemKey("bar"), LiteralNumberFactor(NumberToken(1))),
                 LiteralObjectItem(
-                  WordToken("bat"),
+                  LiteralObjectItemKey("bat"),
                   LiteralObject(
                     LiteralObjectItems(
-                      List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
+                      List(
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("ban"),
+                          LiteralNumberFactor(NumberToken(2))
+                        )
+                      )
                     )
                   )
                 )
@@ -179,27 +200,29 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           ProtoType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("bar"),
-          List(WordToken("f"), WordToken("foo")),
+        ConfIndex(
+          "bar",
+          List("f", "foo"),
           LiteralNumberFactor(NumberToken(1)),
           NumberType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("f"), WordToken("foo")),
+        ConfIndex(
+          "bat",
+          List("f", "foo"),
           LiteralObject(
             LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralNumberFactor(NumberToken(2))))
+              List(
+                LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralNumberFactor(NumberToken(2)))
+              )
             )
           ),
           ObjectType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("ban"),
-          List(WordToken("bat"), WordToken("f"), WordToken("foo")),
+        ConfIndex(
+          "ban",
+          List("bat", "f", "foo"),
           LiteralNumberFactor(NumberToken(2)),
           NumberType,
           hasReference = false
@@ -216,14 +239,14 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           |     e = {bar = 1 bat = {ban = ref5}}
           |     f = g {bar = 1 bat = {ban = ref6}}
           |}""".stripMargin) shouldEqual List(
-        IndexRow(
-          WordToken("foo"),
+        ConfIndex(
+          "foo",
           List(),
           LiteralObject(
             LiteralObjectItems(
               List(
                 LiteralObjectItem(
-                  WordToken("a"),
+                  LiteralObjectItemKey("a"),
                   LiteralBoolGroup(
                     LiteralBoolOperatorAnd(),
                     LiteralBoolFactor(BoolToken(false)),
@@ -231,7 +254,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
                   )
                 ),
                 LiteralObjectItem(
-                  WordToken("b"),
+                  LiteralObjectItemKey("b"),
                   LiteralStringGroup(
                     LiteralStringOperatorConcat(),
                     LiteralStringFactor(StringToken("abc")),
@@ -239,7 +262,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
                   )
                 ),
                 LiteralObjectItem(
-                  WordToken("c"),
+                  LiteralObjectItemKey("c"),
                   LiteralNumberGroup(
                     LiteralNumberOperatorAdd(),
                     LiteralNumberFactor(NumberToken(1.0)),
@@ -247,21 +270,27 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
                   )
                 ),
                 LiteralObjectItem(
-                  WordToken("d"),
+                  LiteralObjectItemKey("d"),
                   LiteralArray(List(LiteralWord(WordToken("ref4"))))
                 ),
                 LiteralObjectItem(
-                  WordToken("e"),
+                  LiteralObjectItemKey("e"),
                   LiteralObject(
                     LiteralObjectItems(
                       List(
-                        LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1.0))),
                         LiteralObjectItem(
-                          WordToken("bat"),
+                          LiteralObjectItemKey("bar"),
+                          LiteralNumberFactor(NumberToken(1.0))
+                        ),
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("bat"),
                           LiteralObject(
                             LiteralObjectItems(
                               List(
-                                LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref5")))
+                                LiteralObjectItem(
+                                  LiteralObjectItemKey("ban"),
+                                  LiteralWord(WordToken("ref5"))
+                                )
                               )
                             )
                           )
@@ -271,18 +300,24 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
                   )
                 ),
                 LiteralObjectItem(
-                  WordToken("f"),
+                  LiteralObjectItemKey("f"),
                   LiteralProto(
-                    WordToken("g"),
+                    LiteralProtoKey("g"),
                     LiteralObjectItems(
                       List(
-                        LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1.0))),
                         LiteralObjectItem(
-                          WordToken("bat"),
+                          LiteralObjectItemKey("bar"),
+                          LiteralNumberFactor(NumberToken(1.0))
+                        ),
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("bat"),
                           LiteralObject(
                             LiteralObjectItems(
                               List(
-                                LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref6")))
+                                LiteralObjectItem(
+                                  LiteralObjectItemKey("ban"),
+                                  LiteralWord(WordToken("ref6"))
+                                )
                               )
                             )
                           )
@@ -298,9 +333,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           hasReference = true,
           isTopLevel = true
         ),
-        IndexRow(
-          WordToken("a"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "a",
+          List("foo"),
           LiteralBoolGroup(
             LiteralBoolOperatorAnd(),
             LiteralBoolFactor(BoolToken(false)),
@@ -309,9 +344,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           BoolType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("b"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "b",
+          List("foo"),
           LiteralStringGroup(
             LiteralStringOperatorConcat(),
             LiteralStringFactor(StringToken("abc")),
@@ -320,9 +355,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           StringType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("c"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "c",
+          List("foo"),
           LiteralNumberGroup(
             LiteralNumberOperatorAdd(),
             LiteralNumberFactor(NumberToken(1)),
@@ -331,26 +366,29 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           NumberType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("d"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "d",
+          List("foo"),
           LiteralArray(List(LiteralWord(WordToken("ref4")))),
           ArrayType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("e"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "e",
+          List("foo"),
           LiteralObject(
             LiteralObjectItems(
               List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
+                LiteralObjectItem(LiteralObjectItemKey("bar"), LiteralNumberFactor(NumberToken(1))),
                 LiteralObjectItem(
-                  WordToken("bat"),
+                  LiteralObjectItemKey("bat"),
                   LiteralObject(
                     LiteralObjectItems(
                       List(
-                        LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref5")))
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("ban"),
+                          LiteralWord(WordToken("ref5"))
+                        )
                       )
                     )
                   )
@@ -361,45 +399,48 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           ObjectType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("bar"),
-          List(WordToken("e"), WordToken("foo")),
+        ConfIndex(
+          "bar",
+          List("e", "foo"),
           LiteralNumberFactor(NumberToken(1)),
           NumberType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("e"), WordToken("foo")),
+        ConfIndex(
+          "bat",
+          List("e", "foo"),
           LiteralObject(
             LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref5"))))
+              List(LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralWord(WordToken("ref5"))))
             )
           ),
           ObjectType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("ban"),
-          List(WordToken("bat"), WordToken("e"), WordToken("foo")),
+        ConfIndex(
+          "ban",
+          List("bat", "e", "foo"),
           LiteralWord(WordToken("ref5")),
           WordType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("f"),
-          List(WordToken("foo")),
+        ConfIndex(
+          "f",
+          List("foo"),
           LiteralProto(
-            WordToken("g"),
+            LiteralProtoKey("g"),
             LiteralObjectItems(
               List(
-                LiteralObjectItem(WordToken("bar"), LiteralNumberFactor(NumberToken(1))),
+                LiteralObjectItem(LiteralObjectItemKey("bar"), LiteralNumberFactor(NumberToken(1))),
                 LiteralObjectItem(
-                  WordToken("bat"),
+                  LiteralObjectItemKey("bat"),
                   LiteralObject(
                     LiteralObjectItems(
                       List(
-                        LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref6")))
+                        LiteralObjectItem(
+                          LiteralObjectItemKey("ban"),
+                          LiteralWord(WordToken("ref6"))
+                        )
                       )
                     )
                   )
@@ -410,27 +451,27 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           ProtoType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("bar"),
-          List(WordToken("f"), WordToken("foo")),
+        ConfIndex(
+          "bar",
+          List("f", "foo"),
           LiteralNumberFactor(NumberToken(1)),
           NumberType,
           hasReference = false
         ),
-        IndexRow(
-          WordToken("bat"),
-          List(WordToken("f"), WordToken("foo")),
+        ConfIndex(
+          "bat",
+          List("f", "foo"),
           LiteralObject(
             LiteralObjectItems(
-              List(LiteralObjectItem(WordToken("ban"), LiteralWord(WordToken("ref6"))))
+              List(LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralWord(WordToken("ref6"))))
             )
           ),
           ObjectType,
           hasReference = true
         ),
-        IndexRow(
-          WordToken("ban"),
-          List(WordToken("bat"), WordToken("f"), WordToken("foo")),
+        ConfIndex(
+          "ban",
+          List("bat", "f", "foo"),
           LiteralWord(WordToken("ref6")),
           WordType,
           hasReference = true
@@ -451,15 +492,16 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           |}""".stripMargin)
 
       val name    = WordToken("a")
+      val key     = name.word
       val pos     = name.pos
-      val parents = List(WordToken("foo"))
+      val parents = List("foo")
 
-      val bool   = indexLookup[LiteralBool](name, BoolType, pos, parents, index)
-      val number = indexLookup[LiteralNumber](name, NumberType, pos, parents, index)
-      val string = indexLookup[LiteralString](name, StringType, pos, parents, index)
-      val array  = indexLookup[LiteralArray](name, ArrayType, pos, parents, index)
-      val obj    = indexLookup[LiteralObject](name, ObjectType, pos, parents, index)
-      val proto  = indexLookup[LiteralProto](name, ProtoType, pos, parents, index)
+      val bool   = indexLookup[LiteralBool](key, BoolType, pos, parents, index)
+      val number = indexLookup[LiteralNumber](key, NumberType, pos, parents, index)
+      val string = indexLookup[LiteralString](key, StringType, pos, parents, index)
+      val array  = indexLookup[LiteralArray](key, ArrayType, pos, parents, index)
+      val obj    = indexLookup[LiteralObject](key, ObjectType, pos, parents, index)
+      val proto  = indexLookup[LiteralProto](key, ProtoType, pos, parents, index)
 
       bool shouldEqual LiteralBoolFactor(BoolToken(true))
       number shouldEqual LiteralNumberFactor(NumberToken(1.0))
@@ -467,20 +509,20 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
       array shouldEqual LiteralArray(List(LiteralNumberFactor(NumberToken(1.0))))
       obj shouldEqual LiteralObject(
         LiteralObjectItems(
-          List(LiteralObjectItem(WordToken("x"), LiteralNumberFactor(NumberToken(1.0))))
+          List(LiteralObjectItem(LiteralObjectItemKey("x"), LiteralNumberFactor(NumberToken(1.0))))
         )
       )
       proto shouldEqual LiteralProto(
-        WordToken("x"),
+        LiteralProtoKey("x"),
         LiteralObjectItems(
-          List(LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(1.0))))
+          List(LiteralObjectItem(LiteralObjectItemKey("y"), LiteralNumberFactor(NumberToken(1.0))))
         )
       )
 
     }
   }
 
-  def indexStmts(input: String): List[IndexRow] = {
+  def indexStmts(input: String): List[ConfIndex] = {
     (for {
       tokens <- ConfeeLexer(input)
       parsed <- ConfeeParser(tokens)

@@ -18,17 +18,21 @@ case class Grammar(stmts: List[Stmt]) extends ConfeeAST
 
 case class TypeStmt(name: NameToken, items: TypeItems) extends Stmt
 
-case class TypeItem(name: WordToken, itemType: TypeDef) extends Node
+case class TypeItem(name: TypeItemKey, itemType: TypeDef) extends Node
+
+case class TypeItemKey(value: String) extends Node
 
 case class TypeItems(items: List[TypeItem]) extends Node
 
-case class TypeDef(name: Either[NameToken, WordToken], isList: Boolean) extends Node
+case class TypeDef(name: NameToken, isList: Boolean) extends Node
 
 /* conf statement */
 
 case class ConfStmt(name: WordToken, confType: TypeDef, items: ConfItems) extends Stmt
 
-case class ConfItem(name: WordToken, itemVal: Expr) extends Node
+case class ConfItem(name: ConfItemKey, itemVal: Expr) extends Node
+
+case class ConfItemKey(value: String) extends Node
 
 case class ConfItems(items: List[ConfItem]) extends Node
 
@@ -127,13 +131,17 @@ case class LiteralArray(items: List[LiteralExpr]) extends LiteralExpr
 
 case class LiteralObject(items: LiteralObjectItems) extends LiteralExpr
 
-case class LiteralObjectItem(name: WordToken, itemVal: LiteralExpr) extends Node
+case class LiteralObjectItem(name: LiteralObjectItemKey, itemVal: LiteralExpr) extends Node
+
+case class LiteralObjectItemKey(value: String) extends Node
 
 case class LiteralObjectItems(items: List[LiteralObjectItem]) extends Node
 
 /* literal proto expression */
 
-case class LiteralProto(proto: WordToken, items: LiteralObjectItems) extends LiteralExpr
+case class LiteralProto(name: LiteralProtoKey, items: LiteralObjectItems) extends LiteralExpr
+
+case class LiteralProtoKey(value: String) extends Node
 
 /* debugging statement */
 

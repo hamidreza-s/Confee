@@ -22,29 +22,47 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("a"),
+                    ConfItemKey("a"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(1.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(1.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          )
                         )
                       )
                     )
                   ),
                   ConfItem(
-                    WordToken("b"),
+                    ConfItemKey("b"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(false))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(2.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(false))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(2.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          )
                         )
                       )
                     )
@@ -79,38 +97,47 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("a"),
+                    ConfItemKey("a"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(1.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(1.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          )
                         )
                       )
                     )
                   ),
                   ConfItem(
-                    WordToken("b"),
+                    ConfItemKey("b"),
                     LiteralArray(
                       List(
                         LiteralObject(
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("x"),
+                                LiteralObjectItemKey("x"),
                                 LiteralBoolFactor(BoolToken(false))
                               ),
                               LiteralObjectItem(
-                                WordToken("y"),
+                                LiteralObjectItemKey("y"),
                                 LiteralNumberFactor(NumberToken(2.0))
                               ),
                               LiteralObjectItem(
-                                WordToken("z"),
+                                LiteralObjectItemKey("z"),
                                 LiteralStringFactor(StringToken("Z"))
                               )
                             )
@@ -119,13 +146,16 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
                         LiteralObject(
                           LiteralObjectItems(
                             List(
-                              LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
                               LiteralObjectItem(
-                                WordToken("y"),
+                                LiteralObjectItemKey("x"),
+                                LiteralBoolFactor(BoolToken(true))
+                              ),
+                              LiteralObjectItem(
+                                LiteralObjectItemKey("y"),
                                 LiteralNumberFactor(NumberToken(3.0))
                               ),
                               LiteralObjectItem(
-                                WordToken("z"),
+                                LiteralObjectItemKey("z"),
                                 LiteralStringFactor(StringToken("Z"))
                               )
                             )
@@ -159,30 +189,51 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("a"),
+                    ConfItemKey("a"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(1.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(1.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          )
                         )
                       )
                     )
                   ),
                   ConfItem(
-                    WordToken("b"),
+                    ConfItemKey("b"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(false))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(2.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z"))),
-                          LiteralObjectItem(WordToken("n"), LiteralStringFactor(StringToken("N")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(false))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(2.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("n"),
+                            LiteralStringFactor(StringToken("N"))
+                          )
                         )
                       )
                     )
@@ -213,44 +264,62 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("a"),
+                    ConfItemKey("a"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(1.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(1.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          )
                         )
                       )
                     )
                   ),
                   ConfItem(
-                    WordToken("b"),
+                    ConfItemKey("b"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("x"), LiteralBoolFactor(BoolToken(true))),
-                          LiteralObjectItem(WordToken("y"), LiteralNumberFactor(NumberToken(2.0))),
-                          LiteralObjectItem(WordToken("z"), LiteralStringFactor(StringToken("Z"))),
                           LiteralObjectItem(
-                            WordToken("m"),
+                            LiteralObjectItemKey("x"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("y"),
+                            LiteralNumberFactor(NumberToken(2.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("z"),
+                            LiteralStringFactor(StringToken("Z"))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("m"),
                             LiteralObject(
                               LiteralObjectItems(
                                 List(
                                   LiteralObjectItem(
-                                    WordToken("x"),
+                                    LiteralObjectItemKey("x"),
                                     LiteralBoolFactor(BoolToken(true))
                                   ),
                                   LiteralObjectItem(
-                                    WordToken("y"),
+                                    LiteralObjectItemKey("y"),
                                     LiteralNumberFactor(NumberToken(3.0))
                                   ),
                                   LiteralObjectItem(
-                                    WordToken("z"),
+                                    LiteralObjectItemKey("z"),
                                     LiteralStringFactor(StringToken("Z"))
                                   )
                                 )
@@ -283,17 +352,17 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("base"), LiteralNumberFactor(NumberToken(1.0))),
+                  ConfItem(ConfItemKey("base"), LiteralNumberFactor(NumberToken(1.0))),
                   ConfItem(
-                    WordToken("a"),
+                    ConfItemKey("a"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
                           LiteralObjectItem(
-                            WordToken("index"),
+                            LiteralObjectItemKey("index"),
                             LiteralNumberFactor(NumberToken(1.0))
                           )
                         )
@@ -301,12 +370,12 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("b"),
+                    ConfItemKey("b"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
                           LiteralObjectItem(
-                            WordToken("index"),
+                            LiteralObjectItemKey("index"),
                             LiteralNumberFactor(NumberToken(2.0))
                           )
                         )
@@ -336,27 +405,36 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("a"), LiteralNumberFactor(NumberToken(1.0))),
-                  ConfItem(WordToken("b"), LiteralNumberFactor(NumberToken(2.0)))
+                  ConfItem(ConfItemKey("a"), LiteralNumberFactor(NumberToken(1.0))),
+                  ConfItem(ConfItemKey("b"), LiteralNumberFactor(NumberToken(2.0)))
                 )
               )
             ),
             ConfStmt(
               WordToken("bar"),
-              TypeDef(Left(NameToken("Bar")), isList = false),
+              TypeDef(NameToken("Bar"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("a"),
+                    ConfItemKey("a"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("a"), LiteralNumberFactor(NumberToken(1.0))),
-                          LiteralObjectItem(WordToken("b"), LiteralNumberFactor(NumberToken(2.0))),
-                          LiteralObjectItem(WordToken("c"), LiteralNumberFactor(NumberToken(3.0)))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("a"),
+                            LiteralNumberFactor(NumberToken(1.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("b"),
+                            LiteralNumberFactor(NumberToken(2.0))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("c"),
+                            LiteralNumberFactor(NumberToken(3.0))
+                          )
                         )
                       )
                     )

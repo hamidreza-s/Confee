@@ -11,20 +11,27 @@ object ConfeeCompiler {
   // DONE: Add unit tests for ConfeeIndexer [done]
   // DONE: Make it possible to use a conf as an object in another conf in binder [done]
   // DONE: Make it possible to use a conf as a proto in another conf in constructor (*** priority 1 ***)
+  // DONE: Type name should just start with Uppercase (+ test/readme)
+  // DONE: Conf name should always start with Lowercase (+ test/readme)
+  // DONE: All type/conf/object/proto item keys can be both uppercase and lowercase
 
-  // TODO: Don't let confs, objects and protos have same item name before constructor step
-  // TODO: Don't let confs have same name
-  // TODO: Type should just start with Uppercase (fix test and readme)
-  // TODO: Conf Value should always start with Lowercase (fix test and readme)
-  // TODO: Conf value should accept array value as well as obj
+  // TODO: Type Checker/Indexer: (*** priority 2 ***)
+  // - Index defined types in Indexer
+  // - Add defined type (next to already existing inferred types) to index row
+  // - Implement type checker before binder
+  // - Fix the to-do items in ConfeeIndexer
+  // - Don't let having wrong types in confs
+  // - Don't let confs, objects and protos have same item name before constructor step
+  // - Don't let confs have same name
+  // TODO: Conf value should accept array value as well as obj (+ test/readme) (*** priority 4 ***)
   // TODO: Add "private" keyword for the items you don't want to expose
   // TODO: Add "proto." keyword for proto items to get access to items of referenced objects
   // TODO: Add unit tests for ConfeeHelper
   // TODO: Make compiler/cli compatible with ScalaNative
   // TODO: Add REST API + GUI for debugging/testing (*** priority 3 ***)
-  // TODO: Implement type checker before binder and then fix the todo items in ConfeeIndexer (*** priority 2 ***)
   // TODO: Add 'list-confs'/'list-types' to ConfeeCompiler + ConfeeCLI + ConfeeRest
   // TODO: Cache index not to create twice in binding and constructing steps
+  // TODO: Improve error message description with better Location information
 
   /** Compiler Steps:
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns

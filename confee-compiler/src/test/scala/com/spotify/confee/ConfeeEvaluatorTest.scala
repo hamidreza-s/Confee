@@ -25,21 +25,21 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralBoolFactor(BoolToken(true))),
-                  ConfItem(WordToken("bat"), LiteralBoolFactor(BoolToken(false))),
-                  ConfItem(WordToken("ban"), LiteralBoolFactor(BoolToken(true))),
-                  ConfItem(WordToken("bal"), LiteralBoolFactor(BoolToken(true))),
-                  ConfItem(WordToken("baz"), LiteralBoolFactor(BoolToken(true))),
-                  ConfItem(WordToken("bay"), LiteralBoolFactor(BoolToken(true))),
-                  ConfItem(WordToken("bax"), LiteralBoolFactor(BoolToken(false))),
-                  ConfItem(WordToken("baw"), LiteralBoolFactor(BoolToken(false))),
-                  ConfItem(WordToken("bav"), LiteralBoolFactor(BoolToken(false))),
-                  ConfItem(WordToken("bau"), LiteralBoolFactor(BoolToken(true))),
-                  ConfItem(WordToken("bas"), LiteralBoolFactor(BoolToken(false))),
-                  ConfItem(WordToken("baq"), LiteralBoolFactor(BoolToken(true)))
+                  ConfItem(ConfItemKey("bar"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(ConfItemKey("bat"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(ConfItemKey("ban"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(ConfItemKey("bal"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(ConfItemKey("baz"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(ConfItemKey("bay"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(ConfItemKey("bax"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(ConfItemKey("baw"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(ConfItemKey("bav"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(ConfItemKey("bau"), LiteralBoolFactor(BoolToken(true))),
+                  ConfItem(ConfItemKey("bas"), LiteralBoolFactor(BoolToken(false))),
+                  ConfItem(ConfItemKey("baq"), LiteralBoolFactor(BoolToken(true)))
                 )
               )
             )
@@ -80,10 +80,10 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("ab")))
+                  ConfItem(ConfItemKey("bar"), LiteralStringFactor(StringToken("ab")))
                 )
               )
             )
@@ -102,12 +102,12 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("a"))),
-                  ConfItem(WordToken("bat"), LiteralStringFactor(StringToken("ac"))),
-                  ConfItem(WordToken("ban"), LiteralStringFactor(StringToken("abc")))
+                  ConfItem(ConfItemKey("bar"), LiteralStringFactor(StringToken("a"))),
+                  ConfItem(ConfItemKey("bat"), LiteralStringFactor(StringToken("ac"))),
+                  ConfItem(ConfItemKey("ban"), LiteralStringFactor(StringToken("abc")))
                 )
               )
             )
@@ -127,13 +127,13 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("abcd"))),
-                  ConfItem(WordToken("bat"), LiteralStringFactor(StringToken("abcd"))),
-                  ConfItem(WordToken("ban"), LiteralStringFactor(StringToken("abcd"))),
-                  ConfItem(WordToken("bal"), LiteralStringFactor(StringToken("abcd")))
+                  ConfItem(ConfItemKey("bar"), LiteralStringFactor(StringToken("abcd"))),
+                  ConfItem(ConfItemKey("bat"), LiteralStringFactor(StringToken("abcd"))),
+                  ConfItem(ConfItemKey("ban"), LiteralStringFactor(StringToken("abcd"))),
+                  ConfItem(ConfItemKey("bal"), LiteralStringFactor(StringToken("abcd")))
                 )
               )
             )
@@ -152,11 +152,11 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralStringFactor(StringToken("abc"))),
-                  ConfItem(WordToken("bat"), LiteralStringFactor(StringToken("a")))
+                  ConfItem(ConfItemKey("bar"), LiteralStringFactor(StringToken("abc"))),
+                  ConfItem(ConfItemKey("bat"), LiteralStringFactor(StringToken("a")))
                 )
               )
             )
@@ -202,14 +202,14 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralNumberFactor(NumberToken(12))),
-                  ConfItem(WordToken("bat"), LiteralNumberFactor(NumberToken(8))),
-                  ConfItem(WordToken("ban"), LiteralNumberFactor(NumberToken(20))),
-                  ConfItem(WordToken("bal"), LiteralNumberFactor(NumberToken(5))),
-                  ConfItem(WordToken("baz"), LiteralNumberFactor(NumberToken(0)))
+                  ConfItem(ConfItemKey("bar"), LiteralNumberFactor(NumberToken(12))),
+                  ConfItem(ConfItemKey("bat"), LiteralNumberFactor(NumberToken(8))),
+                  ConfItem(ConfItemKey("ban"), LiteralNumberFactor(NumberToken(20))),
+                  ConfItem(ConfItemKey("bal"), LiteralNumberFactor(NumberToken(5))),
+                  ConfItem(ConfItemKey("baz"), LiteralNumberFactor(NumberToken(0)))
                 )
               )
             )
@@ -230,13 +230,13 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
-                  ConfItem(WordToken("bar"), LiteralNumberFactor(NumberToken(10))),
-                  ConfItem(WordToken("bat"), LiteralNumberFactor(NumberToken(10))),
-                  ConfItem(WordToken("ban"), LiteralNumberFactor(NumberToken(16))),
-                  ConfItem(WordToken("bal"), LiteralNumberFactor(NumberToken(2)))
+                  ConfItem(ConfItemKey("bar"), LiteralNumberFactor(NumberToken(10))),
+                  ConfItem(ConfItemKey("bat"), LiteralNumberFactor(NumberToken(10))),
+                  ConfItem(ConfItemKey("ban"), LiteralNumberFactor(NumberToken(16))),
+                  ConfItem(ConfItemKey("bal"), LiteralNumberFactor(NumberToken(2)))
                 )
               )
             )
@@ -286,11 +286,11 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("bar"),
+                    ConfItemKey("bar"),
                     LiteralArray(
                       List(
                         LiteralBoolFactor(BoolToken(true)),
@@ -300,7 +300,7 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("bat"),
+                    ConfItemKey("bat"),
                     LiteralArray(
                       List(
                         LiteralStringFactor(StringToken("ab")),
@@ -310,7 +310,7 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("ban"),
+                    ConfItemKey("ban"),
                     LiteralArray(
                       List(
                         LiteralStringFactor(StringToken("abc")),
@@ -320,7 +320,7 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("bal"),
+                    ConfItemKey("bal"),
                     LiteralArray(
                       List(
                         LiteralNumberFactor(NumberToken(1)),
@@ -330,7 +330,7 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("baz"),
+                    ConfItemKey("baz"),
                     LiteralArray(
                       List(
                         LiteralArray(
@@ -349,14 +349,14 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("bay"),
+                    ConfItemKey("bay"),
                     LiteralArray(
                       List(
                         LiteralObject(
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("bax"),
+                                LiteralObjectItemKey("bax"),
                                 LiteralStringFactor(
                                   StringToken("ab")
                                 )
@@ -368,7 +368,7 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("baw"),
+                                LiteralObjectItemKey("baw"),
                                 LiteralNumberFactor(
                                   NumberToken(2)
                                 )
@@ -380,34 +380,34 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                     )
                   ),
                   ConfItem(
-                    WordToken("bav"),
+                    ConfItemKey("bav"),
                     LiteralArray(
                       List(
                         LiteralProto(
-                          WordToken("bau"),
+                          LiteralProtoKey("bau"),
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("bas"),
+                                LiteralObjectItemKey("bas"),
                                 LiteralStringFactor(StringToken("ab"))
                               ),
                               LiteralObjectItem(
-                                WordToken("baq"),
+                                LiteralObjectItemKey("baq"),
                                 LiteralNumberFactor(NumberToken(2))
                               )
                             )
                           )
                         ),
                         LiteralProto(
-                          WordToken("bau"),
+                          LiteralProtoKey("bau"),
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("bas"),
+                                LiteralObjectItemKey("bas"),
                                 LiteralStringFactor(StringToken("ab"))
                               ),
                               LiteralObjectItem(
-                                WordToken("baq"),
+                                LiteralObjectItemKey("baq"),
                                 LiteralNumberFactor(NumberToken(5))
                               )
                             )
@@ -449,22 +449,28 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("bar"),
+                    ConfItemKey("bar"),
                     LiteralObject(
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("ban"), LiteralBoolFactor(BoolToken(true))),
                           LiteralObjectItem(
-                            WordToken("bat"),
+                            LiteralObjectItemKey("ban"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("bat"),
                             LiteralStringFactor(StringToken("abc"))
                           ),
-                          LiteralObjectItem(WordToken("bal"), LiteralNumberFactor(NumberToken(21))),
                           LiteralObjectItem(
-                            WordToken("baz"),
+                            LiteralObjectItemKey("bal"),
+                            LiteralNumberFactor(NumberToken(21))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("baz"),
                             LiteralArray(
                               List(
                                 LiteralStringFactor(StringToken("abcd")),
@@ -473,16 +479,16 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                             )
                           ),
                           LiteralObjectItem(
-                            WordToken("bay"),
+                            LiteralObjectItemKey("bay"),
                             LiteralObject(
                               LiteralObjectItems(
                                 List(
                                   LiteralObjectItem(
-                                    WordToken("bax"),
+                                    LiteralObjectItemKey("bax"),
                                     LiteralNumberFactor(NumberToken(3))
                                   ),
                                   LiteralObjectItem(
-                                    WordToken("baw"),
+                                    LiteralObjectItemKey("baw"),
                                     LiteralStringFactor(StringToken("ab"))
                                   )
                                 )
@@ -490,34 +496,34 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
                             )
                           ),
                           LiteralObjectItem(
-                            WordToken("bav"),
+                            LiteralObjectItemKey("bav"),
                             LiteralArray(
                               List(
                                 LiteralProto(
-                                  WordToken("bau"),
+                                  LiteralProtoKey("bau"),
                                   LiteralObjectItems(
                                     List(
                                       LiteralObjectItem(
-                                        WordToken("bas"),
+                                        LiteralObjectItemKey("bas"),
                                         LiteralStringFactor(StringToken("ab"))
                                       ),
                                       LiteralObjectItem(
-                                        WordToken("baq"),
+                                        LiteralObjectItemKey("baq"),
                                         LiteralNumberFactor(NumberToken(2))
                                       )
                                     )
                                   )
                                 ),
                                 LiteralProto(
-                                  WordToken("bau"),
+                                  LiteralProtoKey("bau"),
                                   LiteralObjectItems(
                                     List(
                                       LiteralObjectItem(
-                                        WordToken("bas"),
+                                        LiteralObjectItemKey("bas"),
                                         LiteralStringFactor(StringToken("ab"))
                                       ),
                                       LiteralObjectItem(
-                                        WordToken("baq"),
+                                        LiteralObjectItemKey("baq"),
                                         LiteralNumberFactor(NumberToken(5))
                                       )
                                     )
@@ -552,50 +558,56 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
           List(
             ConfStmt(
               WordToken("foo"),
-              TypeDef(Left(NameToken("Foo")), isList = false),
+              TypeDef(NameToken("Foo"), isList = false),
               ConfItems(
                 List(
                   ConfItem(
-                    WordToken("bar"),
+                    ConfItemKey("bar"),
                     LiteralProto(
-                      WordToken("ban"),
+                      LiteralProtoKey("ban"),
                       LiteralObjectItems(
                         List(
-                          LiteralObjectItem(WordToken("bat"), LiteralBoolFactor(BoolToken(true))),
-                          LiteralObjectItem(WordToken("bal"), LiteralStringFactor(StringToken("ab")))
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("bat"),
+                            LiteralBoolFactor(BoolToken(true))
+                          ),
+                          LiteralObjectItem(
+                            LiteralObjectItemKey("bal"),
+                            LiteralStringFactor(StringToken("ab"))
+                          )
                         )
                       )
                     )
                   ),
                   ConfItem(
-                    WordToken("baw"),
+                    ConfItemKey("baw"),
                     LiteralArray(
                       List(
                         LiteralProto(
-                          WordToken("ban"),
+                          LiteralProtoKey("ban"),
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("bat"),
+                                LiteralObjectItemKey("bat"),
                                 LiteralBoolFactor(BoolToken(true))
                               ),
                               LiteralObjectItem(
-                                WordToken("bal"),
+                                LiteralObjectItemKey("bal"),
                                 LiteralStringFactor(StringToken("ab"))
                               )
                             )
                           )
                         ),
                         LiteralProto(
-                          WordToken("baz"),
+                          LiteralProtoKey("baz"),
                           LiteralObjectItems(
                             List(
                               LiteralObjectItem(
-                                WordToken("bay"),
+                                LiteralObjectItemKey("bay"),
                                 LiteralStringFactor(StringToken("ac"))
                               ),
                               LiteralObjectItem(
-                                WordToken("bax"),
+                                LiteralObjectItemKey("bax"),
                                 LiteralNumberFactor(NumberToken(9))
                               )
                             )

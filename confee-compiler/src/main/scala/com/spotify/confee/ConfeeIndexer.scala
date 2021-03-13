@@ -12,6 +12,10 @@ object ConfeeIndexer {
   //           referring to, because it might be a Bool, Number, String, Array, or Object
   // TODO (3): When (1) and (2) are done, set the `hasSameType` condition to be true for all cases
 
+  case class TypeIndex(
+      name: WordToken
+  )
+
   /**
     * @param name           the name of the expression
     * @param parents        list of parents' name of the expression
@@ -19,9 +23,9 @@ object ConfeeIndexer {
     * @param hasReference   if there is a reference inside the expression
     * @param isTopLevel     if the expression is a conf which is defined in top-level
     */
-  case class IndexRow(
-      name: WordToken,
-      parents: List[WordToken] = List.empty[WordToken],
+  case class ConfIndex(
+      name: String,
+      parents: List[String] = List.empty[String],
       expr: Expr,
       exprType: ExprType,
       hasReference: Boolean,
@@ -39,20 +43,20 @@ object ConfeeIndexer {
   case object AnyType extends ExprType("Any")
 
   def indexLookup[T <: Expr](
-      name: WordToken,
+      name: String,
       exprType: ExprType,
       pos: Position,
-      parents: List[WordToken],
-      index: List[IndexRow]
+      parents: List[String],
+      index: List[ConfIndex]
   ): T =
     index
-      .foldLeft(List.empty[(Int, Int, IndexRow)]) {
+      .foldLeft(List.empty[(Int, Int, ConfIndex)]) {
         case (acc, indexRow) =>
           val equalityHighPriority     = 0
           val equalityMediumPriority   = 1
           val equalityLowPriority      = 2
           val proximityPriority        = parents.size - indexRow.parents.size
-          val hasSameName              = indexRow.name.word.equals(name.word)
+          val hasSameName              = indexRow.name.equals(name)
           val hasSameType              = indexRow.exprType.equals(exprType)
           val hasSameExactParents      = indexRow.parents.equals(parents)
           val hasSameUpperLevelParents = indexRow.parents.forall(parents.contains)
@@ -76,7 +80,7 @@ object ConfeeIndexer {
         if (indexRow.hasReference) {
           throw ConfeeException(
             Location(pos.line, pos.column),
-            s"Reference error: '${name.word}' has a circular reference"
+            s"Reference error: '$name' has a circular reference"
           )
         } else {
           indexRow.expr.asInstanceOf[T]
@@ -84,23 +88,24 @@ object ConfeeIndexer {
       case None =>
         throw ConfeeException(
           Location(pos.line, pos.column),
-          s"Reference error: '${name.word}' is not defined"
+          s"Reference error: '$name' is not defined"
         )
     }
 
   def confStmtToExpr(confStmt: ConfStmt): Expr =
     LiteralObject(LiteralObjectItems(confStmt.items.items.map {
-      case ConfItem(name, itemVal: LiteralExpr) => LiteralObjectItem(name, itemVal)
+      case ConfItem(name, itemVal: LiteralExpr) =>
+        LiteralObjectItem(LiteralObjectItemKey(name.value), itemVal)
     }))
 
   /* ----- index conf statements and conf item expressions ----- */
 
-  def indexStmts(stmts: List[Stmt]): List[IndexRow] = stmts.flatMap {
+  def indexStmts(stmts: List[Stmt]): List[ConfIndex] = stmts.flatMap {
     case confStmt: ConfStmt => indexConfStmt(confStmt)
     case _                  => None
   }
 
-  def indexConfStmt(confStmt: ConfStmt): List[IndexRow] = confStmt match {
+  def indexConfStmt(confStmt: ConfStmt): List[ConfIndex] = confStmt match {
     case ConfStmt(name, _, items) =>
       /**
         *  In order to index a confStmt, it needs to be converted to an object literal expression.
@@ -108,9 +113,9 @@ object ConfeeIndexer {
         *  inside other confStmts.
         */
       val confExpr = confStmtToExpr(confStmt)
-      val ConfStmtIndexRow = IndexRow(
-        name,
-        List.empty[WordToken],
+      val ConfStmtIndexRow = ConfIndex(
+        name.word,
+        List.empty[String],
         confExpr,
         ObjectType,
         hasReference(confExpr),
@@ -120,8 +125,8 @@ object ConfeeIndexer {
         .foldLeft(List(ConfStmtIndexRow)) {
           case (acc, item) =>
             indexConfItem(
-              name = item.name,
-              parents = List(name),
+              name = item.name.value,
+              parents = List(name.word),
               expr = item.itemVal,
               index = acc
             )
@@ -129,29 +134,29 @@ object ConfeeIndexer {
   }
 
   def indexConfItem(
-      name: WordToken,
+      name: String,
       expr: Expr,
-      parents: List[WordToken] = List.empty[WordToken],
-      index: List[IndexRow] = List.empty[IndexRow]
-  ): List[IndexRow] = expr match {
+      parents: List[String] = List.empty[String],
+      index: List[ConfIndex] = List.empty[ConfIndex]
+  ): List[ConfIndex] = expr match {
     case w: LiteralWord =>
-      index ::: IndexRow(name, parents, w, WordType, hasReference(w)) :: Nil
+      index ::: ConfIndex(name, parents, w, WordType, hasReference(w)) :: Nil
     case b: LiteralBool =>
-      index ::: IndexRow(name, parents, b, BoolType, hasReference(b)) :: Nil
+      index ::: ConfIndex(name, parents, b, BoolType, hasReference(b)) :: Nil
     case n: LiteralNumber =>
-      index ::: IndexRow(name, parents, n, NumberType, hasReference(n)) :: Nil
+      index ::: ConfIndex(name, parents, n, NumberType, hasReference(n)) :: Nil
     case s: LiteralString =>
-      index ::: IndexRow(name, parents, s, StringType, hasReference(s)) :: Nil
+      index ::: ConfIndex(name, parents, s, StringType, hasReference(s)) :: Nil
     case a: LiteralArray =>
-      index ::: IndexRow(name, parents, a, ArrayType, hasReference(a)) :: Nil
+      index ::: ConfIndex(name, parents, a, ArrayType, hasReference(a)) :: Nil
     case o @ LiteralObject(items: LiteralObjectItems) =>
-      index ::: IndexRow(name, parents, o, ObjectType, hasReference(o)) :: indexObjectItems(
+      index ::: ConfIndex(name, parents, o, ObjectType, hasReference(o)) :: indexObjectItems(
         name,
         items,
         parents
       )
     case p @ LiteralProto(_, items: LiteralObjectItems) =>
-      index ::: IndexRow(name, parents, p, ProtoType, hasReference(p)) :: indexObjectItems(
+      index ::: ConfIndex(name, parents, p, ProtoType, hasReference(p)) :: indexObjectItems(
         name,
         items,
         parents
@@ -159,11 +164,11 @@ object ConfeeIndexer {
   }
 
   def indexObjectItems(
-      name: WordToken,
+      name: String,
       objectItems: LiteralObjectItems,
-      parents: List[WordToken]
-  ): List[IndexRow] =
+      parents: List[String]
+  ): List[ConfIndex] =
     objectItems.items.flatMap { item =>
-      indexConfItem(name = item.name, expr = item.itemVal, parents = name :: parents)
+      indexConfItem(name = item.name.value, expr = item.itemVal, parents = name :: parents)
     }
 }

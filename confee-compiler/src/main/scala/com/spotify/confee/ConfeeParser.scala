@@ -77,14 +77,22 @@ object ConfeeParser extends Parsers {
   def typeStmtItem: Parser[TypeItem] = positioned {
 
     val a = word ~ colon ~ name ^^ {
-      case w ~ _ ~ n => TypeItem(w, TypeDef(Left(n), isList = false))
+      case k ~ _ ~ t => TypeItem(TypeItemKey(k.word), TypeDef(t, isList = false))
     }
 
-    val b = word ~ colon ~ bracketOpen ~ name ~ bracketClose ^^ {
-      case w ~ _ ~ _ ~ n ~ _ => TypeItem(w, TypeDef(Left(n), isList = true))
+    val b = name ~ colon ~ name ^^ {
+      case k ~ _ ~ t => TypeItem(TypeItemKey(k.name), TypeDef(t, isList = false))
     }
 
-    a | b
+    val c = word ~ colon ~ bracketOpen ~ name ~ bracketClose ^^ {
+      case k ~ _ ~ _ ~ t ~ _ => TypeItem(TypeItemKey(k.word), TypeDef(t, isList = true))
+    }
+
+    val d = name ~ colon ~ bracketOpen ~ name ~ bracketClose ^^ {
+      case k ~ _ ~ _ ~ t ~ _ => TypeItem(TypeItemKey(k.name), TypeDef(t, isList = true))
+    }
+
+    a | b | c | d
   }
 
   /* ----- conf statement ----- */
@@ -108,20 +116,16 @@ object ConfeeParser extends Parsers {
   }
 
   def confStmtItem: Parser[ConfItem] = positioned {
-    word ~ assignment ~ expr ^^ { case w ~ _ ~ e => ConfItem(w, e) }
+
+    val a = word ~ assignment ~ expr ^^ { case k ~ _ ~ e => ConfItem(ConfItemKey(k.word), e) }
+
+    val b = name ~ assignment ~ expr ^^ { case k ~ _ ~ e => ConfItem(ConfItemKey(k.name), e) }
+
+    a | b
   }
 
   def confStmtType: Parser[TypeDef] = positioned {
-
-    val a = word ^^ { w =>
-      TypeDef(Right(w), isList = false)
-    }
-
-    val b = name ^^ { n =>
-      TypeDef(Left(n), isList = false)
-    }
-
-    a | b
+    name ^^ { n => TypeDef(n, isList = false) }
   }
 
   /* ----- import statement ----- */
@@ -375,13 +379,23 @@ object ConfeeParser extends Parsers {
   }
 
   def exprLiteralObjectItem: Parser[LiteralObjectItem] = positioned {
-    word ~ assignment ~ exprLiteral ^^ { case w ~ _ ~ l => LiteralObjectItem(w, l) }
+
+    val a = word ~ assignment ~ exprLiteral ^^ { case n ~ _ ~ l => LiteralObjectItem(LiteralObjectItemKey(n.word), l) }
+
+    val b = name ~ assignment ~ exprLiteral ^^ { case n ~ _ ~ l => LiteralObjectItem(LiteralObjectItemKey(n.name), l) }
+
+    a | b
   }
 
   /* ----- literal proto expression ----- */
 
   def exprLiteralProto: Parser[LiteralProto] = positioned {
-    word ~ exprLiteralObject ^^ { case w ~ e => LiteralProto(w, e.items) }
+
+    val a = word ~ exprLiteralObject ^^ { case n ~ e => LiteralProto(LiteralProtoKey(n.word), e.items) }
+
+    val b = name ~ exprLiteralObject ^^ { case n ~ e => LiteralProto(LiteralProtoKey(n.name), e.items) }
+
+    a | b
   }
 
   /* ========== AST terminals ========== */
