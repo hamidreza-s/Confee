@@ -24,6 +24,7 @@ object ConfeeCompiler {
   // - Don't let confs, objects and protos have same item name before constructor step
   // - Don't let confs have same name
   // - Don't let types have same name
+  // - Use map for typeIndex and confIndex for a better performance
   // TODO: Conf value should accept array value as well as obj (+ test/readme) (*** priority 4 ***)
   // TODO: Add "private" keyword for the items you don't want to expose
   // TODO: Add "proto." keyword for proto items to get access to items of referenced objects

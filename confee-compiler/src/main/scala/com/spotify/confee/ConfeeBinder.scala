@@ -66,7 +66,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralExpr = {
-    ConfeeIndexer.indexLookup[LiteralExpr](word.value.word, NoInferredType, word.pos, parents, index)
+    ConfeeIndexer.exprIndexExpansion[LiteralExpr](word.value.word, NoInferredType, word.pos, parents, index)
   }
 
   /* ----- literal bool expression ----- */
@@ -88,7 +88,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralBool =
-    ConfeeIndexer.indexLookup[LiteralBool](word.value.word, BoolInferredType, word.pos, parents, index)
+    ConfeeIndexer.exprIndexExpansion[LiteralBool](word.value.word, BoolInferredType, word.pos, parents, index)
 
   @scala.annotation.tailrec
   def bindLiteralBoolUnit(
@@ -146,7 +146,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralString =
-    ConfeeIndexer.indexLookup[LiteralString](word.value.word, StringInferredType, word.pos, parents, index)
+    ConfeeIndexer.exprIndexExpansion[LiteralString](word.value.word, StringInferredType, word.pos, parents, index)
 
   @scala.annotation.tailrec
   def bindLiteralStringGroup(
@@ -186,7 +186,7 @@ object ConfeeBinder {
       parents: List[String],
       index: List[ConfIndex]
   ): LiteralNumber =
-    ConfeeIndexer.indexLookup[LiteralNumber](word.value.word, NumberInferredType, word.pos, parents, index)
+    ConfeeIndexer.exprIndexExpansion[LiteralNumber](word.value.word, NumberInferredType, word.pos, parents, index)
 
   @scala.annotation.tailrec
   def bindLiteralNumberGroup(

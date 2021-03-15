@@ -113,7 +113,7 @@ object ConfeeConstructor {
   ): LiteralObject = {
     // Lookup the object which is referenced as prototype
     val templateProto =
-      ConfeeIndexer.indexLookup[LiteralObject](
+      ConfeeIndexer.exprIndexExpansion[LiteralObject](
         literalProto.name.value,
         ObjectInferredType,
         literalProto.pos,
