@@ -1124,10 +1124,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
       for ((i, expectedFooK) <- fooK1To6) {
         val fooKConf = confIndexLookup(
           s"fooK$i",
-          BoolInferredType,
           NoPosition,
           List("foo"),
-          index
+          confStmtsIndex
         )
         val fooKType =
           typeIndexLookup(fooKConf, typeStmtsIndex, confStmtsIndex).items.get(s"fooK$i")
@@ -1144,10 +1143,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val barK1Conf = confIndexLookup(
         "barK1",
-        BoolInferredType,
         NoPosition,
         List("bar"),
-        index
+        confStmtsIndex
       )
       val barK1Type = typeIndexLookup(barK1Conf, typeStmtsIndex, confStmtsIndex).items.get("barK1")
       barK1Type shouldEqual Some(ObjectDefinedType("FooType", isList = false))
@@ -1156,10 +1154,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val barK2Conf = confIndexLookup(
         "barK2",
-        BoolInferredType,
         NoPosition,
         List("bar"),
-        index
+        confStmtsIndex
       )
       val barK2Type = typeIndexLookup(barK2Conf, typeStmtsIndex, confStmtsIndex).items.get("barK2")
       barK2Type shouldEqual Some(ObjectDefinedType("FooType", isList = true))
@@ -1209,10 +1206,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val l3Conf = confIndexLookup(
         "l3",
-        BoolInferredType,
         NoPosition,
         List("l4"),
-        index
+        confStmtsIndex
       )
       val l3Type = typeIndexLookup(l3Conf, typeStmtsIndex, confStmtsIndex).items.get("l3")
       l3Type shouldEqual Some(ObjectDefinedType("L3", isList = false))
@@ -1221,10 +1217,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val l2Conf = confIndexLookup(
         "l2",
-        BoolInferredType,
         NoPosition,
         List("l3", "l4"),
-        index
+        confStmtsIndex
       )
       val l2Type = typeIndexLookup(l2Conf, typeStmtsIndex, confStmtsIndex).items.get("l2")
       l2Type shouldEqual Some(ObjectDefinedType("L2", isList = false))
@@ -1233,10 +1228,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val l1Conf = confIndexLookup(
         "l1",
-        BoolInferredType,
         NoPosition,
         List("l2", "l3", "l4"),
-        index
+        confStmtsIndex
       )
       val l1Type = typeIndexLookup(l1Conf, typeStmtsIndex, confStmtsIndex).items.get("l1")
       l1Type shouldEqual Some(ObjectDefinedType("L1", isList = false))
@@ -1245,55 +1239,73 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val l0Conf = confIndexLookup(
         "l0",
-        BoolInferredType,
         NoPosition,
         List("l1", "l2", "l3", "l4"),
-        index
+        confStmtsIndex
       )
       val l0Type = typeIndexLookup(l0Conf, typeStmtsIndex, confStmtsIndex).items.get("l0")
       l0Type shouldEqual Some(StringDefinedType(isList = false))
     }
   }
 
-  describe("Expression expansion by Indexer") {
-    it("should be sensitive to the type (unrealistic conf because of duplicated item names)") {
-      val index = indexStmts("""conf foo : Foo {
+  describe("Index lookup for conf") {
+    it("should lookup conf with similar key names but different types in different confs") {
+      val input =
+        """
+          |conf foo1 : FooOne {
           |     a = true
+          |}
+          |
+          |conf foo2 : FooTwo {
           |     a = 1.0
-          |     a = "abc"
-          |     a = [1.0]
-          |     a = { x = 1.0 }
-          |     a = x { y = 1.0 }
-          |}""".stripMargin)
+          |}
+          |""".stripMargin
 
-      val name    = WordToken("a")
-      val key     = name.word
-      val pos     = name.pos
-      val parents = List("foo")
+      val index = indexConfStmts(input)
 
-      val bool   = exprIndexExpansion[LiteralBool](key, BoolInferredType, pos, parents, index)
-      val number = exprIndexExpansion[LiteralNumber](key, NumberInferredType, pos, parents, index)
-      val string = exprIndexExpansion[LiteralString](key, StringInferredType, pos, parents, index)
-      val array  = exprIndexExpansion[LiteralArray](key, ArrayInferredType, pos, parents, index)
-      val obj    = exprIndexExpansion[LiteralObject](key, ObjectInferredType, pos, parents, index)
-      val proto  = exprIndexExpansion[LiteralProto](key, ProtoInferredType, pos, parents, index)
-
-      bool shouldEqual LiteralBoolFactor(BoolToken(true))
-      number shouldEqual LiteralNumberFactor(NumberToken(1.0))
-      string shouldEqual LiteralStringFactor(StringToken("abc"))
-      array shouldEqual LiteralArray(List(LiteralNumberFactor(NumberToken(1.0))))
-      obj shouldEqual LiteralObject(
-        LiteralObjectItems(
-          List(LiteralObjectItem(LiteralObjectItemKey("x"), LiteralNumberFactor(NumberToken(1.0))))
-        )
-      )
-      proto shouldEqual LiteralProto(
-        LiteralProtoKey("x"),
-        LiteralObjectItems(
-          List(LiteralObjectItem(LiteralObjectItemKey("y"), LiteralNumberFactor(NumberToken(1.0))))
-        )
+      confIndexLookup("foo1", NoPosition, List(), index) shouldEqual ConfIndex(
+        "foo1",
+        LiteralObject(
+          LiteralObjectItems(
+            List(LiteralObjectItem(LiteralObjectItemKey("a"), LiteralBoolFactor(BoolToken(true))))
+          )
+        ),
+        ObjectInferredType,
+        Some(ObjectDefinedType("FooOne", isList = false)),
+        List(),
+        isTopLevel = true
       )
 
+      confIndexLookup("a", NoPosition, List("foo1"), index) shouldEqual ConfIndex(
+        "a",
+        LiteralBoolFactor(BoolToken(true)),
+        BoolInferredType,
+        None,
+        List("foo1")
+      )
+
+      confIndexLookup("foo2", NoPosition, List(), index) shouldEqual ConfIndex(
+        "foo2",
+        LiteralObject(
+          LiteralObjectItems(
+            List(
+              LiteralObjectItem(LiteralObjectItemKey("a"), LiteralNumberFactor(NumberToken(1.0)))
+            )
+          )
+        ),
+        ObjectInferredType,
+        Some(ObjectDefinedType("FooTwo", isList = false)),
+        List(),
+        isTopLevel = true
+      )
+
+      confIndexLookup("a", NoPosition, List("foo2"), index) shouldEqual ConfIndex(
+        "a",
+        LiteralNumberFactor(NumberToken(1.0)),
+        NumberInferredType,
+        None,
+        List("foo2")
+      )
     }
   }
 

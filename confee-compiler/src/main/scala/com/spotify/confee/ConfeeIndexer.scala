@@ -8,11 +8,6 @@ import scala.util.{Success, Try}
 
 object ConfeeIndexer {
 
-  // TODO:
-  //  - [done] Add type information of expressions defined in type statement when indexing and use it when looking up
-  //  - Set the `hasSameType` condition to be true for all cases
-  //  - Add test "Index lookup for conf"
-
   trait DefinedType {
     def isList: Boolean
   }
@@ -139,36 +134,30 @@ object ConfeeIndexer {
   ): Option[TypeIndex] = Try(typeIndexLookup(conf, typeIndex, confIndex)) match {
     case Success(typeIndex) => Some(typeIndex)
     case _                  => None
-
   }
 
   /* ----- lookup conf ----- */
 
   def confIndexLookup(
       name: String,
-      exprType: InferredType,
       pos: Position,
       parents: List[String],
-      index: List[Index]
+      index: List[ConfIndex]
   ): ConfIndex =
     index
       .foldLeft(List.empty[(Int, Int, ConfIndex)]) {
-        case (acc, Index(confIndex, typeIndex)) =>
+        case (acc, confIndex) =>
           val equalityHighPriority     = 0
           val equalityMediumPriority   = 1
-          val equalityLowPriority      = 2
           val proximityPriority        = parents.size - confIndex.parents.size
           val hasSameName              = confIndex.name.equals(name)
-          val hasSameInferredType      = confIndex.inferredType.equals(exprType)
           val hasSameExactParents      = confIndex.parents.equals(parents)
           val hasSameUpperLevelParents = confIndex.parents.forall(parents.contains)
 
-          (hasSameName, hasSameInferredType, hasSameExactParents, hasSameUpperLevelParents) match {
-            case (true, true, true, _) =>
-              (equalityHighPriority, proximityPriority, confIndex) :: acc
-            case (true, true, _, _) => (equalityMediumPriority, proximityPriority, confIndex) :: acc
-            case (true, _, _, true) => (equalityLowPriority, proximityPriority, confIndex) :: acc
-            case _                  => acc
+          (hasSameName, hasSameExactParents, hasSameUpperLevelParents) match {
+            case (true, true, _) => (equalityHighPriority, proximityPriority, confIndex) :: acc
+            case (true, _, true) => (equalityMediumPriority, proximityPriority, confIndex) :: acc
+            case _               => acc
           }
       }
       .sortBy {
@@ -189,12 +178,11 @@ object ConfeeIndexer {
 
   def exprIndexExpansion[T <: Expr](
       name: String,
-      exprType: InferredType,
       pos: Position,
       parents: List[String],
-      index: List[Index]
+      index: List[ConfIndex]
   ): T = {
-    val indexRow = confIndexLookup(name, exprType, pos, parents, index)
+    val indexRow = confIndexLookup(name, pos, parents, index)
     if (indexRow.hasReference) {
       throw ConfeeCodeException(
         Location(pos.line, pos.column),
