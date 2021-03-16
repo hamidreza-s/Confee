@@ -59,7 +59,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           |}""".stripMargin) shouldEqual List(
         ConfIndex(
           "foo",
-          List(),
           LiteralObject(
             LiteralObjectItems(
               List(
@@ -130,42 +129,37 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             )
           ),
           ObjectInferredType,
-          hasReference = false,
-          isTopLevel = true,
-          Some(ObjectDefinedType("Foo", isList = false))
+          Some(ObjectDefinedType("Foo", isList = false)),
+          List(),
+          isTopLevel = true
         ),
         ConfIndex(
           "a",
-          List("foo"),
-          LiteralBoolFactor(BoolToken(true)),
-          BoolInferredType,
-          hasReference = false
+          expr = LiteralBoolFactor(BoolToken(true)),
+          inferredType = BoolInferredType,
+          parents = List("foo")
         ),
         ConfIndex(
           "b",
-          List("foo"),
-          LiteralStringFactor(StringToken("abc")),
-          StringInferredType,
-          hasReference = false
+          expr = LiteralStringFactor(StringToken("abc")),
+          inferredType = StringInferredType,
+          parents = List("foo")
         ),
         ConfIndex(
           "c",
-          List("foo"),
-          LiteralNumberFactor(NumberToken(1)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(1)),
+          inferredType = NumberInferredType,
+          parents = List("foo")
         ),
         ConfIndex(
           "d",
-          List("foo"),
-          LiteralArray(List(LiteralNumberFactor(NumberToken(1.0)))),
-          ArrayInferredType,
-          hasReference = false
+          expr = LiteralArray(List(LiteralNumberFactor(NumberToken(1.0)))),
+          inferredType = ArrayInferredType,
+          parents = List("foo")
         ),
         ConfIndex(
           "e",
-          List("foo"),
-          LiteralObject(
+          expr = LiteralObject(
             LiteralObjectItems(
               List(
                 LiteralObjectItem(LiteralObjectItemKey("bar"), LiteralNumberFactor(NumberToken(1))),
@@ -185,40 +179,36 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             )
           ),
-          ObjectInferredType,
-          hasReference = false
+          inferredType = ObjectInferredType,
+          parents = List("foo")
         ),
         ConfIndex(
           "bar",
-          List("e", "foo"),
-          LiteralNumberFactor(NumberToken(1)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(1)),
+          inferredType = NumberInferredType,
+          parents = List("e", "foo")
         ),
         ConfIndex(
           "bat",
-          List("e", "foo"),
-          LiteralObject(
+          expr = LiteralObject(
             LiteralObjectItems(
               List(
                 LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralNumberFactor(NumberToken(2)))
               )
             )
           ),
-          ObjectInferredType,
-          hasReference = false
+          inferredType = ObjectInferredType,
+          parents = List("e", "foo")
         ),
         ConfIndex(
           "ban",
-          List("bat", "e", "foo"),
-          LiteralNumberFactor(NumberToken(2)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(2)),
+          inferredType = NumberInferredType,
+          parents = List("bat", "e", "foo")
         ),
         ConfIndex(
           "f",
-          List("foo"),
-          LiteralProto(
+          expr = LiteralProto(
             LiteralProtoKey("g"),
             LiteralObjectItems(
               List(
@@ -239,35 +229,32 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             )
           ),
-          ProtoInferredType,
-          hasReference = false
+          inferredType = ProtoInferredType,
+          parents = List("foo")
         ),
         ConfIndex(
           "bar",
-          List("f", "foo"),
-          LiteralNumberFactor(NumberToken(1)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(1)),
+          inferredType = NumberInferredType,
+          parents = List("f", "foo")
         ),
         ConfIndex(
           "bat",
-          List("f", "foo"),
-          LiteralObject(
+          expr = LiteralObject(
             LiteralObjectItems(
               List(
                 LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralNumberFactor(NumberToken(2)))
               )
             )
           ),
-          ObjectInferredType,
-          hasReference = false
+          inferredType = ObjectInferredType,
+          parents = List("f", "foo")
         ),
         ConfIndex(
           "ban",
-          List("bat", "f", "foo"),
-          LiteralNumberFactor(NumberToken(2)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(2)),
+          inferredType = NumberInferredType,
+          parents = List("bat", "f", "foo")
         )
       )
     }
@@ -283,7 +270,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           |}""".stripMargin) shouldEqual List(
         ConfIndex(
           "foo",
-          List(),
           LiteralObject(
             LiteralObjectItems(
               List(
@@ -372,54 +358,54 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             )
           ),
           ObjectInferredType,
-          hasReference = true,
+          Some(ObjectDefinedType("Foo", isList = false)),
+          List(),
           isTopLevel = true,
-          Some(ObjectDefinedType("Foo", isList = false))
+          hasReference = true
         ),
         ConfIndex(
           "a",
-          List("foo"),
-          LiteralBoolGroup(
+          expr = LiteralBoolGroup(
             LiteralBoolOperatorAnd(),
             LiteralBoolFactor(BoolToken(false)),
             LiteralBoolWord(WordToken("ref1"))
           ),
-          BoolInferredType,
+          inferredType = BoolInferredType,
+          parents = List("foo"),
           hasReference = true
         ),
         ConfIndex(
           "b",
-          List("foo"),
-          LiteralStringGroup(
+          expr = LiteralStringGroup(
             LiteralStringOperatorConcat(),
             LiteralStringFactor(StringToken("abc")),
             LiteralStringWord(WordToken("ref2"))
           ),
-          StringInferredType,
+          inferredType = StringInferredType,
+          parents = List("foo"),
           hasReference = true
         ),
         ConfIndex(
           "c",
-          List("foo"),
-          LiteralNumberGroup(
+          expr = LiteralNumberGroup(
             LiteralNumberOperatorAdd(),
             LiteralNumberFactor(NumberToken(1)),
             LiteralNumberWord(WordToken("ref3"))
           ),
-          NumberInferredType,
+          inferredType = NumberInferredType,
+          parents = List("foo"),
           hasReference = true
         ),
         ConfIndex(
           "d",
-          List("foo"),
-          LiteralArray(List(LiteralWord(WordToken("ref4")))),
-          ArrayInferredType,
+          expr = LiteralArray(List(LiteralWord(WordToken("ref4")))),
+          inferredType = ArrayInferredType,
+          parents = List("foo"),
           hasReference = true
         ),
         ConfIndex(
           "e",
-          List("foo"),
-          LiteralObject(
+          expr = LiteralObject(
             LiteralObjectItems(
               List(
                 LiteralObjectItem(LiteralObjectItemKey("bar"), LiteralNumberFactor(NumberToken(1))),
@@ -439,38 +425,37 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             )
           ),
-          ObjectInferredType,
+          inferredType = ObjectInferredType,
+          parents = List("foo"),
           hasReference = true
         ),
         ConfIndex(
           "bar",
-          List("e", "foo"),
-          LiteralNumberFactor(NumberToken(1)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(1)),
+          inferredType = NumberInferredType,
+          parents = List("e", "foo")
         ),
         ConfIndex(
           "bat",
-          List("e", "foo"),
-          LiteralObject(
+          expr = LiteralObject(
             LiteralObjectItems(
               List(LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralWord(WordToken("ref5"))))
             )
           ),
-          ObjectInferredType,
+          inferredType = ObjectInferredType,
+          parents = List("e", "foo"),
           hasReference = true
         ),
         ConfIndex(
           "ban",
-          List("bat", "e", "foo"),
-          LiteralWord(WordToken("ref5")),
-          WordInferredType,
+          expr = LiteralWord(WordToken("ref5")),
+          inferredType = WordInferredType,
+          parents = List("bat", "e", "foo"),
           hasReference = true
         ),
         ConfIndex(
           "f",
-          List("foo"),
-          LiteralProto(
+          expr = LiteralProto(
             LiteralProtoKey("g"),
             LiteralObjectItems(
               List(
@@ -491,32 +476,32 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             )
           ),
-          ProtoInferredType,
+          inferredType = ProtoInferredType,
+          parents = List("foo"),
           hasReference = true
         ),
         ConfIndex(
           "bar",
-          List("f", "foo"),
-          LiteralNumberFactor(NumberToken(1)),
-          NumberInferredType,
-          hasReference = false
+          expr = LiteralNumberFactor(NumberToken(1)),
+          inferredType = NumberInferredType,
+          parents = List("f", "foo")
         ),
         ConfIndex(
           "bat",
-          List("f", "foo"),
-          LiteralObject(
+          expr = LiteralObject(
             LiteralObjectItems(
               List(LiteralObjectItem(LiteralObjectItemKey("ban"), LiteralWord(WordToken("ref6"))))
             )
           ),
-          ObjectInferredType,
+          inferredType = ObjectInferredType,
+          parents = List("f", "foo"),
           hasReference = true
         ),
         ConfIndex(
           "ban",
-          List("bat", "f", "foo"),
-          LiteralWord(WordToken("ref6")),
-          WordInferredType,
+          expr = LiteralWord(WordToken("ref6")),
+          inferredType = WordInferredType,
+          parents = List("bat", "f", "foo"),
           hasReference = true
         )
       )
@@ -560,7 +545,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "foo",
-            List(),
             LiteralObject(
               LiteralObjectItems(
                 List(
@@ -606,9 +590,9 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ObjectInferredType,
-            hasReference = false,
-            isTopLevel = true,
-            Some(ObjectDefinedType("FooType", isList = false))
+            Some(ObjectDefinedType("FooType", isList = false)),
+            List(),
+            isTopLevel = true
           ),
           TypeIndex(
             "FooType",
@@ -625,12 +609,10 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "fooK1",
-            List("foo"),
             LiteralBoolFactor(BoolToken(true)),
             BoolInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("foo")
           ),
           TypeIndex(
             "FooType",
@@ -647,12 +629,10 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "fooK2",
-            List("foo"),
             LiteralNumberFactor(NumberToken(1.0)),
             NumberInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("foo")
           ),
           TypeIndex(
             "FooType",
@@ -669,12 +649,10 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "fooK3",
-            List("foo"),
             LiteralStringFactor(StringToken("abc")),
             StringInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("foo")
           ),
           TypeIndex(
             "FooType",
@@ -691,14 +669,12 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "fooK4",
-            List("foo"),
             LiteralArray(
               List(LiteralBoolFactor(BoolToken(true)), LiteralBoolFactor(BoolToken(false)))
             ),
             ArrayInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("foo")
           ),
           TypeIndex(
             "FooType",
@@ -715,7 +691,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "fooK5",
-            List("foo"),
             LiteralArray(
               List(
                 LiteralNumberFactor(NumberToken(1.0)),
@@ -724,9 +699,8 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ArrayInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("foo")
           ),
           TypeIndex(
             "FooType",
@@ -743,7 +717,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "fooK6",
-            List("foo"),
             LiteralArray(
               List(
                 LiteralStringFactor(StringToken("a")),
@@ -752,9 +725,8 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ArrayInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("foo")
           ),
           TypeIndex(
             "FooType",
@@ -771,7 +743,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "bar",
-            List(),
             LiteralObject(
               LiteralObjectItems(
                 List(
@@ -809,9 +780,10 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ObjectInferredType,
-            hasReference = true,
+            Some(ObjectDefinedType("BarType", isList = false)),
+            List(),
             isTopLevel = true,
-            Some(ObjectDefinedType("BarType", isList = false))
+            hasReference = true
           ),
           TypeIndex(
             "BarType",
@@ -824,12 +796,11 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "barK1",
-            List("bar"),
             LiteralWord(WordToken("foo")),
             WordInferredType,
-            hasReference = true,
-            isTopLevel = false,
-            None
+            None,
+            List("bar"),
+            hasReference = true
           ),
           TypeIndex(
             "BarType",
@@ -842,7 +813,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "barK2",
-            List("bar"),
             LiteralArray(
               List(
                 LiteralProto(
@@ -870,9 +840,8 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ArrayInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("bar")
           ),
           TypeIndex(
             "BarType",
@@ -916,7 +885,6 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         Index(
           ConfIndex(
             "l4",
-            List(),
             LiteralObject(
               LiteralObjectItems(
                 List(
@@ -955,16 +923,15 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ObjectInferredType,
-            hasReference = false,
-            isTopLevel = true,
-            Some(ObjectDefinedType("L4", isList = false))
+            Some(ObjectDefinedType("L4", isList = false)),
+            List(),
+            isTopLevel = true
           ),
           TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false)))
         ),
         Index(
           ConfIndex(
             "l3",
-            List("l4"),
             LiteralObject(
               LiteralObjectItems(
                 List(
@@ -994,16 +961,14 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ObjectInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("l4")
           ),
           TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false)))
         ),
         Index(
           ConfIndex(
             "l2",
-            List("l3", "l4"),
             LiteralObject(
               LiteralObjectItems(
                 List(
@@ -1024,16 +989,14 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ObjectInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("l3", "l4")
           ),
           TypeIndex("L3", Map("l2" -> ObjectDefinedType("L2", isList = false)))
         ),
         Index(
           ConfIndex(
             "l1",
-            List("l2", "l3", "l4"),
             LiteralObject(
               LiteralObjectItems(
                 List(
@@ -1045,21 +1008,18 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
               )
             ),
             ObjectInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("l2", "l3", "l4")
           ),
           TypeIndex("L2", Map("l1" -> ObjectDefinedType("L1", isList = false)))
         ),
         Index(
           ConfIndex(
             "l0",
-            List("l1", "l2", "l3", "l4"),
             LiteralStringFactor(StringToken("you made it")),
             StringInferredType,
-            hasReference = false,
-            isTopLevel = false,
-            None
+            None,
+            List("l1", "l2", "l3", "l4")
           ),
           TypeIndex("L1", Map("l0" -> StringDefinedType(false)))
         )
@@ -1128,7 +1088,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- foo test ----- */
 
-      val fooConf = confIndexLookup("foo", confStmtsIndex)
+      val fooConf = topLevelConfIndexLookup("foo", confStmtsIndex)
       val fooType = typeIndexLookup(fooConf, typeStmtsIndex, confStmtsIndex)
       fooType shouldEqual expectedFooType
 
@@ -1143,7 +1103,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         (6, Some(StringDefinedType(isList = true)))
       )
       for ((i, expectedFooK) <- fooK1To6) {
-        val fooKConf = confIndexLookupWithItems(
+        val fooKConf = confIndexLookup(
           s"fooK$i",
           BoolInferredType,
           NoPosition,
@@ -1157,13 +1117,13 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- bar test ----- */
 
-      val barConf = confIndexLookup("bar", confStmtsIndex)
+      val barConf = topLevelConfIndexLookup("bar", confStmtsIndex)
       val barType = typeIndexLookup(barConf, typeStmtsIndex, confStmtsIndex)
       barType shouldEqual expectedBarType
 
       /* ----- barK1 test ----- */
 
-      val barK1Conf = confIndexLookupWithItems(
+      val barK1Conf = confIndexLookup(
         "barK1",
         BoolInferredType,
         NoPosition,
@@ -1175,7 +1135,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- barK2 test ----- */
 
-      val barK2Conf = confIndexLookupWithItems(
+      val barK2Conf = confIndexLookup(
         "barK2",
         BoolInferredType,
         NoPosition,
@@ -1221,13 +1181,13 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- level 4 test ----- */
 
-      val l4Conf = confIndexLookup("l4", confStmtsIndex)
+      val l4Conf = topLevelConfIndexLookup("l4", confStmtsIndex)
       val l4Type = typeIndexLookup(l4Conf, typeStmtsIndex, confStmtsIndex)
       l4Type shouldEqual TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false)))
 
       /* ----- level 3 test ----- */
 
-      val l3Conf = confIndexLookupWithItems(
+      val l3Conf = confIndexLookup(
         "l3",
         BoolInferredType,
         NoPosition,
@@ -1239,7 +1199,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- level 2 test ----- */
 
-      val l2Conf = confIndexLookupWithItems(
+      val l2Conf = confIndexLookup(
         "l2",
         BoolInferredType,
         NoPosition,
@@ -1251,7 +1211,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- level 1 test ----- */
 
-      val l1Conf = confIndexLookupWithItems(
+      val l1Conf = confIndexLookup(
         "l1",
         BoolInferredType,
         NoPosition,
@@ -1263,7 +1223,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       /* ----- level 0 test ----- */
 
-      val l0Conf = confIndexLookupWithItems(
+      val l0Conf = confIndexLookup(
         "l0",
         BoolInferredType,
         NoPosition,

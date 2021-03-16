@@ -7,9 +7,9 @@ import scala.util.parsing.input.{NoPosition, Position}
 
 object ConfeeIndexer {
 
-  // DONE (1): Add type information of expressions defined in type statement when indexing and use it when looking up
-  // TODO (2): LiteralExpr/AnyType should be replaced by the type of expression type it is referring to, because it might be a Bool, Number, String, Array, or Object
-  // TODO (3): When (1) and (2) are done, set the `hasSameType` condition to be true for all cases
+  // TODO:
+  //  1. Add type information of expressions defined in type statement when indexing and use it when looking up [done]
+  //  3. Set the `hasSameType` condition to be true for all cases
 
   trait DefinedType {
     def isList: Boolean
@@ -44,12 +44,12 @@ object ConfeeIndexer {
 
   case class ConfIndex(
       name: String,
-      parents: List[String] = List.empty[String],
       expr: Expr,
-      inferredType: InferredType, // TODO: move it next to definedType
-      hasReference: Boolean,
+      inferredType: InferredType,
+      definedType: Option[DefinedType] = None,
+      parents: List[String] = List.empty[String],
       isTopLevel: Boolean = false,
-      definedType: Option[DefinedType] = None
+      hasReference: Boolean = false
   )
 
   case class Index(
@@ -57,14 +57,14 @@ object ConfeeIndexer {
       typeIndex: TypeIndex
   )
 
-  // TODO: make sure it won't go into infinite loop
-  // TODO: just pass confIndex's name instead of confIndexItem
+  /* ----- lookup type ----- */
+
   def typeIndexLookup(
-      confIndexItem: ConfIndex,
+      conf: ConfIndex,
       typeIndex: List[TypeIndex],
       confIndex: List[ConfIndex]
   ): TypeIndex =
-    confIndexItem.definedType match {
+    conf.definedType match {
       case Some(ObjectDefinedType(typeName, _)) =>
         typeIndex.find { typeIndexRow =>
           typeIndexRow.name.equals(typeName)
@@ -72,64 +72,70 @@ object ConfeeIndexer {
           case Some(indexRow) => indexRow
           case None =>
             throw ConfeeException(
-              Location(confIndexItem.expr.pos.line, confIndexItem.expr.pos.column),
-              s"Indexer error: '${confIndexItem.name}' does not have defined type"
+              Location(conf.expr.pos.line, conf.expr.pos.column),
+              s"Indexer error: '${conf.name}' conf does not have defined type"
             )
         }
       case Some(_) =>
         throw ConfeeException(
-          Location(confIndexItem.expr.pos.line, confIndexItem.expr.pos.column),
-          s"Indexer error: '${confIndexItem.name}' is not inside a valid top-level type"
+          Location(conf.expr.pos.line, conf.expr.pos.column),
+          s"Indexer error: '${conf.name}' is not inside a valid top-level type"
         )
       case None =>
-        val confParentsAscending = confIndexItem.parents.reverse
+        val confParentsAscending = conf.parents.reverse
         confParentsAscending match {
           case Nil =>
             throw ConfeeException(
-              Location(confIndexItem.expr.pos.line, confIndexItem.expr.pos.column),
-              s"Indexer error: '${confIndexItem.name}' is top-level but has invalid structure"
+              Location(conf.expr.pos.line, conf.expr.pos.column),
+              s"Indexer error: '${conf.name}' is top-level but has invalid structure"
             )
           case topLevelParent :: tailParent =>
-            val topLevelParentConfIndex = confIndexLookup(topLevelParent, confIndex)
-            val topLevelParentTypeIndex =
-              typeIndexLookup(topLevelParentConfIndex, typeIndex, confIndex)
-            typeIndexLookupNested(
-              topLevelParentTypeIndex,
-              tailParent,
-              typeIndex,
-              confIndex
-            )
+            val topLevelParentConf = topLevelConfIndexLookup(topLevelParent, confIndex)
+            val topLevelParentType = typeIndexLookup(topLevelParentConf, typeIndex, confIndex)
+
+            /**
+              * The typeIndexLookup method gets called when we are looking for a type of
+              * an object item which in any level lower than a conf. Since objects can be nested,
+              * so we need to do a recursive call to reach to the type we are looking for.
+              */
+            typeIndexLookupLoop(conf, topLevelParentType, tailParent, typeIndex, confIndex)
         }
     }
 
   @tailrec
-  def typeIndexLookupNested(
-      currentTypeIndex: TypeIndex,
+  private def typeIndexLookupLoop(
+      conf: ConfIndex,
+      currentType: TypeIndex,
       pathToItem: List[String],
       typeIndex: List[TypeIndex],
       confIndex: List[ConfIndex]
   ): TypeIndex = pathToItem match {
-    case Nil => currentTypeIndex
+    case Nil => currentType
     case head :: tail =>
-      currentTypeIndex.items.get(head) match {
+      currentType.items.get(head) match {
         case Some(ObjectDefinedType(nextTypeName, _)) =>
           typeIndex.find { typeIndexRow =>
             typeIndexRow.name.equals(nextTypeName)
           } match {
-            case Some(indexRow) => typeIndexLookupNested(indexRow, tail, typeIndex, confIndex)
+            case Some(indexRow) =>
+              typeIndexLookupLoop(conf, indexRow, tail, typeIndex, confIndex)
             case None =>
-              throw ConfeeException(Location(0, 0), "Implement me!") // TODO: Implement it!
+              throw ConfeeException(
+                Location(conf.expr.pos.line, conf.expr.pos.column),
+                s"Indexer error: '${conf.name}' object item does not have defined type"
+              )
           }
+        case _ =>
+          throw ConfeeException(
+            Location(conf.expr.pos.line, conf.expr.pos.column),
+            s"Indexer error: '${conf.name}' does not have a valid type structure"
+          )
       }
   }
 
-  def confIndexLookup(
-      name: String,
-      index: List[ConfIndex]
-  ): ConfIndex =
-    confIndexLookupWithItems(name, ObjectInferredType, NoPosition, List.empty[String], index)
+  /* ----- lookup conf ----- */
 
-  def confIndexLookupWithItems(
+  def confIndexLookup(
       name: String,
       exprType: InferredType,
       pos: Position,
@@ -178,7 +184,7 @@ object ConfeeIndexer {
       parents: List[String],
       index: List[ConfIndex]
   ): T = {
-    val indexRow = confIndexLookupWithItems(name, exprType, pos, parents, index)
+    val indexRow = confIndexLookup(name, exprType, pos, parents, index)
     if (indexRow.hasReference) {
       throw ConfeeException(
         Location(pos.line, pos.column),
@@ -188,6 +194,12 @@ object ConfeeIndexer {
       indexRow.expr.asInstanceOf[T]
     }
   }
+
+  def topLevelConfIndexLookup(
+      name: String,
+      index: List[ConfIndex]
+  ): ConfIndex =
+    confIndexLookup(name, ObjectInferredType, NoPosition, List.empty[String], index)
 
   def confStmtToExpr(confStmt: ConfStmt): Expr =
     LiteralObject(LiteralObjectItems(confStmt.items.items.map {
@@ -230,19 +242,20 @@ object ConfeeIndexer {
 
   def indexConfStmt(confStmt: ConfStmt): List[ConfIndex] = confStmt match {
     case ConfStmt(name, typeDef, items) =>
-      /** In order to index a confStmt, it needs to be converted to an object literal expression.
-        *  Then it will be indexed as a top-level object in the index list, so it can be referenced
-        *  inside other confStmts.
+      /**
+        * In order to index a confStmt, it needs to be converted to an object literal expression.
+        * Then it will be indexed as a top-level object in the index list, so it can be referenced
+        * inside other confStmts.
         */
       val confExpr = confStmtToExpr(confStmt)
       val ConfStmtIndexRow = ConfIndex(
         name.word,
-        List.empty[String],
         confExpr,
         ObjectInferredType,
-        hasReference(confExpr),
+        Some(DefinedType.parse(typeDef)),
+        List.empty[String],
         isTopLevel = true,
-        Some(DefinedType.parse(typeDef))
+        hasReference(confExpr)
       )
       items.items
         .foldLeft(List(ConfStmtIndexRow)) {
@@ -263,23 +276,65 @@ object ConfeeIndexer {
       index: List[ConfIndex] = List.empty[ConfIndex]
   ): List[ConfIndex] = expr match {
     case w: LiteralWord =>
-      index ::: ConfIndex(name, parents, w, WordInferredType, hasReference(w)) :: Nil
+      index ::: ConfIndex(
+        name,
+        expr = w,
+        inferredType = WordInferredType,
+        parents = parents,
+        hasReference = hasReference(w)
+      ) :: Nil
     case b: LiteralBool =>
-      index ::: ConfIndex(name, parents, b, BoolInferredType, hasReference(b)) :: Nil
+      index ::: ConfIndex(
+        name,
+        expr = b,
+        inferredType = BoolInferredType,
+        parents = parents,
+        hasReference = hasReference(b)
+      ) :: Nil
     case n: LiteralNumber =>
-      index ::: ConfIndex(name, parents, n, NumberInferredType, hasReference(n)) :: Nil
+      index ::: ConfIndex(
+        name,
+        expr = n,
+        inferredType = NumberInferredType,
+        parents = parents,
+        hasReference = hasReference(n)
+      ) :: Nil
     case s: LiteralString =>
-      index ::: ConfIndex(name, parents, s, StringInferredType, hasReference(s)) :: Nil
+      index ::: ConfIndex(
+        name,
+        expr = s,
+        inferredType = StringInferredType,
+        parents = parents,
+        hasReference = hasReference(s)
+      ) :: Nil
     case a: LiteralArray =>
-      index ::: ConfIndex(name, parents, a, ArrayInferredType, hasReference(a)) :: Nil
+      index ::: ConfIndex(
+        name,
+        expr = a,
+        inferredType = ArrayInferredType,
+        parents = parents,
+        hasReference = hasReference(a)
+      ) :: Nil
     case o @ LiteralObject(items: LiteralObjectItems) =>
-      index ::: ConfIndex(name, parents, o, ObjectInferredType, hasReference(o)) :: indexObjectItems(
+      index ::: ConfIndex(
+        name,
+        expr = o,
+        inferredType = ObjectInferredType,
+        parents = parents,
+        hasReference = hasReference(o)
+      ) :: indexObjectItems(
         name,
         items,
         parents
       )
     case p @ LiteralProto(_, items: LiteralObjectItems) =>
-      index ::: ConfIndex(name, parents, p, ProtoInferredType, hasReference(p)) :: indexObjectItems(
+      index ::: ConfIndex(
+        name,
+        expr = p,
+        inferredType = ProtoInferredType,
+        parents = parents,
+        hasReference = hasReference(p)
+      ) :: indexObjectItems(
         name,
         items,
         parents
