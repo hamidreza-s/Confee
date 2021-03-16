@@ -24,7 +24,9 @@ case class ConfeeInvalidArgumentError(msg: String) extends ConfeeError
 
 case class ConfeeIllegalOperationError(msg: String) extends ConfeeError
 
-case class ConfeeException(location: Location, msg: String) extends Exception(msg)
+case class ConfeeCodeException(location: Location, msg: String) extends Exception(msg)
+
+case class ConfeeException(msg: String) extends Exception(msg)
 
 case class Location(line: Int, column: Int) {
   override def toString = s"$line:$column"

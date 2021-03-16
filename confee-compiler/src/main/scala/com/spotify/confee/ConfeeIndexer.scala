@@ -3,13 +3,15 @@ package com.spotify.confee
 import com.spotify.confee.ConfeeHelper.hasReference
 
 import scala.annotation.tailrec
-import scala.util.parsing.input.{NoPosition, Position}
+import scala.util.parsing.input.Position
+import scala.util.{Success, Try}
 
 object ConfeeIndexer {
 
   // TODO:
-  //  1. Add type information of expressions defined in type statement when indexing and use it when looking up [done]
-  //  3. Set the `hasSameType` condition to be true for all cases
+  //  - [done] Add type information of expressions defined in type statement when indexing and use it when looking up
+  //  - Set the `hasSameType` condition to be true for all cases
+  //  - Add test "Index lookup for conf"
 
   trait DefinedType {
     def isList: Boolean
@@ -52,10 +54,7 @@ object ConfeeIndexer {
       hasReference: Boolean = false
   )
 
-  case class Index(
-      confIndex: ConfIndex,
-      typeIndex: TypeIndex
-  )
+  case class Index(confIndex: ConfIndex, typeIndex: Option[TypeIndex])
 
   /* ----- lookup type ----- */
 
@@ -71,13 +70,13 @@ object ConfeeIndexer {
         } match {
           case Some(indexRow) => indexRow
           case None =>
-            throw ConfeeException(
+            throw ConfeeCodeException(
               Location(conf.expr.pos.line, conf.expr.pos.column),
               s"Indexer error: '${conf.name}' conf does not have defined type"
             )
         }
       case Some(_) =>
-        throw ConfeeException(
+        throw ConfeeCodeException(
           Location(conf.expr.pos.line, conf.expr.pos.column),
           s"Indexer error: '${conf.name}' is not inside a valid top-level type"
         )
@@ -85,7 +84,7 @@ object ConfeeIndexer {
         val confParentsAscending = conf.parents.reverse
         confParentsAscending match {
           case Nil =>
-            throw ConfeeException(
+            throw ConfeeCodeException(
               Location(conf.expr.pos.line, conf.expr.pos.column),
               s"Indexer error: '${conf.name}' is top-level but has invalid structure"
             )
@@ -120,17 +119,27 @@ object ConfeeIndexer {
             case Some(indexRow) =>
               typeIndexLookupLoop(conf, indexRow, tail, typeIndex, confIndex)
             case None =>
-              throw ConfeeException(
+              throw ConfeeCodeException(
                 Location(conf.expr.pos.line, conf.expr.pos.column),
                 s"Indexer error: '${conf.name}' object item does not have defined type"
               )
           }
         case _ =>
-          throw ConfeeException(
+          throw ConfeeCodeException(
             Location(conf.expr.pos.line, conf.expr.pos.column),
             s"Indexer error: '${conf.name}' does not have a valid type structure"
           )
       }
+  }
+
+  def typeIndexLookupMaybe(
+      conf: ConfIndex,
+      typeIndex: List[TypeIndex],
+      confIndex: List[ConfIndex]
+  ): Option[TypeIndex] = Try(typeIndexLookup(conf, typeIndex, confIndex)) match {
+    case Success(typeIndex) => Some(typeIndex)
+    case _                  => None
+
   }
 
   /* ----- lookup conf ----- */
@@ -140,25 +149,26 @@ object ConfeeIndexer {
       exprType: InferredType,
       pos: Position,
       parents: List[String],
-      index: List[ConfIndex]
+      index: List[Index]
   ): ConfIndex =
     index
       .foldLeft(List.empty[(Int, Int, ConfIndex)]) {
-        case (acc, indexRow) =>
+        case (acc, Index(confIndex, typeIndex)) =>
           val equalityHighPriority     = 0
           val equalityMediumPriority   = 1
           val equalityLowPriority      = 2
-          val proximityPriority        = parents.size - indexRow.parents.size
-          val hasSameName              = indexRow.name.equals(name)
-          val hasSameType              = indexRow.inferredType.equals(exprType)
-          val hasSameExactParents      = indexRow.parents.equals(parents)
-          val hasSameUpperLevelParents = indexRow.parents.forall(parents.contains)
+          val proximityPriority        = parents.size - confIndex.parents.size
+          val hasSameName              = confIndex.name.equals(name)
+          val hasSameInferredType      = confIndex.inferredType.equals(exprType)
+          val hasSameExactParents      = confIndex.parents.equals(parents)
+          val hasSameUpperLevelParents = confIndex.parents.forall(parents.contains)
 
-          (hasSameName, hasSameType, hasSameExactParents, hasSameUpperLevelParents) match {
-            case (true, true, true, _) => (equalityHighPriority, proximityPriority, indexRow) :: acc
-            case (true, true, _, _)    => (equalityMediumPriority, proximityPriority, indexRow) :: acc
-            case (true, _, _, true)    => (equalityLowPriority, proximityPriority, indexRow) :: acc
-            case _                     => acc
+          (hasSameName, hasSameInferredType, hasSameExactParents, hasSameUpperLevelParents) match {
+            case (true, true, true, _) =>
+              (equalityHighPriority, proximityPriority, confIndex) :: acc
+            case (true, true, _, _) => (equalityMediumPriority, proximityPriority, confIndex) :: acc
+            case (true, _, _, true) => (equalityLowPriority, proximityPriority, confIndex) :: acc
+            case _                  => acc
           }
       }
       .sortBy {
@@ -171,7 +181,7 @@ object ConfeeIndexer {
       .headOption match {
       case Some(indexRow) => indexRow
       case None =>
-        throw ConfeeException(
+        throw ConfeeCodeException(
           Location(pos.line, pos.column),
           s"Reference error: '$name' is not defined"
         )
@@ -182,11 +192,11 @@ object ConfeeIndexer {
       exprType: InferredType,
       pos: Position,
       parents: List[String],
-      index: List[ConfIndex]
+      index: List[Index]
   ): T = {
     val indexRow = confIndexLookup(name, exprType, pos, parents, index)
     if (indexRow.hasReference) {
-      throw ConfeeException(
+      throw ConfeeCodeException(
         Location(pos.line, pos.column),
         s"Reference error: '$name' has a circular reference"
       )
@@ -197,9 +207,19 @@ object ConfeeIndexer {
 
   def topLevelConfIndexLookup(
       name: String,
-      index: List[ConfIndex]
+      confIndex: List[ConfIndex]
   ): ConfIndex =
-    confIndexLookup(name, ObjectInferredType, NoPosition, List.empty[String], index)
+    confIndex.find { conf =>
+      val isTopLevel       = conf.isTopLevel
+      val hasNoParents     = conf.parents.isEmpty
+      val hasSameName      = conf.name.equals(name)
+      val inferredAsObject = conf.inferredType.equals(ObjectInferredType)
+      isTopLevel & hasNoParents & hasSameName & inferredAsObject
+    } match {
+      case Some(indexRow) => indexRow
+      case None =>
+        throw ConfeeException(s"Indexer error: '$name' is not a top-level conf")
+    }
 
   def confStmtToExpr(confStmt: ConfStmt): Expr =
     LiteralObject(LiteralObjectItems(confStmt.items.items.map {
@@ -209,12 +229,12 @@ object ConfeeIndexer {
 
   /* ----- index type and conf statements ----- */
 
-  def index(stmts: List[Stmt]): List[Index] = {
+  def indexStmts(stmts: List[Stmt]): List[Index] = {
     val typeIndex = indexTypeStmts(stmts)
     val confIndex = indexConfStmts(stmts)
 
     confIndex.map { confIndexItem =>
-      Index(confIndexItem, typeIndexLookup(confIndexItem, typeIndex, confIndex))
+      Index(confIndexItem, typeIndexLookupMaybe(confIndexItem, typeIndex, confIndex))
     }
   }
 

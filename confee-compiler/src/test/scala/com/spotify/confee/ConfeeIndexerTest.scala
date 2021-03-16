@@ -6,8 +6,6 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.util.parsing.input.NoPosition
 
-// TODO: add test "Index lookup for conf"
-
 class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
   describe("Indexer on type statement") {
@@ -510,7 +508,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
   describe("Indexer on conf statements paired with type statements") {
     it("should match conf with correct type with ONE level nesting") {
-      index("""
+      indexStmts("""
           |type FooType {
           |     fooK1 : Bool
           |     fooK2 : Number
@@ -594,15 +592,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List(),
             isTopLevel = true
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -614,15 +614,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -634,15 +636,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -654,15 +658,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -676,15 +682,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -702,15 +710,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -728,15 +738,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          TypeIndex(
-            "FooType",
-            Map(
-              "fooK3" -> StringDefinedType(false),
-              "fooK1" -> BoolDefinedType(false),
-              "fooK4" -> BoolDefinedType(true),
-              "fooK5" -> NumberDefinedType(true),
-              "fooK6" -> StringDefinedType(true),
-              "fooK2" -> NumberDefinedType(false)
+          Some(
+            TypeIndex(
+              "FooType",
+              Map(
+                "fooK3" -> StringDefinedType(false),
+                "fooK1" -> BoolDefinedType(false),
+                "fooK4" -> BoolDefinedType(true),
+                "fooK5" -> NumberDefinedType(true),
+                "fooK6" -> StringDefinedType(true),
+                "fooK2" -> NumberDefinedType(false)
+              )
             )
           )
         ),
@@ -785,11 +797,13 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             isTopLevel = true,
             hasReference = true
           ),
-          TypeIndex(
-            "BarType",
-            Map(
-              "barK1" -> ObjectDefinedType("FooType", isList = false),
-              "barK2" -> ObjectDefinedType("FooType", isList = true)
+          Some(
+            TypeIndex(
+              "BarType",
+              Map(
+                "barK1" -> ObjectDefinedType("FooType", isList = false),
+                "barK2" -> ObjectDefinedType("FooType", isList = true)
+              )
             )
           )
         ),
@@ -802,11 +816,13 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List("bar"),
             hasReference = true
           ),
-          TypeIndex(
-            "BarType",
-            Map(
-              "barK1" -> ObjectDefinedType("FooType", isList = false),
-              "barK2" -> ObjectDefinedType("FooType", isList = true)
+          Some(
+            TypeIndex(
+              "BarType",
+              Map(
+                "barK1" -> ObjectDefinedType("FooType", isList = false),
+                "barK2" -> ObjectDefinedType("FooType", isList = true)
+              )
             )
           )
         ),
@@ -843,11 +859,13 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("bar")
           ),
-          TypeIndex(
-            "BarType",
-            Map(
-              "barK1" -> ObjectDefinedType("FooType", isList = false),
-              "barK2" -> ObjectDefinedType("FooType", isList = true)
+          Some(
+            TypeIndex(
+              "BarType",
+              Map(
+                "barK1" -> ObjectDefinedType("FooType", isList = false),
+                "barK2" -> ObjectDefinedType("FooType", isList = true)
+              )
             )
           )
         )
@@ -855,7 +873,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
     }
 
     it("should match conf with correct type with FOUR levels nesting") {
-      index("""
+      indexStmts("""
           |type L4 {
           |     l3 : L3
           |}
@@ -927,7 +945,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List(),
             isTopLevel = true
           ),
-          TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false)))
+          Some(TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false))))
         ),
         Index(
           ConfIndex(
@@ -964,7 +982,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l4")
           ),
-          TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false)))
+          Some(TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false))))
         ),
         Index(
           ConfIndex(
@@ -992,7 +1010,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l3", "l4")
           ),
-          TypeIndex("L3", Map("l2" -> ObjectDefinedType("L2", isList = false)))
+          Some(TypeIndex("L3", Map("l2" -> ObjectDefinedType("L2", isList = false))))
         ),
         Index(
           ConfIndex(
@@ -1011,7 +1029,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l2", "l3", "l4")
           ),
-          TypeIndex("L2", Map("l1" -> ObjectDefinedType("L1", isList = false)))
+          Some(TypeIndex("L2", Map("l1" -> ObjectDefinedType("L1", isList = false))))
         ),
         Index(
           ConfIndex(
@@ -1021,7 +1039,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l1", "l2", "l3", "l4")
           ),
-          TypeIndex("L1", Map("l0" -> StringDefinedType(false)))
+          Some(TypeIndex("L1", Map("l0" -> StringDefinedType(false))))
         )
       )
     }
@@ -1085,6 +1103,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val confStmtsIndex = indexConfStmts(input)
       val typeStmtsIndex = indexTypeStmts(input)
+      val index          = indexStmts(input)
 
       /* ----- foo test ----- */
 
@@ -1108,7 +1127,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           BoolInferredType,
           NoPosition,
           List("foo"),
-          confStmtsIndex
+          index
         )
         val fooKType =
           typeIndexLookup(fooKConf, typeStmtsIndex, confStmtsIndex).items.get(s"fooK$i")
@@ -1128,7 +1147,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         BoolInferredType,
         NoPosition,
         List("bar"),
-        confStmtsIndex
+        index
       )
       val barK1Type = typeIndexLookup(barK1Conf, typeStmtsIndex, confStmtsIndex).items.get("barK1")
       barK1Type shouldEqual Some(ObjectDefinedType("FooType", isList = false))
@@ -1140,7 +1159,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         BoolInferredType,
         NoPosition,
         List("bar"),
-        confStmtsIndex
+        index
       )
       val barK2Type = typeIndexLookup(barK2Conf, typeStmtsIndex, confStmtsIndex).items.get("barK2")
       barK2Type shouldEqual Some(ObjectDefinedType("FooType", isList = true))
@@ -1178,6 +1197,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val confStmtsIndex = indexConfStmts(input)
       val typeStmtsIndex = indexTypeStmts(input)
+      val index          = indexStmts(input)
 
       /* ----- level 4 test ----- */
 
@@ -1192,7 +1212,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         BoolInferredType,
         NoPosition,
         List("l4"),
-        confStmtsIndex
+        index
       )
       val l3Type = typeIndexLookup(l3Conf, typeStmtsIndex, confStmtsIndex).items.get("l3")
       l3Type shouldEqual Some(ObjectDefinedType("L3", isList = false))
@@ -1204,7 +1224,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         BoolInferredType,
         NoPosition,
         List("l3", "l4"),
-        confStmtsIndex
+        index
       )
       val l2Type = typeIndexLookup(l2Conf, typeStmtsIndex, confStmtsIndex).items.get("l2")
       l2Type shouldEqual Some(ObjectDefinedType("L2", isList = false))
@@ -1216,7 +1236,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         BoolInferredType,
         NoPosition,
         List("l2", "l3", "l4"),
-        confStmtsIndex
+        index
       )
       val l1Type = typeIndexLookup(l1Conf, typeStmtsIndex, confStmtsIndex).items.get("l1")
       l1Type shouldEqual Some(ObjectDefinedType("L1", isList = false))
@@ -1228,7 +1248,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         BoolInferredType,
         NoPosition,
         List("l1", "l2", "l3", "l4"),
-        confStmtsIndex
+        index
       )
       val l0Type = typeIndexLookup(l0Conf, typeStmtsIndex, confStmtsIndex).items.get("l0")
       l0Type shouldEqual Some(StringDefinedType(isList = false))
@@ -1237,7 +1257,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
   describe("Expression expansion by Indexer") {
     it("should be sensitive to the type (unrealistic conf because of duplicated item names)") {
-      val index = indexConfStmts("""conf foo : Foo {
+      val index = indexStmts("""conf foo : Foo {
           |     a = true
           |     a = 1.0
           |     a = "abc"
@@ -1277,12 +1297,12 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
     }
   }
 
-  def index(input: String): List[Index] = {
+  def indexStmts(input: String): List[Index] = {
     (for {
       tokens <- ConfeeLexer(input)
       parsed <- ConfeeParser(tokens)
     } yield parsed) match {
-      case Right(Grammar(stmts: List[Stmt])) => ConfeeIndexer.index(stmts)
+      case Right(Grammar(stmts: List[Stmt])) => ConfeeIndexer.indexStmts(stmts)
       case error                             => fail(error.toString)
     }
   }
