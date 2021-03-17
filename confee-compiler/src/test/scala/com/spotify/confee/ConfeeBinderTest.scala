@@ -860,9 +860,11 @@ class ConfeeBinderTest extends AnyFunSpec with Matchers {
 
   def bindAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
-      tokens <- ConfeeLexer(input)
-      parsed <- ConfeeParser(tokens)
-      bound  <- ConfeeBinder(parsed)
+      tokens    <- ConfeeLexer(input)
+      parsed    <- ConfeeParser(tokens)
+      linked    <- ConfeeLinker(parsed)
+      validated <- ConfeeValidator(linked)
+      bound     <- ConfeeBinder(validated)
     } yield bound
   }
 }

@@ -453,7 +453,8 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
       tokens      <- ConfeeLexer(input)
       parsed      <- ConfeeParser(tokens)
       linked      <- ConfeeLinker(parsed)
-      bound       <- ConfeeBinder(linked)
+      validated   <- ConfeeValidator(linked)
+      bound       <- ConfeeBinder(validated)
       evaluated   <- ConfeeEvaluator(bound)
       constructed <- ConfeeConstructor(evaluated)
     } yield constructed

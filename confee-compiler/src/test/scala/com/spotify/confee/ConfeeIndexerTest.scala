@@ -25,6 +25,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
                        |}""".stripMargin) shouldEqual List(
         TypeIndex(
           "Foo",
+          TypeStmt(
+            NameToken("Foo"),
+            TypeItems(
+              List(
+                TypeItem(TypeItemKey("a"), TypeDef(NameToken("Bool"), isList = false)),
+                TypeItem(TypeItemKey("b"), TypeDef(NameToken("Number"), isList = false)),
+                TypeItem(TypeItemKey("c"), TypeDef(NameToken("String"), isList = false)),
+                TypeItem(TypeItemKey("d"), TypeDef(NameToken("Bar"), isList = false))
+              )
+            )
+          ),
           Map(
             "a" -> BoolDefinedType(isList = false),
             "b" -> NumberDefinedType(isList = false),
@@ -34,6 +45,17 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
         ),
         TypeIndex(
           "Bar",
+          TypeStmt(
+            NameToken("Bar"),
+            TypeItems(
+              List(
+                TypeItem(TypeItemKey("a"), TypeDef(NameToken("Bool"), isList = true)),
+                TypeItem(TypeItemKey("b"), TypeDef(NameToken("Number"), isList = true)),
+                TypeItem(TypeItemKey("c"), TypeDef(NameToken("String"), isList = true)),
+                TypeItem(TypeItemKey("d"), TypeDef(NameToken("Foo"), isList = true))
+              )
+            )
+          ),
           Map(
             "a" -> BoolDefinedType(isList = true),
             "b" -> NumberDefinedType(isList = true),
@@ -595,6 +617,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -617,6 +652,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -639,6 +687,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -661,6 +722,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -685,6 +759,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -713,6 +800,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -741,6 +841,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "FooType",
+              TypeStmt(
+                NameToken("FooType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+                    TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+                    TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+                    TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+                    TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+                    TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "fooK3" -> StringDefinedType(false),
                 "fooK1" -> BoolDefinedType(false),
@@ -800,6 +913,15 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "BarType",
+              TypeStmt(
+                NameToken("BarType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("barK1"), TypeDef(NameToken("FooType"), isList = false)),
+                    TypeItem(TypeItemKey("barK2"), TypeDef(NameToken("FooType"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "barK1" -> ObjectDefinedType("FooType", isList = false),
                 "barK2" -> ObjectDefinedType("FooType", isList = true)
@@ -819,6 +941,15 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "BarType",
+              TypeStmt(
+                NameToken("BarType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("barK1"), TypeDef(NameToken("FooType"), isList = false)),
+                    TypeItem(TypeItemKey("barK2"), TypeDef(NameToken("FooType"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "barK1" -> ObjectDefinedType("FooType", isList = false),
                 "barK2" -> ObjectDefinedType("FooType", isList = true)
@@ -862,6 +993,15 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
           Some(
             TypeIndex(
               "BarType",
+              TypeStmt(
+                NameToken("BarType"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("barK1"), TypeDef(NameToken("FooType"), isList = false)),
+                    TypeItem(TypeItemKey("barK2"), TypeDef(NameToken("FooType"), isList = true))
+                  )
+                )
+              ),
               Map(
                 "barK1" -> ObjectDefinedType("FooType", isList = false),
                 "barK2" -> ObjectDefinedType("FooType", isList = true)
@@ -945,7 +1085,20 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List(),
             isTopLevel = true
           ),
-          Some(TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false))))
+          Some(
+            TypeIndex(
+              "L4",
+              TypeStmt(
+                NameToken("L4"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("l3"), TypeDef(NameToken("L3"), isList = false))
+                  )
+                )
+              ),
+              Map("l3" -> ObjectDefinedType("L3", isList = false))
+            )
+          )
         ),
         Index(
           ConfIndex(
@@ -982,7 +1135,20 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l4")
           ),
-          Some(TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false))))
+          Some(
+            TypeIndex(
+              "L4",
+              TypeStmt(
+                NameToken("L4"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("l3"), TypeDef(NameToken("L3"), isList = false))
+                  )
+                )
+              ),
+              Map("l3" -> ObjectDefinedType("L3", isList = false))
+            )
+          )
         ),
         Index(
           ConfIndex(
@@ -1010,7 +1176,20 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l3", "l4")
           ),
-          Some(TypeIndex("L3", Map("l2" -> ObjectDefinedType("L2", isList = false))))
+          Some(
+            TypeIndex(
+              "L3",
+              TypeStmt(
+                NameToken("L3"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("l2"), TypeDef(NameToken("L2"), isList = false))
+                  )
+                )
+              ),
+              Map("l2" -> ObjectDefinedType("L2", isList = false))
+            )
+          )
         ),
         Index(
           ConfIndex(
@@ -1029,7 +1208,20 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l2", "l3", "l4")
           ),
-          Some(TypeIndex("L2", Map("l1" -> ObjectDefinedType("L1", isList = false))))
+          Some(
+            TypeIndex(
+              "L2",
+              TypeStmt(
+                NameToken("L2"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("l1"), TypeDef(NameToken("L1"), isList = false))
+                  )
+                )
+              ),
+              Map("l1" -> ObjectDefinedType("L1", isList = false))
+            )
+          )
         ),
         Index(
           ConfIndex(
@@ -1039,7 +1231,20 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l1", "l2", "l3", "l4")
           ),
-          Some(TypeIndex("L1", Map("l0" -> StringDefinedType(false))))
+          Some(
+            TypeIndex(
+              "L1",
+              TypeStmt(
+                NameToken("L1"),
+                TypeItems(
+                  List(
+                    TypeItem(TypeItemKey("l0"), TypeDef(NameToken("String"), isList = false))
+                  )
+                )
+              ),
+              Map("l0" -> StringDefinedType(false))
+            )
+          )
         )
       )
     }
@@ -1083,6 +1288,19 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val expectedFooType = TypeIndex(
         "FooType",
+        TypeStmt(
+          NameToken("FooType"),
+          TypeItems(
+            List(
+              TypeItem(TypeItemKey("fooK1"), TypeDef(NameToken("Bool"), isList = false)),
+              TypeItem(TypeItemKey("fooK2"), TypeDef(NameToken("Number"), isList = false)),
+              TypeItem(TypeItemKey("fooK3"), TypeDef(NameToken("String"), isList = false)),
+              TypeItem(TypeItemKey("fooK4"), TypeDef(NameToken("Bool"), isList = true)),
+              TypeItem(TypeItemKey("fooK5"), TypeDef(NameToken("Number"), isList = true)),
+              TypeItem(TypeItemKey("fooK6"), TypeDef(NameToken("String"), isList = true))
+            )
+          )
+        ),
         Map(
           "fooK3" -> StringDefinedType(isList = false),
           "fooK1" -> BoolDefinedType(isList = false),
@@ -1095,6 +1313,15 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val expectedBarType = TypeIndex(
         "BarType",
+        TypeStmt(
+          NameToken("BarType"),
+          TypeItems(
+            List(
+              TypeItem(TypeItemKey("barK1"), TypeDef(NameToken("FooType"), isList = false)),
+              TypeItem(TypeItemKey("barK2"), TypeDef(NameToken("FooType"), isList = true))
+            )
+          )
+        ),
         Map(
           "barK1" -> ObjectDefinedType("FooType", isList = false),
           "barK2" -> ObjectDefinedType("FooType", isList = true)
@@ -1200,7 +1427,18 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
 
       val l4Conf = topLevelConfIndexLookup("l4", confStmtsIndex)
       val l4Type = typeIndexLookup(l4Conf, typeStmtsIndex, confStmtsIndex)
-      l4Type shouldEqual TypeIndex("L4", Map("l3" -> ObjectDefinedType("L3", isList = false)))
+      l4Type shouldEqual TypeIndex(
+        "L4",
+        TypeStmt(
+          NameToken("L4"),
+          TypeItems(
+            List(
+              TypeItem(TypeItemKey("l3"), TypeDef(NameToken("L3"), isList = false))
+            )
+          )
+        ),
+        Map("l3" -> ObjectDefinedType("L3", isList = false))
+      )
 
       /* ----- level 3 test ----- */
 

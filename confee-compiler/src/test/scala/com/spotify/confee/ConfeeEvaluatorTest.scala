@@ -629,7 +629,9 @@ class ConfeeEvaluatorTest extends AnyFunSpec with Matchers {
     for {
       tokens    <- ConfeeLexer(input)
       parsed    <- ConfeeParser(tokens)
-      evaluated <- ConfeeEvaluator(parsed)
+      linked    <- ConfeeLinker(parsed)
+      validated <- ConfeeValidator(linked)
+      evaluated <- ConfeeEvaluator(validated)
     } yield evaluated
   }
 }

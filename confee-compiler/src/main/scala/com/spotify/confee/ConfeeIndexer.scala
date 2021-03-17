@@ -36,6 +36,7 @@ object ConfeeIndexer {
 
   case class TypeIndex(
       name: String,
+      stmt: TypeStmt,
       items: Map[String, DefinedType]
   )
 
@@ -235,7 +236,7 @@ object ConfeeIndexer {
 
   def indexTypeStmt(typeStmt: TypeStmt): TypeIndex = typeStmt match {
     case TypeStmt(name, items: TypeItems) =>
-      TypeIndex(name.name, items.items.map {
+      TypeIndex(name.name, typeStmt, items.items.map {
         case TypeItem(itemKey: TypeItemKey, typeDef: TypeDef) =>
           itemKey.value -> DefinedType.parse(typeDef)
       }.toMap)

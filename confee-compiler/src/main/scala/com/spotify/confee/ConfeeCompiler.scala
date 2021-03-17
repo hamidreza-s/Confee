@@ -6,7 +6,6 @@ object ConfeeCompiler {
   case object JSON extends Target
   case object YAML extends Target
 
-  // TODO: Implement Validator
   // TODO: Implement Checker
   // TODO: Add REST API + GUI for debugging/testing
   // TODO: Conf value should accept array value as well as obj (+ test/readme)
@@ -16,7 +15,7 @@ object ConfeeCompiler {
   // TODO: Refactor value names of AST case classes (name, value, items, etc. can be better)
   // TODO: Make compiler/cli compatible with ScalaNative
   // TODO: Add 'list-confs'/'list-types' to ConfeeCompiler + ConfeeCLI + ConfeeRest
-  // TODO: Cache index not to create twice in binding and constructing steps
+  // TODO: Cache index not to create it again when needed for the second time
   // TODO: Improve error message description with better Location information
   // TODO: Use map for typeIndex and confIndex for a better performance
 
@@ -24,7 +23,7 @@ object ConfeeCompiler {
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns [done]
     * 2. Parser: It gets tokens and generates AST based on parser grammar [done]
     * 3. Linker: It iterates parsed AST and link config files based on import statements
-    * 4. Validator: It iterates linked AST and checks conf/type/item naming correctness
+    * 4. Validator: It iterates linked AST and checks conf/type/item naming correctness [done]
     * 5. Binder: It iterates linked AST and bind references (variables) it their values [done]
     * 6. Evaluator: It iterates bound AST and evaluates expressions [done]
     * 7. Constructor: It iterates evaluated AST and constructs objects from prototypes [done]

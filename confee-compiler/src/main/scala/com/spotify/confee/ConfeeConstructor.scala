@@ -1,6 +1,6 @@
 package com.spotify.confee
 
-import com.spotify.confee.ConfeeIndexer.ConfIndex
+import com.spotify.confee.ConfeeIndexer.{ConfIndex, indexConfStmts}
 
 import scala.util.{Failure, Success, Try}
 
@@ -8,7 +8,7 @@ object ConfeeConstructor {
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
-      val index: List[ConfIndex] = ConfeeIndexer.indexConfStmts(stmts)
+      val index: List[ConfIndex] = indexConfStmts(stmts)
       Try(stmts.map {
         case confStmt @ ConfStmt(name, _, items) =>
           confStmt.copy(items = constructConfItems(items, name.word :: Nil, index))
@@ -22,7 +22,7 @@ object ConfeeConstructor {
       Left(
         ConfeeConstructorError(
           Location(otherwise.pos.line, otherwise.pos.column),
-          "AST in evaluation step does not contain valid grammar structure"
+          "AST in constructor step does not contain valid grammar structure"
         )
       )
   }

@@ -130,7 +130,9 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
     for {
       tokens      <- ConfeeLexer(input)
       parsed      <- ConfeeParser(tokens)
-      bound       <- ConfeeBinder(parsed)
+      linked      <- ConfeeLinker(parsed)
+      validated   <- ConfeeValidator(linked)
+      bound       <- ConfeeBinder(validated)
       evaluated   <- ConfeeEvaluator(bound)
       constructed <- ConfeeConstructor(evaluated)
       checked     <- ConfeeChecker(constructed)
