@@ -614,7 +614,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List(),
             isTopLevel = true
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -649,7 +649,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -684,7 +684,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -719,7 +719,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -756,7 +756,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -797,7 +797,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -838,7 +838,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("foo")
           ),
-          Some(
+          Right(
             TypeIndex(
               "FooType",
               TypeStmt(
@@ -910,7 +910,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             isTopLevel = true,
             hasReference = true
           ),
-          Some(
+          Right(
             TypeIndex(
               "BarType",
               TypeStmt(
@@ -938,7 +938,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List("bar"),
             hasReference = true
           ),
-          Some(
+          Right(
             TypeIndex(
               "BarType",
               TypeStmt(
@@ -990,7 +990,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("bar")
           ),
-          Some(
+          Right(
             TypeIndex(
               "BarType",
               TypeStmt(
@@ -1085,7 +1085,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             List(),
             isTopLevel = true
           ),
-          Some(
+          Right(
             TypeIndex(
               "L4",
               TypeStmt(
@@ -1135,7 +1135,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l4")
           ),
-          Some(
+          Right(
             TypeIndex(
               "L4",
               TypeStmt(
@@ -1176,7 +1176,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l3", "l4")
           ),
-          Some(
+          Right(
             TypeIndex(
               "L3",
               TypeStmt(
@@ -1208,7 +1208,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l2", "l3", "l4")
           ),
-          Some(
+          Right(
             TypeIndex(
               "L2",
               TypeStmt(
@@ -1231,7 +1231,7 @@ class ConfeeIndexerTest extends AnyFunSpec with Matchers {
             None,
             List("l1", "l2", "l3", "l4")
           ),
-          Some(
+          Right(
             TypeIndex(
               "L1",
               TypeStmt(

@@ -9,7 +9,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
   describe("Parser on type statement") {
 
     it("should parse type definitions without type items") {
-      parsedAST("""
+      parseAST("""
           |type Foo { }
           |type Bar { }
           |""".stripMargin) shouldEqual Right(
@@ -23,7 +23,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse type definitions with type items in one line") {
-      parsedAST("type Person { name: Text age: Int friends: [Person] }") shouldEqual Right(
+      parseAST("type Person { name: Text age: Int friends: [Person] }") shouldEqual Right(
         Grammar(
           List(
             TypeStmt(
@@ -42,7 +42,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse type definitions with type item keys starting with lowercase") {
-      parsedAST("""type Person {
+      parseAST("""type Person {
           |     name: Text
           |     age: Int
           |     friends: [Person]
@@ -65,7 +65,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse type definitions with type key starting with uppercase") {
-      parsedAST("""type Person {
+      parseAST("""type Person {
                   |     Name: Text
                   |     Age: Int
                   |     Friends: [Person]
@@ -88,7 +88,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should NOT parse type definitions with a name which starts with lowercase") {
-      parsedAST("""type person {
+      parseAST("""type person {
           |     name: Text
           |}""".stripMargin) shouldEqual Left(ConfeeParserError(Location(1, 6), "name expected"))
     }
@@ -96,7 +96,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
 
   describe("Parser on import statement") {
     it("should parse two import statements") {
-      parsedAST("""
+      parseAST("""
           |import "/path/to/foo.confee"
           |import "/path/to/bar.confee"
         """.stripMargin) shouldEqual Right(
@@ -113,7 +113,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
   describe("Parser on conf statement") {
 
     it("should parse conf definition without conf items") {
-      parsedAST("""
+      parseAST("""
           |conf foo : Foo { }
           |conf bar : Bar { }
           |""".stripMargin) shouldEqual Right(
@@ -135,7 +135,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse conf definition with conf items in one line") {
-      parsedAST("""conf alice : Person {name = "Alice" age = 20}""") shouldEqual Right(
+      parseAST("""conf alice : Person {name = "Alice" age = 20}""") shouldEqual Right(
         Grammar(
           List(
             ConfStmt(
@@ -162,7 +162,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     describe("Parser on literal expression") {
 
       it("should parse conf definition with boolean, string and number") {
-        parsedAST("""conf alice : Person {
+        parseAST("""conf alice : Person {
             |     name = "Alice"
             |     age = 20
             |     active = true
@@ -200,7 +200,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with operator in bool") {
-        parsedAST("""conf report : StatusReport {
+        parseAST("""conf report : StatusReport {
             |     is_in_progress = false
             |     is_done = not false
             |     is_valid = true xor false
@@ -282,7 +282,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with operator in number") {
-        parsedAST("""conf report : TimeReport {
+        parseAST("""conf report : TimeReport {
             |     sec = 60
             |     hour = 60 * sec
             |     week = day * 7
@@ -366,7 +366,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with operator in string") {
-        parsedAST("""conf report : SprintReport {
+        parseAST("""conf report : SprintReport {
             |     project = "wheel"
             |     goal = "Inventing the " + project
             |     next = "Maintaining " + (goal - "Inventing ")
@@ -408,7 +408,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with list") {
-        parsedAST("""conf team : Team {
+        parseAST("""conf team : Team {
             |     members = ["Alice", "Bob", "Joe"]
             |     records = [98, 97, 99]
             |}""".stripMargin) shouldEqual Right(
@@ -448,7 +448,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with list of list") {
-        parsedAST("""conf match : Match {
+        parseAST("""conf match : Match {
             |     players = [["Alice", "Bob"], ["Joe", "Monica"]]
             |     scores = [[7, 10], [23, 14]]
             |}""".stripMargin) shouldEqual Right(
@@ -506,7 +506,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with object") {
-        parsedAST("""
+        parseAST("""
             |conf match : Match {
             |     info = {
             |          stadium = "Azadi"
@@ -557,7 +557,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with object of object") {
-        parsedAST("""
+        parseAST("""
             |conf match : Match {
             |     info = {
             |          size = {
@@ -614,7 +614,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with proto") {
-        parsedAST("""
+        parseAST("""
             |conf match : Match {
             |     info = templateInfo { quality = 5 }
             |}
@@ -649,7 +649,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with references") {
-        parsedAST("""conf foo : Foo {
+        parseAST("""conf foo : Foo {
             |     a1 = true
             |     b1 = "something"
             |     c1 = 123
@@ -729,7 +729,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf definition with keyword in reference names") {
-        parsedAST("""conf foo : Foo {
+        parseAST("""conf foo : Foo {
             |     a = import_keyword + type_keyword + conf_keyword
             |     b = keyword_import + keyword_type + keyword_conf
             |     c = key_import_word + key_type_word + key_conf_word
@@ -837,7 +837,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
       }
 
       it("should parse conf / object / proto definitions with item key starting with uppercase") {
-        parsedAST("""conf foo : Foo {
+        parseAST("""conf foo : Foo {
                     |     A = true
                     |     B = [true]
                     |     C = { Y = true }
@@ -894,7 +894,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
 
   describe("Parser on a real example") {
     it("should parse type definitions") {
-      parsedAST("""
+      parseAST("""
           |type DataInfo {
           |     id: Text
           |     description: Text
@@ -960,7 +960,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
 
     it("should parse conf definitions based on the above types ") {
-      parsedAST("""
+      parseAST("""
           |import "/path/to/DataInfoTypes.confee"
           |
           |conf workflow : DataWorkflow {
@@ -1104,7 +1104,7 @@ class ConfeeParserTest extends AnyFunSpec with Matchers with BeforeAndAfterEach 
     }
   }
 
-  def parsedAST(input: String): Either[ConfeeError, ConfeeAST] = {
+  def parseAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
       tokens <- ConfeeLexer(input)
       ast    <- ConfeeParser(tokens)

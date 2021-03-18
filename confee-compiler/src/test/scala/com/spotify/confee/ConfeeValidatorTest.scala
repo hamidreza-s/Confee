@@ -7,7 +7,7 @@ class ConfeeValidatorTest extends AnyFunSpec with Matchers {
 
   describe("Validator on type statements") {
     it("should NOT let types, confs, and their items with duplicated names (sorted errors)") {
-      validatedAST("""
+      validateAST("""
           |type Foo { a : Bool }
           |type Foo { b : Bool }
           |
@@ -64,7 +64,7 @@ class ConfeeValidatorTest extends AnyFunSpec with Matchers {
     }
   }
 
-  def validatedAST(input: String): Either[ConfeeError, ConfeeAST] = {
+  def validateAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
       tokens    <- ConfeeLexer(input)
       parsed    <- ConfeeParser(tokens)

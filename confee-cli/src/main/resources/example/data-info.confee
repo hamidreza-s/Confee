@@ -1,3 +1,5 @@
+import "./data-info-type.confee"
+
 conf workflow : WorkFlow {
      account = "admin@dataflow.com"
      dockerArgs = ["--wrap-luigi"]

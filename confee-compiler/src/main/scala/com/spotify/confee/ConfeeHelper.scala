@@ -1,6 +1,9 @@
 package com.spotify.confee
 
 object ConfeeHelper {
+  def updateConfItems(confStmt: ConfStmt, newItems: ConfItems): ConfStmt =
+    confStmt.copy(items = newItems).setPos(confStmt.pos)
+
   def hasReference(expr: Expr): Boolean = expr match {
     // literal word expressions
     case _: LiteralWord => true

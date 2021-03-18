@@ -1,0 +1,15 @@
+type WorkFlow {
+     account: String
+     dockerArgs: [String]
+}
+
+type DataFact {
+     doc: String
+     workFlows: [DataWorkflow]
+}
+
+type DataInfo {
+     id: String
+     description: String
+     facts: [DataFact]
+}

@@ -26,6 +26,7 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
           |     }
           |}""".stripMargin,
         "foo",
+        skipChecking = true,
         Right("""{
           |    "a" : true,
           |    "b" : 1.0,
@@ -74,6 +75,7 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
           |     }
           |}""".stripMargin,
         "foo",
+        skipChecking = true,
         Right("""{
                 |    "a" : {
                 |        "x" : true,
@@ -103,6 +105,7 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
           |     }
           |}""".stripMargin,
         "foo",
+        skipChecking = true,
         Right("""{
                 |    "base" : 1.0,
                 |    "a" : {
@@ -117,15 +120,43 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
       )
     }
 
+    it("should NOT format due to type checking errors") {
+      formatJSON(
+        """
+          |type Bar {}
+          |conf bar : Bar {}
+          |conf foo : Foo {}
+          |""".stripMargin,
+        "foo",
+        skipChecking = false,
+        Left(
+          ConfeeCheckerErrors(
+            List(
+              ConfeeCheckerError(
+                Location(4, 1),
+                "Type error: 'foo' conf does not have defined type"
+              )
+            )
+          )
+        )
+      )
+    }
+
   }
 
-  def formatJSON(input: String, conf: String, output: Either[ConfeeError, String]): Unit =
-    formatAST(input, conf, ConfeeCompiler.JSON) shouldEqual output
+  def formatJSON(
+      input: String,
+      conf: String,
+      skipChecking: Boolean,
+      output: Either[ConfeeError, String]
+  ): Unit =
+    formatAST(input, conf, ConfeeCompiler.JSON, skipChecking) shouldEqual output
 
   def formatAST(
       input: String,
       conf: String,
-      target: ConfeeCompiler.Target
+      target: ConfeeCompiler.Target,
+      skipChecking: Boolean
   ): Either[ConfeeError, String] = {
     for {
       tokens      <- ConfeeLexer(input)
@@ -135,7 +166,7 @@ class ConfeeFormatterTest extends AnyFunSpec with Matchers {
       bound       <- ConfeeBinder(validated)
       evaluated   <- ConfeeEvaluator(bound)
       constructed <- ConfeeConstructor(evaluated)
-      checked     <- ConfeeChecker(constructed)
+      checked     <- ConfeeChecker(constructed, skipChecking)
       formatted   <- ConfeeFormatter(checked, conf, target)
     } yield formatted
   }

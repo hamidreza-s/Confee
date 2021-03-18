@@ -1,5 +1,6 @@
 package com.spotify.confee
 
+import com.spotify.confee.ConfeeHelper.updateConfItems
 import com.spotify.confee.ConfeeIndexer.ConfIndex
 
 import scala.util.{Failure, Success, Try}
@@ -8,17 +9,16 @@ object ConfeeBinder {
 
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
-      val index: List[ConfIndex] = ConfeeIndexer.indexConfStmts(stmts)
+      val index = ConfeeIndexer.indexConfStmts(stmts)
       Try(stmts.map {
         case confStmt @ ConfStmt(name, _, items) =>
-          confStmt.copy(items = bindConfItems(items, name.word :: Nil, index))
+          updateConfItems(confStmt, bindConfItems(items, name.word :: Nil, index))
         case otherwise => otherwise
       }) match {
-        case Success(boundStmts)              => Right(Grammar(boundStmts))
-        case Failure(ex: ConfeeCodeException) => Left(ConfeeBinderError(ex.location, ex.msg))
-        case Failure(ex)                      => Left(ConfeeUnknownError(ex))
+        case Success(boundStmts)                 => Right(Grammar(boundStmts))
+        case Failure(ex: ConfeeIndexerException) => Left(ConfeeBinderError(ex.location, ex.msg))
+        case Failure(ex)                         => Left(ConfeeUnknownError(ex))
       }
-
     case otherwise =>
       Left(
         ConfeeBinderError(

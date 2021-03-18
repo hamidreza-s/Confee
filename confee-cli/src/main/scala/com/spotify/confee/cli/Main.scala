@@ -1,18 +1,19 @@
 package com.spotify.confee.cli
 
-import com.spotify.confee.ConfeeCompiler
 import com.spotify.confee.ConfeeCompiler.{JSON, Target, YAML}
+import com.spotify.confee._
 import scopt.{OptionParser, Read}
 
 import java.io.{File, PrintWriter}
 import scala.io.Source
-import scala.util.{Failure, Success, Try}
 
 case class Config(
     name: Option[String] = None,
     target: Option[Target] = None,
     input: Option[File] = None,
-    output: Option[File] = None
+    output: Option[File] = None,
+    relax: Boolean = false,
+    typesafe: Boolean = false
 )
 
 object Main extends App {
@@ -36,7 +37,7 @@ object Main extends App {
       .text("config name to be formatted")
 
     opt[Target]('t', "target")
-      .valueName("JSON|YAML")
+      .valueName("json|yaml")
       .action((x, c) => c.copy(target = Some(x)))
       .text("target format of confee file")
 
@@ -51,24 +52,45 @@ object Main extends App {
       .action((x, c) => c.copy(output = Some(x)))
       .text("path to confee output file (optional)")
 
+    opt[Unit]('R', "relax")
+      .optional()
+      .action((_, c) => c.copy(relax = true))
+      .text("disable object key name validator")
+
+    opt[Unit]('T', "typeless")
+      .optional()
+      .action((_, c) => c.copy(typesafe = true))
+      .text("disable type checker")
+
     help("help").text("prints this usage text")
   }
 
-  Try(parser.parse(args, Config()) match {
-    case Some(Config(Some(name), Some(target), Some(inputFilePath), maybeOutputFilePath)) =>
-      compile(name, target, inputFilePath, maybeOutputFilePath)
-    case _ => throw new Exception("Invalid arguments!")
-  }) match {
-    case Failure(exception) => println(s"Failure: ${exception.getMessage}")
-    case Success(output)    => println(output)
+  parser.parse(args, Config()) match {
+    case Some(Config(Some(name), Some(target), Some(inputPath), outputPath, relax, typeless)) =>
+      compile(name, target, inputPath, outputPath, relax, typeless) match {
+        case Right(result)                      => println(result)
+        case Left(ConfeeLexerError(l, m))       => printError(l, m)
+        case Left(ConfeeParserError(l, m))      => printError(l, m)
+        case Left(ConfeeValidatorError(l, m))   => printError(l, m)
+        case Left(ConfeeBinderError(l, m))      => printError(l, m)
+        case Left(ConfeeEvaluatorError(l, m))   => printError(l, m)
+        case Left(ConfeeConstructorError(l, m)) => printError(l, m)
+        case Left(ConfeeCheckerError(l, m))     => printError(l, m)
+        case Left(ConfeeCheckerErrors(es))      => es.map(e => printError(e.location, e.msg))
+        case Left(ConfeeValidatorErrors(es))    => es.map(e => printError(e.location, e.msg))
+        case Left(error)                        => println(s"Compiler: $error")
+      }
+    case _ => println("Invalid arguments!")
   }
 
   private def compile(
       configName: String,
       target: Target,
       input: File,
-      maybeOutput: Option[File]
-  ): String = {
+      maybeOutput: Option[File],
+      relax: Boolean,
+      typeless: Boolean
+  ): Either[ConfeeError, String] = {
     println(s"""
                |Compiling ...
                |>> target: $target
@@ -86,19 +108,20 @@ object Main extends App {
     val inputLines  = inputSource.getLines().mkString("\n")
     inputSource.close()
 
-    ConfeeCompiler(inputLines, configName, target) match {
+    ConfeeCompiler(inputLines, configName, target, relax, typeless) match {
       case Right(compiledConfig) =>
         maybeOutput match {
           case Some(outputFilePath) =>
             val outputFile = new PrintWriter(outputFilePath)
             outputFile.write(compiledConfig)
             outputFile.close()
-            "Compiled Successfully!"
+            Right("Compiled Successfully!")
 
-          case None => compiledConfig
+          case None => Right(compiledConfig)
         }
-      case Left(error) => throw new Exception(error.toString)
+      case otherwise => otherwise
     }
-
   }
+
+  private def printError(l: Location, m: String): Unit = println(s"$m ($l)")
 }

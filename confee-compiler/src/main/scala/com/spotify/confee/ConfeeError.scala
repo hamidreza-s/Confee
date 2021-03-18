@@ -10,7 +10,7 @@ case class ConfeeParserError(location: Location, msg: String) extends ConfeeErro
 
 case class ConfeeValidatorError(location: Location, msg: String) extends ConfeeError
 
-case class ConfeeValidatorErrors(list: List[ConfeeValidatorError]) extends ConfeeError
+case class ConfeeValidatorErrors(errors: List[ConfeeValidatorError]) extends ConfeeError
 
 case class ConfeeBinderError(location: Location, msg: String) extends ConfeeError
 
@@ -18,7 +18,13 @@ case class ConfeeEvaluatorError(location: Location, msg: String) extends ConfeeE
 
 case class ConfeeConstructorError(location: Location, msg: String) extends ConfeeError
 
+case class ConfeeCheckerError(location: Location, msg: String) extends ConfeeError
+
+case class ConfeeCheckerErrors(errors: List[ConfeeCheckerError]) extends ConfeeError
+
 case class ConfeeFormatterError(location: Location, msg: String) extends ConfeeError
+
+case class ConfeeIndexerError(location: Location, msg: String) extends ConfeeError
 
 case class ConfeeUnknownError(exception: Throwable) extends ConfeeError
 
@@ -30,7 +36,7 @@ case class ConfeeInvalidArgumentError(msg: String) extends ConfeeError
 
 case class ConfeeIllegalOperationError(msg: String) extends ConfeeError
 
-case class ConfeeCodeException(location: Location, msg: String) extends Exception(msg)
+case class ConfeeIndexerException(location: Location, msg: String) extends Exception(msg)
 
 case class ConfeeException(msg: String) extends Exception(msg)
 

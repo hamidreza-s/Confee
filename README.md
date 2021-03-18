@@ -74,6 +74,8 @@ Usage: confeec [options]
   -t, --target JSON|YAML  target format of confee file
   -i, --input <path>      path to confee input file
   -o, --output <path>     path to confee output file (optional)
+  -R, --relax             disable object key name validator
+  -T, --typeless          disable type checker
   --help                  prints this usage text
 ```
 

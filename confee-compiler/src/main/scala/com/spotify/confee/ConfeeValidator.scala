@@ -3,61 +3,66 @@ package com.spotify.confee
 import com.spotify.confee.Location.fromPosition
 
 object ConfeeValidator {
-  def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
-    case Grammar(stmts: List[Stmt]) =>
-      val duplicatedConfs     = findDuplicatedConfName(stmts)
-      val duplicateConfItems  = findDuplicateConfItemNames(stmts)
-      val duplicatedTypes     = findDuplicatedTypeName(stmts)
-      val duplicatedTypeItems = findDuplicatedTypeItemNames(stmts)
+  def apply(ast: ConfeeAST, skip: Boolean = false): Either[ConfeeError, ConfeeAST] = {
+    if (skip) Right(ast)
+    else {
+      ast match {
+        case Grammar(stmts: List[Stmt]) =>
+          val duplicatedConfs     = findDuplicatedConfName(stmts)
+          val duplicateConfItems  = findDuplicateConfItemNames(stmts)
+          val duplicatedTypes     = findDuplicatedTypeName(stmts)
+          val duplicatedTypeItems = findDuplicatedTypeItemNames(stmts)
 
-      if (duplicatedConfs.isEmpty
-            & duplicateConfItems.isEmpty
-            & duplicatedTypes.isEmpty
-            & duplicatedTypeItems.isEmpty) {
-        Right(ast)
-      } else {
-        val confErrors = duplicatedConfs.map { c =>
-          ConfeeValidatorError(
-            fromPosition(c.name.pos),
-            s"Validator error: duplicate conf name: ${c.name}"
-          )
-        }
+          if (duplicatedConfs.isEmpty
+                & duplicateConfItems.isEmpty
+                & duplicatedTypes.isEmpty
+                & duplicatedTypeItems.isEmpty) {
+            Right(ast)
+          } else {
+            val confErrors = duplicatedConfs.map { c =>
+              ConfeeValidatorError(
+                fromPosition(c.name.pos),
+                s"Validator error: duplicate conf name: ${c.name}"
+              )
+            }
 
-        val confItemErrors = duplicateConfItems.map { confItem =>
-          ConfeeValidatorError(
-            fromPosition(confItem.itemVal.pos),
-            s"Validation error: duplicated item name of conf: ${confItem.name}"
-          )
-        }
+            val confItemErrors = duplicateConfItems.map { confItem =>
+              ConfeeValidatorError(
+                fromPosition(confItem.itemVal.pos),
+                s"Validation error: duplicated item name of conf: ${confItem.name}"
+              )
+            }
 
-        val typeErrors = duplicatedTypes.map { t =>
-          ConfeeValidatorError(
-            fromPosition(t.name.pos),
-            s"Validator error: duplicated type name: ${t.name}"
-          )
-        }
+            val typeErrors = duplicatedTypes.map { t =>
+              ConfeeValidatorError(
+                fromPosition(t.name.pos),
+                s"Validator error: duplicated type name: ${t.name}"
+              )
+            }
 
-        val typeItemErrors = duplicatedTypeItems.map { typeItem =>
-          ConfeeValidatorError(
-            fromPosition(typeItem.itemType.name.pos),
-            s"Validator error: duplicated item name of type: ${typeItem.name}"
-          )
-        }
+            val typeItemErrors = duplicatedTypeItems.map { typeItem =>
+              ConfeeValidatorError(
+                fromPosition(typeItem.itemType.name.pos),
+                s"Validator error: duplicated item name of type: ${typeItem.name}"
+              )
+            }
 
-        val sortedErrors = (confErrors ::: confItemErrors ::: typeErrors ::: typeItemErrors)
-          .sortBy { e =>
-            (e.location.line, e.location.column)
+            val sortedDistinctErrors =
+              (confErrors ::: confItemErrors ::: typeErrors ::: typeItemErrors).sortBy { e =>
+                (e.location.line, e.location.column)
+              }.distinct
+
+            Left(ConfeeValidatorErrors(sortedDistinctErrors))
           }
-
-        Left(ConfeeValidatorErrors(sortedErrors))
+        case otherwise =>
+          Left(
+            ConfeeConstructorError(
+              Location(otherwise.pos.line, otherwise.pos.column),
+              "AST in validator step does not contain valid grammar structure"
+            )
+          )
       }
-    case otherwise =>
-      Left(
-        ConfeeConstructorError(
-          Location(otherwise.pos.line, otherwise.pos.column),
-          "AST in validator step does not contain valid grammar structure"
-        )
-      )
+    }
   }
 
   private def findDuplicatedConfName(stmts: List[Stmt]): List[ConfStmt] =

@@ -1,10 +1,11 @@
 package com.spotify.confee
 
 import com.spotify.confee.ConfeeHelper.hasReference
+import com.spotify.confee.Location.fromPosition
 
 import scala.annotation.tailrec
 import scala.util.parsing.input.Position
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 object ConfeeIndexer {
 
@@ -50,7 +51,10 @@ object ConfeeIndexer {
       hasReference: Boolean = false
   )
 
-  case class Index(confIndex: ConfIndex, typeIndex: Option[TypeIndex])
+  case class Index(
+      confIndex: ConfIndex,
+      typeIndex: Either[ConfeeError, TypeIndex]
+  )
 
   /* ----- lookup type ----- */
 
@@ -66,23 +70,23 @@ object ConfeeIndexer {
         } match {
           case Some(indexRow) => indexRow
           case None =>
-            throw ConfeeCodeException(
-              Location(conf.expr.pos.line, conf.expr.pos.column),
-              s"Indexer error: '${conf.name}' conf does not have defined type"
+            throw ConfeeIndexerException(
+              fromPosition(conf.expr.pos),
+              s"Type error: '${conf.name}' conf does not have defined type"
             )
         }
       case Some(_) =>
-        throw ConfeeCodeException(
-          Location(conf.expr.pos.line, conf.expr.pos.column),
-          s"Indexer error: '${conf.name}' is not inside a valid top-level type"
+        throw ConfeeIndexerException(
+          fromPosition(conf.expr.pos),
+          s"Type error: '${conf.name}' is not inside a valid top-level type"
         )
       case None =>
         val confParentsAscending = conf.parents.reverse
         confParentsAscending match {
           case Nil =>
-            throw ConfeeCodeException(
-              Location(conf.expr.pos.line, conf.expr.pos.column),
-              s"Indexer error: '${conf.name}' is top-level but has invalid structure"
+            throw ConfeeIndexerException(
+              fromPosition(conf.expr.pos),
+              s"Type error: '${conf.name}' is top-level but has invalid structure"
             )
           case topLevelParent :: tailParent =>
             val topLevelParentConf = topLevelConfIndexLookup(topLevelParent, confIndex)
@@ -115,15 +119,15 @@ object ConfeeIndexer {
             case Some(indexRow) =>
               typeIndexLookupLoop(conf, indexRow, tail, typeIndex, confIndex)
             case None =>
-              throw ConfeeCodeException(
-                Location(conf.expr.pos.line, conf.expr.pos.column),
-                s"Indexer error: '${conf.name}' object item does not have defined type"
+              throw ConfeeIndexerException(
+                fromPosition(conf.expr.pos),
+                s"Type error: '${conf.name}' object item does not have defined type"
               )
           }
         case _ =>
-          throw ConfeeCodeException(
-            Location(conf.expr.pos.line, conf.expr.pos.column),
-            s"Indexer error: '${conf.name}' does not have a valid type structure"
+          throw ConfeeIndexerException(
+            fromPosition(conf.expr.pos),
+            s"Type error: '${conf.name}' does not have a valid type structure"
           )
       }
   }
@@ -132,9 +136,10 @@ object ConfeeIndexer {
       conf: ConfIndex,
       typeIndex: List[TypeIndex],
       confIndex: List[ConfIndex]
-  ): Option[TypeIndex] = Try(typeIndexLookup(conf, typeIndex, confIndex)) match {
-    case Success(typeIndex) => Some(typeIndex)
-    case _                  => None
+  ): Either[ConfeeError, TypeIndex] = Try(typeIndexLookup(conf, typeIndex, confIndex)) match {
+    case Success(typeIndex)                  => Right(typeIndex)
+    case Failure(ex: ConfeeIndexerException) => Left(ConfeeIndexerError(ex.location, ex.msg))
+    case Failure(ex)                         => Left(ConfeeUnknownError(ex))
   }
 
   /* ----- lookup conf ----- */
@@ -171,8 +176,8 @@ object ConfeeIndexer {
       .headOption match {
       case Some(indexRow) => indexRow
       case None =>
-        throw ConfeeCodeException(
-          Location(pos.line, pos.column),
+        throw ConfeeIndexerException(
+          fromPosition(pos),
           s"Reference error: '$name' is not defined"
         )
     }
@@ -185,8 +190,8 @@ object ConfeeIndexer {
   ): T = {
     val indexRow = confIndexLookup(name, pos, parents, index)
     if (indexRow.hasReference) {
-      throw ConfeeCodeException(
-        Location(pos.line, pos.column),
+      throw ConfeeIndexerException(
+        fromPosition(pos),
         s"Reference error: '$name' has a circular reference"
       )
     } else {
@@ -214,7 +219,7 @@ object ConfeeIndexer {
     LiteralObject(LiteralObjectItems(confStmt.items.items.map {
       case ConfItem(name, itemVal: LiteralExpr) =>
         LiteralObjectItem(LiteralObjectItemKey(name.value), itemVal)
-    }))
+    })).setPos(confStmt.pos)
 
   /* ----- index type and conf statements ----- */
 

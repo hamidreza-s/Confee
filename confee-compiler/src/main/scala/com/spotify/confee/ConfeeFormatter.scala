@@ -33,7 +33,7 @@ object ConfeeFormatter {
       case literalString: LiteralStringFactor => toJsonLiteralStringFactor(literalString)
       case literalObject: LiteralObject       => toJsonLiteralObject(literalObject)
       case otherwise: LiteralExpr =>
-        throw ConfeeCodeException(
+        throw ConfeeIndexerException(
           Location(otherwise.pos.line, otherwise.pos.column),
           "Not allowed literal expression in Formatting step!"
         )
@@ -55,7 +55,7 @@ object ConfeeFormatter {
       case LiteralObjectItem(name, itemVal: LiteralObject) =>
         (name.value, toJsonLiteralObject(itemVal))
       case LiteralObjectItem(name, _: LiteralExpr) =>
-        throw ConfeeCodeException(
+        throw ConfeeIndexerException(
           Location(name.pos.line, name.pos.column),
           "Not allowed literal expression in formatting step!"
         )
@@ -74,14 +74,14 @@ object ConfeeFormatter {
       case ConfItem(name, itemVal: LiteralObject) =>
         (name.value, toJsonLiteralObject(itemVal))
       case ConfItem(name, _: LiteralExpr) =>
-        throw ConfeeCodeException(
+        throw ConfeeIndexerException(
           Location(name.pos.line, name.pos.column),
           "Not allowed literal expression in formatting step!"
         )
     }) match {
-      case Success(items)               => Right(Json.obj(items: _*))
-      case Failure(ex: ConfeeCodeException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
-      case Failure(ex)                  => Left(ConfeeUnknownError(ex))
+      case Success(items)                      => Right(Json.obj(items: _*))
+      case Failure(ex: ConfeeIndexerException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
+      case Failure(ex)                         => Left(ConfeeUnknownError(ex))
     }
 
   def pickConf(ast: ConfeeAST, conf: String): Either[ConfeeError, ConfStmt] = ast match {

@@ -1,5 +1,7 @@
 package com.spotify.confee
 
+import com.spotify.confee.ConfeeHelper.updateConfItems
+
 import scala.util.{Failure, Success, Try}
 
 object ConfeeEvaluator {
@@ -7,12 +9,12 @@ object ConfeeEvaluator {
   def apply(ast: ConfeeAST): Either[ConfeeError, ConfeeAST] = ast match {
     case Grammar(stmts: List[Stmt]) =>
       Try(stmts.map {
-        case confStmt @ ConfStmt(_, _, items) => confStmt.copy(items = evaluateConfItems(items))
+        case confStmt @ ConfStmt(_, _, items) => updateConfItems(confStmt, evaluateConfItems(items))
         case otherwise                        => otherwise
       }) match {
-        case Success(evaluatedStmts)      => Right(Grammar(evaluatedStmts))
-        case Failure(ex: ConfeeCodeException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
-        case Failure(ex)                  => Left(ConfeeUnknownError(ex))
+        case Success(evaluatedStmts)             => Right(Grammar(evaluatedStmts))
+        case Failure(ex: ConfeeIndexerException) => Left(ConfeeEvaluatorError(ex.location, ex.msg))
+        case Failure(ex)                         => Left(ConfeeUnknownError(ex))
       }
     case otherwise =>
       Left(
@@ -59,7 +61,7 @@ object ConfeeEvaluator {
   }
 
   def evaluateLiteralBoolWord(word: LiteralBoolWord): LiteralBoolFactor =
-    throw ConfeeCodeException(
+    throw ConfeeIndexerException(
       Location(word.pos.line, word.pos.column),
       "Literal Bool Word must have been referenced in binder step"
     )
@@ -111,7 +113,7 @@ object ConfeeEvaluator {
     }
 
   def evaluateLiteralStringWord(word: LiteralStringWord): LiteralStringFactor =
-    throw ConfeeCodeException(
+    throw ConfeeIndexerException(
       Location(word.pos.line, word.pos.column),
       "Literal String Word must have been referenced in binder step"
     )
@@ -145,7 +147,7 @@ object ConfeeEvaluator {
     }
 
   def evaluateLiteralNumberWord(word: LiteralNumberWord): LiteralNumberFactor =
-    throw ConfeeCodeException(
+    throw ConfeeIndexerException(
       Location(word.pos.line, word.pos.column),
       "Literal Number Word must have been referenced in binder step"
     )

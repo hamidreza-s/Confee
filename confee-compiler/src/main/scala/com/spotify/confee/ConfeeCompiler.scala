@@ -6,7 +6,8 @@ object ConfeeCompiler {
   case object JSON extends Target
   case object YAML extends Target
 
-  // TODO: Implement Checker
+  // TODO: Make sure a conf has all items which is defined in its type
+  // TODO: Make parser smarter
   // TODO: Add REST API + GUI for debugging/testing
   // TODO: Conf value should accept array value as well as obj (+ test/readme)
   // TODO: Add "private" keyword for the items you don't want to expose
@@ -18,6 +19,7 @@ object ConfeeCompiler {
   // TODO: Cache index not to create it again when needed for the second time
   // TODO: Improve error message description with better Location information
   // TODO: Use map for typeIndex and confIndex for a better performance
+  // TODO: Add more unhappy path tests
 
   /** Compiler Steps:
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns [done]
@@ -37,7 +39,13 @@ object ConfeeCompiler {
     *  - TypeIndex is just being used in Checker step
     *  - Confee supports typeless config compiling by a flag, then it skips Checker step
     */
-  def apply(code: String, conf: String, target: Target): Either[ConfeeError, String] =
+  def apply(
+      code: String,
+      conf: String,
+      target: Target,
+      skipValidating: Boolean = false,
+      skipChecking: Boolean = false
+  ): Either[ConfeeError, String] =
     for {
       tokens      <- ConfeeLexer(code)
       parsed      <- ConfeeParser(tokens)
@@ -47,7 +55,7 @@ object ConfeeCompiler {
       evaluated   <- ConfeeEvaluator(bound)
       constructed <- ConfeeConstructor(evaluated)
       executed    <- ConfeeExecutor(constructed)
-      checked     <- ConfeeChecker(executed)
+      checked     <- ConfeeChecker(executed, skipChecking)
       output      <- ConfeeFormatter(checked, conf, target)
     } yield output
 }

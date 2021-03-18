@@ -7,7 +7,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
 
   describe("Constructor on literal proto") {
     it("should construct an object from a proto both at the same level") {
-      constructedAST("""conf foo : Foo {
+      constructAST("""conf foo : Foo {
           |     a = {
           |          x = true
           |          y = 1.0
@@ -76,7 +76,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
     }
 
     it("should construct an object from a proto inside an array") {
-      constructedAST("""conf foo : Foo {
+      constructAST("""conf foo : Foo {
                        |     a = {
                        |          x = true
                        |          y = 1.0
@@ -173,7 +173,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
     }
 
     it("should construct an object from a proto both at same level with new item") {
-      constructedAST("""conf foo : Foo {
+      constructAST("""conf foo : Foo {
           |     a = {
           |          x = true
           |          y = 1.0
@@ -247,7 +247,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
     }
 
     it("should construct objects from a proto having another proto inside") {
-      constructedAST("""conf foo : Foo {
+      constructAST("""conf foo : Foo {
           |     a = {
           |          x = true
           |          y = 1.0
@@ -339,7 +339,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
     }
 
     it("should construct objects from a proto having reference which needs to be bound") {
-      constructedAST("""conf foo : Foo {
+      constructAST("""conf foo : Foo {
           |     base = 1
           |     a = {
           |          index = base
@@ -391,7 +391,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
     }
 
     it("should construct object from a proto having reference to a conf") {
-      constructedAST("""
+      constructAST("""
                 |conf foo : Foo {
                 |     a = 1
                 |     b = 2
@@ -448,7 +448,7 @@ class ConfeeConstructorTest extends AnyFunSpec with Matchers {
     }
   }
 
-  def constructedAST(input: String): Either[ConfeeError, ConfeeAST] = {
+  def constructAST(input: String): Either[ConfeeError, ConfeeAST] = {
     for {
       tokens      <- ConfeeLexer(input)
       parsed      <- ConfeeParser(tokens)
