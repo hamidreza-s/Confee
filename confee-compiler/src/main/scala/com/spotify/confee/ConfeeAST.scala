@@ -2,7 +2,7 @@ package com.spotify.confee
 
 import scala.util.parsing.input.Positional
 
-sealed trait ConfeeAST extends Positional
+sealed trait ConfeeAST extends Positional with ConfeePath
 
 sealed trait Stmt extends ConfeeAST
 
@@ -38,7 +38,7 @@ case class ConfItems(items: List[ConfItem]) extends Node
 
 /* import statement */
 
-case class ImportStmt(path: StringToken) extends Stmt
+case class ImportStmt(value: StringToken) extends Stmt
 
 /* literal expression */
 

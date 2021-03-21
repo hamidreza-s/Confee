@@ -1,4 +1,4 @@
-import "./data-info-type.confee"
+import "data-type.confee"
 
 conf workflow : WorkFlow {
      account = "admin@dataflow.com"

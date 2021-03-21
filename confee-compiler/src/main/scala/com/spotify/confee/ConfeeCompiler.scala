@@ -1,11 +1,17 @@
 package com.spotify.confee
 
+import java.io.File
+import java.net.URI
+
 object ConfeeCompiler {
 
   sealed trait Target
   case object JSON extends Target
   case object YAML extends Target
 
+  // TODO: Check recursive self imports
+  // TODO: Check for duplicate imports
+  // TODO: Add tests for ConfeeLinker.Reader
   // TODO: Make sure a conf has all items which is defined in its type
   // TODO: Make parser smarter
   // TODO: Add REST API + GUI for debugging/testing
@@ -24,13 +30,13 @@ object ConfeeCompiler {
   /** Compiler Steps:
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns [done]
     * 2. Parser: It gets tokens and generates AST based on parser grammar [done]
-    * 3. Linker: It iterates parsed AST and link config files based on import statements
+    * 3. Linker: It iterates parsed AST and link config files based on import statements [done]
     * 4. Validator: It iterates linked AST and checks conf/type/item naming correctness [done]
     * 5. Binder: It iterates linked AST and bind references (variables) it their values [done]
     * 6. Evaluator: It iterates bound AST and evaluates expressions [done]
     * 7. Constructor: It iterates evaluated AST and constructs objects from prototypes [done]
     * 8. Executor: It iterates constructed AST and executes lambdas
-    * 9. Checker: It iterates executed AST and checks the types
+    * 9. Checker: It iterates executed AST and checks the types [done]
     * 10. Generator: It gets AST and lints/optimises/etc. it into an IRC
     * 11. Formatter: It gets AST/IRC and formats it into the target config (e.g. JSON, YAML, etc.) [done]
     *
@@ -43,13 +49,15 @@ object ConfeeCompiler {
       code: String,
       conf: String,
       target: Target,
+      localImports: Seq[File] = Seq.empty[File],
+      remoteImports: Seq[URI] = Seq.empty[URI],
       skipValidating: Boolean = false,
       skipChecking: Boolean = false
   ): Either[ConfeeError, String] =
     for {
       tokens      <- ConfeeLexer(code)
       parsed      <- ConfeeParser(tokens)
-      linked      <- ConfeeLinker(parsed)
+      linked      <- ConfeeLinker(parsed, localImports, remoteImports)
       validated   <- ConfeeValidator(linked)
       bound       <- ConfeeBinder(validated)
       evaluated   <- ConfeeEvaluator(bound)

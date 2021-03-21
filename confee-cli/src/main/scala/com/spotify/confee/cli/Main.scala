@@ -5,6 +5,7 @@ import com.spotify.confee._
 import scopt.{OptionParser, Read}
 
 import java.io.{File, PrintWriter}
+import java.net.URI
 import scala.io.Source
 
 case class Config(
@@ -12,6 +13,8 @@ case class Config(
     target: Option[Target] = None,
     input: Option[File] = None,
     output: Option[File] = None,
+    localImports: Seq[File] = Seq.empty[File],
+    remoteImports: Seq[URI] = Seq.empty[URI],
     relax: Boolean = false,
     typesafe: Boolean = false
 )
@@ -29,6 +32,8 @@ object Main extends App {
       }
     }
 
+    implicit val uriConverter: Read[URI] = Read.reads(new URI(_))
+
     head("confeec - Confee Compiler", "0.0.1")
 
     opt[String]('c', "config")
@@ -42,15 +47,27 @@ object Main extends App {
       .text("target format of confee file")
 
     opt[File]('i', "input")
-      .valueName("<path>")
+      .valueName("<file>")
       .action((x, c) => c.copy(input = Some(x)))
       .text("path to confee input file")
 
     opt[File]('o', "output")
       .optional()
-      .valueName("<path>")
+      .valueName("<file>")
       .action((x, c) => c.copy(output = Some(x)))
-      .text("path to confee output file (optional)")
+      .text("path to confee output file")
+
+    opt[Seq[File]]('l', "locals")
+      .optional()
+      .valueName("<dir>,...")
+      .action((x, c) => c.copy(localImports = x))
+      .text("comma-separated local import directories")
+
+    opt[Seq[URI]]('r', "remotes")
+      .optional()
+      .valueName("<uri>,...")
+      .action((x, c) => c.copy(remoteImports = x))
+      .text("comma-separated remote import URIs")
 
     opt[Unit]('R', "relax")
       .optional()
@@ -66,19 +83,21 @@ object Main extends App {
   }
 
   parser.parse(args, Config()) match {
-    case Some(Config(Some(name), Some(target), Some(inputPath), outputPath, relax, typeless)) =>
-      compile(name, target, inputPath, outputPath, relax, typeless) match {
-        case Right(result)                      => println(result)
-        case Left(ConfeeLexerError(l, m))       => printError(l, m)
-        case Left(ConfeeParserError(l, m))      => printError(l, m)
-        case Left(ConfeeValidatorError(l, m))   => printError(l, m)
-        case Left(ConfeeBinderError(l, m))      => printError(l, m)
-        case Left(ConfeeEvaluatorError(l, m))   => printError(l, m)
-        case Left(ConfeeConstructorError(l, m)) => printError(l, m)
-        case Left(ConfeeCheckerError(l, m))     => printError(l, m)
-        case Left(ConfeeCheckerErrors(es))      => es.map(e => printError(e.location, e.msg))
-        case Left(ConfeeValidatorErrors(es))    => es.map(e => printError(e.location, e.msg))
-        case Left(error)                        => println(s"Compiler: $error")
+    case Some(
+        Config(
+          Some(name),
+          Some(target),
+          Some(inputPath),
+          outputPath,
+          localImports,
+          remoteImports,
+          relax,
+          typeless
+        )
+        ) =>
+      compile(name, target, inputPath, outputPath, localImports, remoteImports, relax, typeless) match {
+        case Right(result) => println(result)
+        case Left(error)   => outputError(error)
       }
     case _ => println("Invalid arguments!")
   }
@@ -87,7 +106,9 @@ object Main extends App {
       configName: String,
       target: Target,
       input: File,
-      maybeOutput: Option[File],
+      output: Option[File],
+      localImports: Seq[File],
+      remoteImports: Seq[URI],
       relax: Boolean,
       typeless: Boolean
   ): Either[ConfeeError, String] = {
@@ -95,33 +116,52 @@ object Main extends App {
                |Compiling ...
                |>> target: $target
                |>> input: $input
-               |>> output: $maybeOutput
+               |>> output: $output
                |""".stripMargin)
 
-    if (!input.exists)
-      throw new Exception("Input file does not exist!")
+    if (!localImports.forall(_.isDirectory)) {
+      Left(ConfeeInvalidArgumentError("Local import directory is not valid!"))
+    } else if (!remoteImports.forall(uri => Option(uri.getHost).isDefined)) {
+      Left(ConfeeInvalidArgumentError("Remote import URI is not valid!"))
+    } else if (!input.exists) {
+      Left(ConfeeInvalidArgumentError("Input file does not exist!"))
+    } else if (!input.canRead) {
+      Left(ConfeeInvalidArgumentError("Input file is not readable!"))
+    } else {
+      val inputSource = Source.fromFile(input)
+      val inputLines  = inputSource.getLines().mkString("\n")
+      inputSource.close()
 
-    if (!input.canRead)
-      throw new Exception("Input file is not readable!")
+      ConfeeCompiler(inputLines, configName, target, localImports, remoteImports, relax, typeless) match {
+        case Right(compiledConfig) =>
+          output match {
+            case Some(outputFilePath) =>
+              val outputFile = new PrintWriter(outputFilePath)
+              outputFile.write(compiledConfig)
+              outputFile.close()
+              Right("Compiled Successfully!")
 
-    val inputSource = Source.fromFile(input)
-    val inputLines  = inputSource.getLines().mkString("\n")
-    inputSource.close()
-
-    ConfeeCompiler(inputLines, configName, target, relax, typeless) match {
-      case Right(compiledConfig) =>
-        maybeOutput match {
-          case Some(outputFilePath) =>
-            val outputFile = new PrintWriter(outputFilePath)
-            outputFile.write(compiledConfig)
-            outputFile.close()
-            Right("Compiled Successfully!")
-
-          case None => Right(compiledConfig)
-        }
-      case otherwise => otherwise
+            case None => Right(compiledConfig)
+          }
+        case otherwise => otherwise
+      }
     }
   }
 
+  private def outputError(error: ConfeeError): Unit = error match {
+    case ConfeeErrors(es)              => es.foreach(outputError)
+    case ConfeeLexerError(l, m)        => printError(l, m)
+    case ConfeeParserError(l, m)       => printError(l, m)
+    case ConfeeLinkerError(l, m)       => printError(l, m)
+    case ConfeeValidatorError(l, m)    => printError(l, m)
+    case ConfeeBinderError(l, m)       => printError(l, m)
+    case ConfeeEvaluatorError(l, m)    => printError(l, m)
+    case ConfeeConstructorError(l, m)  => printError(l, m)
+    case ConfeeCheckerError(l, m)      => printError(l, m)
+    case ConfeeCheckerErrors(es)       => es.foreach(e => printError(e.location, e.msg))
+    case ConfeeValidatorErrors(es)     => es.foreach(e => printError(e.location, e.msg))
+    case ConfeeInvalidArgumentError(m) => println(s"Invalid argument: $m")
+    case e                             => println(s"Compiler error: $e")
+  }
   private def printError(l: Location, m: String): Unit = println(s"$m ($l)")
 }

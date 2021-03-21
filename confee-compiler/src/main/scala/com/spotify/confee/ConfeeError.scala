@@ -4,9 +4,15 @@ import scala.util.parsing.input.Position
 
 sealed trait ConfeeError
 
+case class ConfeeErrors(errors: List[ConfeeError]) extends ConfeeError
+
 case class ConfeeLexerError(location: Location, msg: String) extends ConfeeError
 
 case class ConfeeParserError(location: Location, msg: String) extends ConfeeError
+
+case class ConfeeLinkerError(location: Location, msg: String) extends ConfeeError
+
+case class ConfeeLinkerErrors(errors: List[ConfeeLinkerError]) extends ConfeeError
 
 case class ConfeeValidatorError(location: Location, msg: String) extends ConfeeError
 

@@ -70,19 +70,24 @@ Confee config files can be compiled using `confee-cli` with the following flags:
 confeec - Confee Compiler 0.0.1
 Usage: confeec [options]
 
-  -c, --config <name>     config name to be formatted
-  -t, --target JSON|YAML  target format of confee file
-  -i, --input <path>      path to confee input file
-  -o, --output <path>     path to confee output file (optional)
-  -R, --relax             disable object key name validator
-  -T, --typeless          disable type checker
-  --help                  prints this usage text
+  -c, --config <name>      config name to be formatted
+  -t, --target json|yaml   target format of confee file
+  -i, --input <file>       path to confee input file
+  -o, --output <file>      path to confee output file
+  -l, --locals <dir>,...   comma-separated local import directories
+  -r, --remotes <uri>,...  comma-separated remote import URIs
+  -R, --relax              disable object key name validator
+  -T, --typeless           disable type checker
+  --help                   prints this usage text
 ```
 
 It can be executed by `sbt` from the root path of the project and prints the compiled config file
 when then output path flag is not set:
 ```
-# sbt 'confee-cli/run -c dataInfo -i ./confee-cli/src/main/resources/example/data-info.confee -t JSON'
+# sbt 'confee-cli/run --config dataInfo
+                      --target yaml
+                      --input ./confee-cli/src/main/resources/example/data-info.confee
+                      --locals ./confee-cli/src/main/resources/example/'
 ```
 
 Syntax
@@ -97,6 +102,12 @@ Syntax
 - Type item keys can start with lowercase or uppercase
 
 `import`: It is a top-level statement which is used to import Conf and Type to a given file.
+- It can be either a local or remote `.confee` file
+- The local files have precedence over remote files
+- Local import directories can be passed as comma-separated to confee-cli `--locals` flag
+- Remote import URIs can be passed as comma-separated to confee-cli `--remotes` flag
+- The order of import directories and URIs passed to confee-cli is used by the compiler when 
+  resolving name conflicts
 
 Core features
 ==
