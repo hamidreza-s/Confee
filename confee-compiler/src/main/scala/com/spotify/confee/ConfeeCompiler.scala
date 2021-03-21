@@ -49,15 +49,14 @@ object ConfeeCompiler {
       code: String,
       conf: String,
       target: Target,
-      localImports: Seq[File] = Seq.empty[File],
-      remoteImports: Seq[URI] = Seq.empty[URI],
+      include: Seq[File] = Seq.empty[File],
       skipValidating: Boolean = false,
       skipChecking: Boolean = false
   ): Either[ConfeeError, String] =
     for {
       tokens      <- ConfeeLexer(code)
       parsed      <- ConfeeParser(tokens)
-      linked      <- ConfeeLinker(parsed, localImports, remoteImports)
+      linked      <- ConfeeLinker(parsed, include)
       validated   <- ConfeeValidator(linked)
       bound       <- ConfeeBinder(validated)
       evaluated   <- ConfeeEvaluator(bound)

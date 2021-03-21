@@ -3,22 +3,16 @@ package com.spotify.confee
 import com.spotify.confee.Location.fromPosition
 
 import java.io.File
-import java.net.URI
-import java.net.http.HttpResponse.BodyHandlers
-import java.net.http.{HttpClient, HttpRequest}
 import scala.io.Source
 
 object ConfeeLinker {
 
   case class Code(path: String, source: String)
 
-  case class Reader(
-      localImports: Seq[File] = Seq.empty[File],
-      remoteImports: Seq[URI] = Seq.empty[URI]
-  ) {
+  case class Reader(include: Seq[File] = Seq.empty[File]) {
 
-    def readLocalFile(name: String): Option[Code] =
-      localImports
+    def read(name: String): Option[Code] =
+      include
         .collectFirst {
           case dir: File if dir.isDirectory =>
             dir
@@ -33,33 +27,12 @@ object ConfeeLinker {
           fileSource.close()
           Some(Code(file, inputLines))
         }
-
-    def readRemoteFile(name: String): Option[Code] =
-      remoteImports.collectFirst {
-        case base: URI =>
-          val host = Option(base.getHost)
-            .map(host => s"$host/${base.getPath}")
-            .getOrElse(base.getPath)
-          val uri      = s"${host}/${name}"
-          val client   = HttpClient.newHttpClient()
-          val request  = HttpRequest.newBuilder(new URI(uri)).build()
-          val response = client.send(request, BodyHandlers.ofString())
-
-          if (response.statusCode() == 200) Some(Code(uri, response.body()))
-          else None
-      }.flatten
   }
 
-  def apply(
-      ast: ConfeeAST,
-      localImports: Seq[File] = Seq.empty[File],
-      remoteImports: Seq[URI] = Seq.empty[URI]
-  ): Either[ConfeeError, ConfeeAST] = this(ast, Reader(localImports, remoteImports))
+  def apply(ast: ConfeeAST, include: Seq[File] = Seq.empty[File]): Either[ConfeeError, ConfeeAST] =
+    this(ast, Reader(include))
 
-  def apply(
-      ast: ConfeeAST,
-      reader: Reader
-  ): Either[ConfeeError, ConfeeAST] = ast match {
+  def apply(ast: ConfeeAST, reader: Reader): Either[ConfeeError, ConfeeAST] = ast match {
     case grammar @ Grammar(stmts: List[Stmt]) =>
       val parsedImports =
         stmts.foldLeft(List.empty[Either[ConfeeError, ConfeeAST]]) {
@@ -94,7 +67,7 @@ object ConfeeLinker {
       reader: Reader
   ): Either[ConfeeError, ConfeeAST] = importStmt match {
     case ImportStmt(StringToken(value)) =>
-      reader.readLocalFile(value).orElse(reader.readRemoteFile(value)) match {
+      reader.read(value) match {
         case Some(file) => fileToAst(file, reader)
         case None =>
           Left(

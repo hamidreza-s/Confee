@@ -13,10 +13,9 @@ case class Config(
     target: Option[Target] = None,
     input: Option[File] = None,
     output: Option[File] = None,
-    localImports: Seq[File] = Seq.empty[File],
-    remoteImports: Seq[URI] = Seq.empty[URI],
+    include: Seq[File] = Seq.empty[File],
     relax: Boolean = false,
-    typesafe: Boolean = false
+    typeless: Boolean = false
 )
 
 object Main extends App {
@@ -57,17 +56,11 @@ object Main extends App {
       .action((x, c) => c.copy(output = Some(x)))
       .text("path to confee output file")
 
-    opt[Seq[File]]('l', "locals")
+    opt[Seq[File]]('I', "include")
       .optional()
       .valueName("<dir>,...")
-      .action((x, c) => c.copy(localImports = x))
-      .text("comma-separated local import directories")
-
-    opt[Seq[URI]]('r', "remotes")
-      .optional()
-      .valueName("<uri>,...")
-      .action((x, c) => c.copy(remoteImports = x))
-      .text("comma-separated remote import URIs")
+      .action((x, c) => c.copy(include = x))
+      .text("comma-separated directories to include for imports")
 
     opt[Unit]('R', "relax")
       .optional()
@@ -76,7 +69,7 @@ object Main extends App {
 
     opt[Unit]('T', "typeless")
       .optional()
-      .action((_, c) => c.copy(typesafe = true))
+      .action((_, c) => c.copy(typeless = true))
       .text("disable type checker")
 
     help("help").text("prints this usage text")
@@ -89,13 +82,12 @@ object Main extends App {
           Some(target),
           Some(inputPath),
           outputPath,
-          localImports,
-          remoteImports,
+          include,
           relax,
           typeless
         )
         ) =>
-      compile(name, target, inputPath, outputPath, localImports, remoteImports, relax, typeless) match {
+      compile(name, target, inputPath, outputPath, include, relax, typeless) match {
         case Right(result) => println(result)
         case Left(error)   => outputError(error)
       }
@@ -107,8 +99,7 @@ object Main extends App {
       target: Target,
       input: File,
       output: Option[File],
-      localImports: Seq[File],
-      remoteImports: Seq[URI],
+      include: Seq[File],
       relax: Boolean,
       typeless: Boolean
   ): Either[ConfeeError, String] = {
@@ -119,10 +110,8 @@ object Main extends App {
                |>> output: $output
                |""".stripMargin)
 
-    if (!localImports.forall(_.isDirectory)) {
+    if (!include.forall(_.isDirectory)) {
       Left(ConfeeInvalidArgumentError("Local import directory is not valid!"))
-    } else if (!remoteImports.forall(uri => Option(uri.getHost).isDefined)) {
-      Left(ConfeeInvalidArgumentError("Remote import URI is not valid!"))
     } else if (!input.exists) {
       Left(ConfeeInvalidArgumentError("Input file does not exist!"))
     } else if (!input.canRead) {
@@ -132,7 +121,7 @@ object Main extends App {
       val inputLines  = inputSource.getLines().mkString("\n")
       inputSource.close()
 
-      ConfeeCompiler(inputLines, configName, target, localImports, remoteImports, relax, typeless) match {
+      ConfeeCompiler(inputLines, configName, target, include, relax, typeless) match {
         case Right(compiledConfig) =>
           output match {
             case Some(outputFilePath) =>

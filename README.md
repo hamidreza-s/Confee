@@ -8,55 +8,46 @@ Here is an example to define data pipelines to be used as the `data-info.yaml` f
 The types can be used in a global space to be used by every data pipeline project:
 ```
 type DataInfo {
-     projectName: String
-     description: String
+     project: String
      storage: String
-     facts: DataFact
+     facts: Fact
 }
 
-type DataFact {
+type Fact {
      doc: String
-     workFlows: [DataWorkflow]
+     workFlows: [Workflow]
 }
 
-type DataWorkflow {
+type Workflow {
      name: String
      account: String
      schedule: String
      dockerArgs: [String]
+}
 }
 ```
 
 Then by importing the types and then defining the proto, we can define the configs:
 
 ```
-import "/path/to/DataInfoTypes.confee"
+import "/path/to/types.confee"
 
-conf workflow : DataWorkflow {
+conf workflow : Workflow {
      name = "default-workflow-name"
      account = "admin@dataflow.com"
+     schedule = "hourly"
      dockerArgs = ["--wrap-luigi", "--development"]
 }
 
 conf dataInfo : DataInfo {
-     projectName = "cool-project"
-     description = "sample desc"
-     storageType = "gcs"
+     project = "cool-project"
+     storage = "gcs"
      facts = {
           doc = "It is a very cool project."
           workFlows = [
-               workflow { 
-                    name = projectName + ".cool-job." schedule + "." + storageType
-                    schedule = "hourly" 
-               },
-               workflow { 
-                    name = projectName + ".cool-job." + schedule + "." + storageType 
-                    schedule = "daily" 
-               },
-               workflow { 
-                    name = projectName + ".cool-job." + schedule + "." + storageType
-                    schedule = "monthly" 
-               }
+               workflow { schedule = "hourly" name = "foo." + storage },
+               workflow { schedule = "hourly" name = "bar." + storage },
+               workflow { schedule = "weekly" name = "bat." + storage }
           ]
      }
 }
@@ -74,8 +65,7 @@ Usage: confeec [options]
   -t, --target json|yaml   target format of confee file
   -i, --input <file>       path to confee input file
   -o, --output <file>      path to confee output file
-  -l, --locals <dir>,...   comma-separated local import directories
-  -r, --remotes <uri>,...  comma-separated remote import URIs
+  -I, --include <dir>,...  comma-separated directories to include for imports
   -R, --relax              disable object key name validator
   -T, --typeless           disable type checker
   --help                   prints this usage text
@@ -87,7 +77,7 @@ when then output path flag is not set:
 # sbt 'confee-cli/run --config dataInfo
                       --target yaml
                       --input ./confee-cli/src/main/resources/example/data-info.confee
-                      --locals ./confee-cli/src/main/resources/example/'
+                      --include ./confee-cli/src/main/resources/example/'
 ```
 
 Syntax
@@ -102,12 +92,6 @@ Syntax
 - Type item keys can start with lowercase or uppercase
 
 `import`: It is a top-level statement which is used to import Conf and Type to a given file.
-- It can be either a local or remote `.confee` file
-- The local files have precedence over remote files
-- Local import directories can be passed as comma-separated to confee-cli `--locals` flag
-- Remote import URIs can be passed as comma-separated to confee-cli `--remotes` flag
-- The order of import directories and URIs passed to confee-cli is used by the compiler when 
-  resolving name conflicts
 
 Core features
 ==

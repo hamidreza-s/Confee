@@ -7,11 +7,11 @@ import org.scalatest.matchers.should.Matchers
 
 class ConfeeLinkerTest extends AnyFunSpec with Matchers with MockFactory {
 
-  describe("Linker on local file") {
-    it("should link one local file having types") {
+  describe("Linker on imported files") {
+    it("should link one confee file having types") {
 
       val mockReader = mock[ConfeeLinker.Reader]
-      (mockReader.readLocalFile _)
+      (mockReader.read _)
         .expects("data-type.confee")
         .returning(
           Some(
