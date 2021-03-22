@@ -24,7 +24,6 @@ type Workflow {
      schedule: String
      dockerArgs: [String]
 }
-}
 ```
 
 Then by importing the types and then defining the proto, we can define the configs:
