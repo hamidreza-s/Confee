@@ -1,7 +1,6 @@
 package com.spotify.confee
 
 import java.io.File
-import java.net.URI
 
 object ConfeeCompiler {
 
@@ -26,6 +25,8 @@ object ConfeeCompiler {
   // TODO: Improve error message description with better Location information
   // TODO: Use map for typeIndex and confIndex for a better performance
   // TODO: Add more unhappy path tests
+  // TODO: Support for array of array
+  // TODO: Check empty objects/arrays
 
   /** Compiler Steps:
     * 1. Lexer: It gets the confee config as string and generates tokens based on lexing patterns [done]

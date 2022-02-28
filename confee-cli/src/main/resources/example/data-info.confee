@@ -5,9 +5,9 @@ conf workflow : WorkFlow {
      dockerArgs = ["--wrap-luigi"]
 }
 
-conf dataInfo : DataInfo {
+conf dataInfo : WorkFlow {
      id = "e73d6402"
-     description = "sample desc"
+     description = "some doc"
      facts = {
           doc = "sample doc"
           workFlows = [

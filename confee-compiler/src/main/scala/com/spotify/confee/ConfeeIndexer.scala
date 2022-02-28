@@ -10,19 +10,21 @@ import scala.util.{Failure, Success, Try}
 object ConfeeIndexer {
 
   trait DefinedType {
+    def name: String
     def isList: Boolean
+    override def toString: String = if (isList) s"[$name]" else name
   }
   case object DefinedType {
     def parse(typeDef: TypeDef): DefinedType = typeDef match {
-      case TypeDef(NameToken("Bool"), isList)   => BoolDefinedType(isList)
-      case TypeDef(NameToken("Number"), isList) => NumberDefinedType(isList)
-      case TypeDef(NameToken("String"), isList) => StringDefinedType(isList)
+      case TypeDef(NameToken("Bool"), isList)   => BoolDefinedType("Bool", isList)
+      case TypeDef(NameToken("Number"), isList) => NumberDefinedType("Number", isList)
+      case TypeDef(NameToken("String"), isList) => StringDefinedType("String", isList)
       case TypeDef(NameToken(custom), isList)   => ObjectDefinedType(custom, isList)
     }
   }
-  case class BoolDefinedType(isList: Boolean) extends DefinedType
-  case class NumberDefinedType(isList: Boolean) extends DefinedType
-  case class StringDefinedType(isList: Boolean) extends DefinedType
+  case class BoolDefinedType(name: String, isList: Boolean) extends DefinedType
+  case class NumberDefinedType(name: String, isList: Boolean) extends DefinedType
+  case class StringDefinedType(name: String, isList: Boolean) extends DefinedType
   case class ObjectDefinedType(name: String, isList: Boolean) extends DefinedType
 
   sealed trait InferredType
@@ -48,7 +50,8 @@ object ConfeeIndexer {
       definedType: Option[DefinedType] = None,
       parents: List[String] = List.empty[String],
       isTopLevel: Boolean = false,
-      hasReference: Boolean = false
+      hasReference: Boolean = false,
+      isArrayItem: Boolean = false
   )
 
   case class Index(
@@ -287,55 +290,66 @@ object ConfeeIndexer {
       name: String,
       expr: Expr,
       parents: List[String] = List.empty[String],
-      index: List[ConfIndex] = List.empty[ConfIndex]
+      index: List[ConfIndex] = List.empty[ConfIndex],
+      isArrayItem: Boolean = false
   ): List[ConfIndex] = expr match {
     case w: LiteralWord =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = w,
         inferredType = WordInferredType,
         parents = parents,
-        hasReference = hasReference(w)
+        hasReference = hasReference(w),
+        isArrayItem = isArrayItem
       ) :: Nil
     case b: LiteralBool =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = b,
         inferredType = BoolInferredType,
         parents = parents,
-        hasReference = hasReference(b)
+        hasReference = hasReference(b),
+        isArrayItem = isArrayItem
       ) :: Nil
     case n: LiteralNumber =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = n,
         inferredType = NumberInferredType,
         parents = parents,
-        hasReference = hasReference(n)
+        hasReference = hasReference(n),
+        isArrayItem = isArrayItem
       ) :: Nil
     case s: LiteralString =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = s,
         inferredType = StringInferredType,
         parents = parents,
-        hasReference = hasReference(s)
+        hasReference = hasReference(s),
+        isArrayItem = isArrayItem
       ) :: Nil
-    case a: LiteralArray =>
+    case a @ LiteralArray(items: List[LiteralExpr]) =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = a,
         inferredType = ArrayInferredType,
         parents = parents,
-        hasReference = hasReference(a)
-      ) :: Nil
+        hasReference = hasReference(a),
+        isArrayItem = isArrayItem
+      ) :: indexArrayItems(
+        name,
+        items,
+        parents
+      )
     case o @ LiteralObject(items: LiteralObjectItems) =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = o,
         inferredType = ObjectInferredType,
         parents = parents,
-        hasReference = hasReference(o)
+        hasReference = hasReference(o),
+        isArrayItem = isArrayItem
       ) :: indexObjectItems(
         name,
         items,
@@ -343,17 +357,23 @@ object ConfeeIndexer {
       )
     case p @ LiteralProto(_, items: LiteralObjectItems) =>
       index ::: ConfIndex(
-        name,
+        name = name,
         expr = p,
         inferredType = ProtoInferredType,
         parents = parents,
-        hasReference = hasReference(p)
+        hasReference = hasReference(p),
+        isArrayItem = isArrayItem
       ) :: indexObjectItems(
         name,
         items,
         parents
       )
   }
+
+  def indexArrayItems(name: String, arrayItems: List[LiteralExpr], parents: List[String]): List[ConfIndex] =
+    arrayItems.zipWithIndex.flatMap { case (item, i) =>
+      indexConfItem(name = s"$name.$i", expr = item, parents = parents, isArrayItem = true)
+    }
 
   def indexObjectItems(
       name: String,
